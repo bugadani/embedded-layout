@@ -12,17 +12,19 @@ pub mod vertical;
 
 /// Implement this trait for horizontal alignment algorithms
 pub trait HorizontalAlignment {
-    fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> Point;
+    fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
 }
 
 /// Implement this trait for vertical alignment algorithms
+///
+/// Vertical alignment assumes lower coordinate values are higher up
 pub trait VerticalAlignment {
-    fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> Point;
+    fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
 }
 
 /// This trait enables alignment operations of `embedded-graphics` primitives
 pub trait Align: Transform {
-    fn align_to<D, H, V>(&mut self, reference: D, horizontal: H, vertical: V) -> &mut Self
+    fn align_to<D, H, V>(self, reference: D, horizontal: H, vertical: V) -> Self
     where
         D: Dimensions,
         H: HorizontalAlignment,
@@ -33,14 +35,14 @@ impl<T> Align for T
 where
     T: Dimensions + Transform,
 {
-    fn align_to<D, H, V>(&mut self, reference: D, horizontal: H, vertical: V) -> &mut Self
+    fn align_to<D, H, V>(self, reference: D, horizontal: H, vertical: V) -> Self
     where
         D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
-        let h = horizontal.align(self, &reference);
-        let v = vertical.align(self, &reference);
-        self.translate_mut(h + v)
+        let h = horizontal.align(&self, &reference);
+        let v = vertical.align(&self, &reference);
+        self.translate(Point::new(h, v))
     }
 }
