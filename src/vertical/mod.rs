@@ -44,6 +44,23 @@ impl VerticalAlignment for Bottom {
     }
 }
 
+/// Align the top edge of the object to the bottom edge of the reference, non-overlapping
+pub struct TopToBottom;
+
+impl VerticalAlignment for TopToBottom {
+    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+        (reference.bottom_right().y + 1) - object.top_left().y
+    }
+}
+pub struct BottomToTop;
+
+/// Align the bottom edge of the object to the top edge of the reference, non-overlapping
+impl VerticalAlignment for BottomToTop {
+    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+        (reference.top_left().y - 1) - object.bottom_right().y
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
@@ -123,5 +140,61 @@ mod test {
         // Test the other direction
         let result = rect2.align_to(rect1, horizontal::NoAlignment, vertical::Bottom);
         check_bottom_alignment(rect2, rect1, result);
+    }
+
+    #[test]
+    fn test_top_to_bottom() {
+        fn check_to_to_bottom_alignment(
+            source: Rectangle,
+            reference: Rectangle,
+            result: Rectangle,
+        ) {
+            // The size hasn't changed
+            assert_eq!(result.size(), source.size());
+
+            // Top is at bottom + 1
+            assert_eq!(result.top_left.y, reference.bottom_right.y + 1);
+
+            // Horizontal coordinate is unchanged
+            assert_eq!(result.bottom_right.x, source.bottom_right.x);
+        }
+
+        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(rect2, horizontal::NoAlignment, vertical::TopToBottom);
+        check_to_to_bottom_alignment(rect1, rect2, result);
+
+        // Test the other direction
+        let result = rect2.align_to(rect1, horizontal::NoAlignment, vertical::TopToBottom);
+        check_to_to_bottom_alignment(rect2, rect1, result);
+    }
+
+    #[test]
+    fn test_bottom_to_top() {
+        fn check_to_to_bottom_alignment(
+            source: Rectangle,
+            reference: Rectangle,
+            result: Rectangle,
+        ) {
+            // The size hasn't changed
+            assert_eq!(result.size(), source.size());
+
+            // Bottom is at top - 1
+            assert_eq!(result.bottom_right.y, reference.top_left.y - 1);
+
+            // Horizontal coordinate is unchanged
+            assert_eq!(result.bottom_right.x, source.bottom_right.x);
+        }
+
+        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(rect2, horizontal::NoAlignment, vertical::BottomToTop);
+        check_to_to_bottom_alignment(rect1, rect2, result);
+
+        // Test the other direction
+        let result = rect2.align_to(rect1, horizontal::NoAlignment, vertical::BottomToTop);
+        check_to_to_bottom_alignment(rect2, rect1, result);
     }
 }

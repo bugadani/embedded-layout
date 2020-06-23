@@ -44,6 +44,25 @@ impl HorizontalAlignment for Right {
     }
 }
 
+/// Align the left edge of the object to the right edge of the reference, non-overlapping
+pub struct LeftToRight;
+
+impl HorizontalAlignment for LeftToRight {
+    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+        (reference.bottom_right().x + 1) - object.top_left().x
+    }
+}
+
+/// Align the right edge of the object to the left edge of the reference, non-overlapping
+pub struct RightToLeft;
+
+/// Align the bottom edge of the object to the top edge of the reference, non-overlapping
+impl HorizontalAlignment for RightToLeft {
+    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+        (reference.top_left().x - 1) - object.bottom_right().x
+    }
+}
+
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
@@ -123,5 +142,61 @@ mod test {
         // Test the other direction
         let result = rect2.align_to(rect1, horizontal::Right, vertical::NoAlignment);
         check_right_alignment(rect2, rect1, result);
+    }
+
+    #[test]
+    fn test_left_to_right() {
+        fn check_left_to_right_alignment(
+            source: Rectangle,
+            reference: Rectangle,
+            result: Rectangle,
+        ) {
+            // The size hasn't changed
+            assert_eq!(result.size(), source.size());
+
+            // Left is at right + 1
+            assert_eq!(result.top_left.x, reference.bottom_right.x + 1);
+
+            // Vertical coordinate is unchanged
+            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+        }
+
+        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(rect2, horizontal::LeftToRight, vertical::NoAlignment);
+        check_left_to_right_alignment(rect1, rect2, result);
+
+        // Test the other direction
+        let result = rect2.align_to(rect1, horizontal::LeftToRight, vertical::NoAlignment);
+        check_left_to_right_alignment(rect2, rect1, result);
+    }
+
+    #[test]
+    fn test_right_to_left() {
+        fn check_right_to_left_alignment(
+            source: Rectangle,
+            reference: Rectangle,
+            result: Rectangle,
+        ) {
+            // The size hasn't changed
+            assert_eq!(result.size(), source.size());
+
+            // Left is at right + 1
+            assert_eq!(result.bottom_right.x, reference.top_left.x - 1);
+
+            // Vertical coordinate is unchanged
+            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+        }
+
+        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(rect2, horizontal::RightToLeft, vertical::NoAlignment);
+        check_right_to_left_alignment(rect1, rect2, result);
+
+        // Test the other direction
+        let result = rect2.align_to(rect1, horizontal::RightToLeft, vertical::NoAlignment);
+        check_right_to_left_alignment(rect2, rect1, result);
     }
 }
