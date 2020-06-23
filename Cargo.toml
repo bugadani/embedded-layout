@@ -1,6 +1,9 @@
 [package]
 name = "embedded-layout"
 version = "0.0.1"
+license = "MIT"
+description = "Extend embedded-graphics with simple layout functions"
+repository = "https://github.com/bugadani/embedded-layout"
 authors = ["Dániel Buga <bugadani@gmail.com>"]
 edition = "2018"
 
