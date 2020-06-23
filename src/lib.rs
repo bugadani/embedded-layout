@@ -1,4 +1,4 @@
-//! Enable simple layout operations in `embedded-graphics`
+//! Enable simple layout operations in [`embedded-graphics`]
 //!
 //! This crate extends `embedded-graphics` objects that implement the `Transform` trait
 //! to be aligned to other objects that have `Dimensions`.
@@ -33,6 +33,8 @@
 //!      .draw(&mut disp)
 //!      .unwrap();
 //! ```
+//!
+//! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 
 #![cfg_attr(not(test), no_std)]
 
