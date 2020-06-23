@@ -2,12 +2,9 @@
 use crate::HorizontalAlignment;
 use embedded_graphics::geometry::Dimensions;
 
-pub struct NoAlignment;
-pub struct Center;
-pub struct Left;
-pub struct Right;
-
 /// Keep the object's horizontal coordinate unchanged
+pub struct NoAlignment;
+
 impl HorizontalAlignment for NoAlignment {
     fn align(&self, _object: &impl Dimensions, _reference: &impl Dimensions) -> i32 {
         0
@@ -18,6 +15,8 @@ impl HorizontalAlignment for NoAlignment {
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
 ///         the integer cordinates used.
+pub struct Center;
+
 impl HorizontalAlignment for Center {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         let center_object = (object.top_left().x + object.bottom_right().x) / 2;
@@ -28,6 +27,8 @@ impl HorizontalAlignment for Center {
 }
 
 /// Align the left edge of the object to the left edge of the reference
+pub struct Left;
+
 impl HorizontalAlignment for Left {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         reference.top_left().x - object.top_left().x
@@ -35,6 +36,8 @@ impl HorizontalAlignment for Left {
 }
 
 /// Align the right edge of the object to the right edge of the reference
+pub struct Right;
+
 impl HorizontalAlignment for Right {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         reference.bottom_right().x - object.bottom_right().x

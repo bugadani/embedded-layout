@@ -2,12 +2,9 @@
 use crate::VerticalAlignment;
 use embedded_graphics::geometry::Dimensions;
 
-pub struct NoAlignment;
-pub struct Center;
-pub struct Top;
-pub struct Bottom;
-
 /// Keep the object's vertical coordinate unchanged
+pub struct NoAlignment;
+
 impl VerticalAlignment for NoAlignment {
     fn align(&self, _object: &impl Dimensions, _reference: &impl Dimensions) -> i32 {
         0
@@ -18,6 +15,8 @@ impl VerticalAlignment for NoAlignment {
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
 ///         the integer cordinates used.
+pub struct Center;
+
 impl VerticalAlignment for Center {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         let center_object = (object.top_left().y + object.bottom_right().y) / 2;
@@ -28,6 +27,8 @@ impl VerticalAlignment for Center {
 }
 
 /// Align the top edge of the object to the top edge of the reference
+pub struct Top;
+
 impl VerticalAlignment for Top {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         reference.top_left().y - object.top_left().y
@@ -35,6 +36,8 @@ impl VerticalAlignment for Top {
 }
 
 /// Align the bottom edge of the object to the bottom edge of the reference
+pub struct Bottom;
+
 impl VerticalAlignment for Bottom {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         reference.bottom_right().y - object.bottom_right().y
