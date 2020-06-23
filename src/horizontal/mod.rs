@@ -1,12 +1,12 @@
 use crate::HorizontalAlignment;
 use embedded_graphics::geometry::Dimensions;
 
-pub struct NoHorizontalAlignment;
+pub struct NoAlignment;
 pub struct Center;
 pub struct Left;
 pub struct Right;
 
-impl HorizontalAlignment for NoHorizontalAlignment {
+impl HorizontalAlignment for NoAlignment {
     fn align(&self, _what: &impl Dimensions, _reference: &impl Dimensions) -> i32 {
         0
     }
@@ -36,22 +36,28 @@ impl HorizontalAlignment for Right {
 
 #[cfg(test)]
 mod test {
-    use embedded_graphics::primitives::Rectangle;
-    use embedded_graphics::geometry::Point;
     use super::*;
-    use crate::vertical::NoVerticalAlignment;
+    use crate::vertical::NoAlignment;
     use crate::Align;
+    use embedded_graphics::geometry::Point;
+    use embedded_graphics::primitives::Rectangle;
 
     #[test]
     fn test_center() {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(5, 20), Point::new(25, 50));
 
-        let result = rect1.align_to(rect2, Center, NoVerticalAlignment);
-        assert_eq!(result, Rectangle::new(Point::new(10, 0), Point::new(20, 10)));
+        let result = rect1.align_to(rect2, Center, NoAlignment);
+        assert_eq!(
+            result,
+            Rectangle::new(Point::new(10, 0), Point::new(20, 10))
+        );
 
-        let result = rect2.align_to(rect1, Center, NoVerticalAlignment);
-        assert_eq!(result, Rectangle::new(Point::new(-5, 20), Point::new(15, 50)));
+        let result = rect2.align_to(rect1, Center, NoAlignment);
+        assert_eq!(
+            result,
+            Rectangle::new(Point::new(-5, 20), Point::new(15, 50))
+        );
     }
 
     #[test]
@@ -59,11 +65,14 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(5, 20), Point::new(25, 50));
 
-        let result = rect1.align_to(rect2, Left, NoVerticalAlignment);
+        let result = rect1.align_to(rect2, Left, NoAlignment);
         assert_eq!(result, Rectangle::new(Point::new(5, 0), Point::new(15, 10)));
 
-        let result = rect2.align_to(rect1, Left, NoVerticalAlignment);
-        assert_eq!(result, Rectangle::new(Point::new(0, 20), Point::new(20, 50)));
+        let result = rect2.align_to(rect1, Left, NoAlignment);
+        assert_eq!(
+            result,
+            Rectangle::new(Point::new(0, 20), Point::new(20, 50))
+        );
     }
 
     #[test]
@@ -71,10 +80,16 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(5, 20), Point::new(25, 50));
 
-        let result = rect1.align_to(rect2, Right, NoVerticalAlignment);
-        assert_eq!(result, Rectangle::new(Point::new(15, 0), Point::new(25, 10)));
+        let result = rect1.align_to(rect2, Right, NoAlignment);
+        assert_eq!(
+            result,
+            Rectangle::new(Point::new(15, 0), Point::new(25, 10))
+        );
 
-        let result = rect2.align_to(rect1, Right, NoVerticalAlignment);
-        assert_eq!(result, Rectangle::new(Point::new(-10, 20), Point::new(10, 50)));
+        let result = rect2.align_to(rect1, Right, NoAlignment);
+        assert_eq!(
+            result,
+            Rectangle::new(Point::new(-10, 20), Point::new(10, 50))
+        );
     }
 }

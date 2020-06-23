@@ -10,6 +10,10 @@ use embedded_graphics::{geometry::Point, prelude::*};
 pub mod horizontal;
 pub mod vertical;
 
+pub mod prelude {
+    pub use crate::{horizontal, vertical, Align};
+}
+
 /// Implement this trait for horizontal alignment algorithms
 pub trait HorizontalAlignment {
     fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
