@@ -73,14 +73,14 @@ where
 }
 
 /// Implement this trait for horizontal alignment algorithms
-pub trait HorizontalAlignment {
+pub trait HorizontalAlignment: Copy + Clone {
     fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
 }
 
 /// Implement this trait for vertical alignment algorithms
 ///
 /// Vertical alignment assumes lower coordinate values are higher up
-pub trait VerticalAlignment {
+pub trait VerticalAlignment: Copy + Clone {
     fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
 }
 
