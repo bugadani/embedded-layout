@@ -3,6 +3,7 @@ use crate::HorizontalAlignment;
 use embedded_graphics::geometry::Dimensions;
 
 /// Keep the object's horizontal coordinate unchanged
+#[derive(Copy, Clone)]
 pub struct NoAlignment;
 
 impl HorizontalAlignment for NoAlignment {
@@ -15,6 +16,7 @@ impl HorizontalAlignment for NoAlignment {
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
 ///         the integer cordinates used.
+#[derive(Copy, Clone)]
 pub struct Center;
 
 impl HorizontalAlignment for Center {
@@ -27,6 +29,7 @@ impl HorizontalAlignment for Center {
 }
 
 /// Align the left edge of the object to the left edge of the reference
+#[derive(Copy, Clone)]
 pub struct Left;
 
 impl HorizontalAlignment for Left {
@@ -36,6 +39,7 @@ impl HorizontalAlignment for Left {
 }
 
 /// Align the right edge of the object to the right edge of the reference
+#[derive(Copy, Clone)]
 pub struct Right;
 
 impl HorizontalAlignment for Right {
@@ -45,6 +49,7 @@ impl HorizontalAlignment for Right {
 }
 
 /// Align the left edge of the object to the right edge of the reference, non-overlapping
+#[derive(Copy, Clone)]
 pub struct LeftToRight;
 
 impl HorizontalAlignment for LeftToRight {
@@ -54,6 +59,7 @@ impl HorizontalAlignment for LeftToRight {
 }
 
 /// Align the right edge of the object to the left edge of the reference, non-overlapping
+#[derive(Copy, Clone)]
 pub struct RightToLeft;
 
 /// Align the bottom edge of the object to the top edge of the reference, non-overlapping

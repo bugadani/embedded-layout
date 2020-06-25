@@ -3,6 +3,7 @@ use crate::VerticalAlignment;
 use embedded_graphics::geometry::Dimensions;
 
 /// Keep the object's vertical coordinate unchanged
+#[derive(Copy, Clone)]
 pub struct NoAlignment;
 
 impl VerticalAlignment for NoAlignment {
@@ -15,6 +16,7 @@ impl VerticalAlignment for NoAlignment {
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
 ///         the integer cordinates used.
+#[derive(Copy, Clone)]
 pub struct Center;
 
 impl VerticalAlignment for Center {
@@ -27,6 +29,7 @@ impl VerticalAlignment for Center {
 }
 
 /// Align the top edge of the object to the top edge of the reference
+#[derive(Copy, Clone)]
 pub struct Top;
 
 impl VerticalAlignment for Top {
@@ -36,6 +39,7 @@ impl VerticalAlignment for Top {
 }
 
 /// Align the bottom edge of the object to the bottom edge of the reference
+#[derive(Copy, Clone)]
 pub struct Bottom;
 
 impl VerticalAlignment for Bottom {
@@ -45,6 +49,7 @@ impl VerticalAlignment for Bottom {
 }
 
 /// Align the top edge of the object to the bottom edge of the reference, non-overlapping
+#[derive(Copy, Clone)]
 pub struct TopToBottom;
 
 impl VerticalAlignment for TopToBottom {
@@ -52,9 +57,11 @@ impl VerticalAlignment for TopToBottom {
         (reference.bottom_right().y + 1) - object.top_left().y
     }
 }
-pub struct BottomToTop;
 
 /// Align the bottom edge of the object to the top edge of the reference, non-overlapping
+#[derive(Copy, Clone)]
+pub struct BottomToTop;
+
 impl VerticalAlignment for BottomToTop {
     fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
         (reference.top_left().y - 1) - object.bottom_right().y

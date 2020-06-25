@@ -91,6 +91,12 @@ pub trait Align: Transform {
         D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment;
+
+    fn align_to_mut<D, H, V>(&mut self, reference: D, horizontal: H, vertical: V) -> &mut Self
+    where
+        D: Dimensions,
+        H: HorizontalAlignment,
+        V: VerticalAlignment;
 }
 
 impl<T> Align for T
@@ -106,5 +112,16 @@ where
         let h = horizontal.align(&self, &reference);
         let v = vertical.align(&self, &reference);
         self.translate(Point::new(h, v))
+    }
+
+    fn align_to_mut<D, H, V>(&mut self, reference: D, horizontal: H, vertical: V) -> &mut Self
+    where
+        D: Dimensions,
+        H: HorizontalAlignment,
+        V: VerticalAlignment,
+    {
+        let h = horizontal.align(self, &reference);
+        let v = vertical.align(self, &reference);
+        self.translate_mut(Point::new(h, v))
     }
 }
