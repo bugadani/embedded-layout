@@ -29,7 +29,7 @@
 //!
 //! Text::new("Hello, world!", Point::zero())
 //!      .into_styled(text_style)
-//!      .align_to(display_area, horizontal::Center, vertical::Center)
+//!      .align_to(&display_area, horizontal::Center, vertical::Center)
 //!      .draw(&mut disp)
 //!      .unwrap();
 //! ```
@@ -86,13 +86,13 @@ pub trait VerticalAlignment: Copy + Clone {
 
 /// This trait enables alignment operations of `embedded-graphics` primitives
 pub trait Align: Transform {
-    fn align_to<D, H, V>(self, reference: D, horizontal: H, vertical: V) -> Self
+    fn align_to<D, H, V>(self, reference: &D, horizontal: H, vertical: V) -> Self
     where
         D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment;
 
-    fn align_to_mut<D, H, V>(&mut self, reference: D, horizontal: H, vertical: V) -> &mut Self
+    fn align_to_mut<D, H, V>(&mut self, reference: &D, horizontal: H, vertical: V) -> &mut Self
     where
         D: Dimensions,
         H: HorizontalAlignment,
@@ -103,25 +103,25 @@ impl<T> Align for T
 where
     T: Dimensions + Transform,
 {
-    fn align_to<D, H, V>(self, reference: D, horizontal: H, vertical: V) -> Self
+    fn align_to<D, H, V>(self, reference: &D, horizontal: H, vertical: V) -> Self
     where
         D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
-        let h = horizontal.align(&self, &reference);
-        let v = vertical.align(&self, &reference);
+        let h = horizontal.align(&self, reference);
+        let v = vertical.align(&self, reference);
         self.translate(Point::new(h, v))
     }
 
-    fn align_to_mut<D, H, V>(&mut self, reference: D, horizontal: H, vertical: V) -> &mut Self
+    fn align_to_mut<D, H, V>(&mut self, reference: &D, horizontal: H, vertical: V) -> &mut Self
     where
         D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
-        let h = horizontal.align(self, &reference);
-        let v = vertical.align(self, &reference);
+        let h = horizontal.align(self, reference);
+        let v = vertical.align(self, reference);
         self.translate_mut(Point::new(h, v))
     }
 }

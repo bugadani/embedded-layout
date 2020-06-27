@@ -94,11 +94,11 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let result = rect1.align_to(rect2, horizontal::Center, vertical::NoAlignment);
+        let result = rect1.align_to(&rect2, horizontal::Center, vertical::NoAlignment);
         check_center_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let result = rect2.align_to(rect1, horizontal::Center, vertical::NoAlignment);
+        let result = rect2.align_to(&rect1, horizontal::Center, vertical::NoAlignment);
         check_center_alignment(rect2, rect1, result);
     }
 
@@ -118,11 +118,11 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let result = rect1.align_to(rect2, horizontal::Left, vertical::NoAlignment);
+        let result = rect1.align_to(&rect2, horizontal::Left, vertical::NoAlignment);
         check_left_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let result = rect2.align_to(rect1, horizontal::Left, vertical::NoAlignment);
+        let result = rect2.align_to(&rect1, horizontal::Left, vertical::NoAlignment);
         check_left_alignment(rect2, rect1, result);
     }
 
@@ -142,11 +142,11 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let result = rect1.align_to(rect2, horizontal::Right, vertical::NoAlignment);
+        let result = rect1.align_to(&rect2, horizontal::Right, vertical::NoAlignment);
         check_right_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let result = rect2.align_to(rect1, horizontal::Right, vertical::NoAlignment);
+        let result = rect2.align_to(&rect1, horizontal::Right, vertical::NoAlignment);
         check_right_alignment(rect2, rect1, result);
     }
 
@@ -170,11 +170,11 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let result = rect1.align_to(rect2, horizontal::LeftToRight, vertical::NoAlignment);
+        let result = rect1.align_to(&rect2, horizontal::LeftToRight, vertical::NoAlignment);
         check_left_to_right_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let result = rect2.align_to(rect1, horizontal::LeftToRight, vertical::NoAlignment);
+        let result = rect2.align_to(&rect1, horizontal::LeftToRight, vertical::NoAlignment);
         check_left_to_right_alignment(rect2, rect1, result);
     }
 
@@ -198,11 +198,11 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let result = rect1.align_to(rect2, horizontal::RightToLeft, vertical::NoAlignment);
+        let result = rect1.align_to(&rect2, horizontal::RightToLeft, vertical::NoAlignment);
         check_right_to_left_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let result = rect2.align_to(rect1, horizontal::RightToLeft, vertical::NoAlignment);
+        let result = rect2.align_to(&rect1, horizontal::RightToLeft, vertical::NoAlignment);
         check_right_to_left_alignment(rect2, rect1, result);
     }
 }

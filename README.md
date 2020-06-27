@@ -3,6 +3,8 @@ embedded-layout
 
 `embedded-layout` extends [`embedded-graphics`] with basic layout functions.
 
+**Note:** This library is currently highly experimental. Expect API breakage with every update.
+
 ## Example
 
 Draw some text to the center of the display:
