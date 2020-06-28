@@ -4,7 +4,8 @@ Unreleased
 ## Added:
 
  * `View` trait
-
+ * `LinearLayout`: Arrange a set of display objects along the horizontal or vertical axis.
+ 
 ## Changed:
 
  * **breaking:** Change API to work with a reference to the reference box

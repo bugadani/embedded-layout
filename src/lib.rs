@@ -42,6 +42,7 @@ use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 pub mod horizontal;
 pub mod vertical;
+pub mod layout;
 
 mod align;
 mod rect_helper;
