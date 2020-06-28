@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+## Added:
+
+ * `View` trait
+
 ## Changed:
 
  * **breaking:** Change API to work with a reference to the reference box

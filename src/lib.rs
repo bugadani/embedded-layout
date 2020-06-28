@@ -38,14 +38,18 @@
 
 #![cfg_attr(not(test), no_std)]
 
-use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle, DrawTarget};
+use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 pub mod horizontal;
 pub mod vertical;
 
+mod view;
+
+pub use view::View;
+
 /// The essentials
 pub mod prelude {
-    pub use crate::{horizontal, vertical, Align, DisplayArea};
+    pub use crate::{horizontal, vertical, Align, DisplayArea, View};
 }
 
 /// Helper trait to retrieve display area as a `Rectangle`.
@@ -74,38 +78,40 @@ where
 
 /// Implement this trait for horizontal alignment algorithms
 pub trait HorizontalAlignment: Copy + Clone {
-    fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
+    fn align(&self, what: &impl View, reference: &impl View) -> i32;
 }
 
 /// Implement this trait for vertical alignment algorithms
 ///
 /// Vertical alignment assumes lower coordinate values are higher up
 pub trait VerticalAlignment: Copy + Clone {
-    fn align(&self, what: &impl Dimensions, reference: &impl Dimensions) -> i32;
+    fn align(&self, what: &impl View, reference: &impl View) -> i32;
 }
 
 /// This trait enables alignment operations of `embedded-graphics` primitives
 pub trait Align: Transform {
-    fn align_to<D, H, V>(self, reference: &D, horizontal: H, vertical: V) -> Self
+    fn align_to<H, V>(self, reference: &impl View, horizontal: H, vertical: V) -> Self
     where
-        D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment;
 
-    fn align_to_mut<D, H, V>(&mut self, reference: &D, horizontal: H, vertical: V) -> &mut Self
+    fn align_to_mut<H, V>(
+        &mut self,
+        reference: &impl View,
+        horizontal: H,
+        vertical: V,
+    ) -> &mut Self
     where
-        D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment;
 }
 
 impl<T> Align for T
 where
-    T: Dimensions + Transform,
+    T: View,
 {
-    fn align_to<D, H, V>(self, reference: &D, horizontal: H, vertical: V) -> Self
+    fn align_to<H, V>(self, reference: &impl View, horizontal: H, vertical: V) -> Self
     where
-        D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
@@ -114,9 +120,8 @@ where
         self.translate(Point::new(h, v))
     }
 
-    fn align_to_mut<D, H, V>(&mut self, reference: &D, horizontal: H, vertical: V) -> &mut Self
+    fn align_to_mut<H, V>(&mut self, reference: &impl View, horizontal: H, vertical: V) -> &mut Self
     where
-        D: Dimensions,
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {

@@ -1,13 +1,13 @@
 //! Horizontal alignment options
 use crate::HorizontalAlignment;
-use embedded_graphics::geometry::Dimensions;
+use crate::View;
 
 /// Keep the object's horizontal coordinate unchanged
 #[derive(Copy, Clone)]
 pub struct NoAlignment;
 
 impl HorizontalAlignment for NoAlignment {
-    fn align(&self, _object: &impl Dimensions, _reference: &impl Dimensions) -> i32 {
+    fn align(&self, _object: &impl View, _reference: &impl View) -> i32 {
         0
     }
 }
@@ -20,7 +20,7 @@ impl HorizontalAlignment for NoAlignment {
 pub struct Center;
 
 impl HorizontalAlignment for Center {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         let center_object = (object.top_left().x + object.bottom_right().x) / 2;
         let center_ref = (reference.top_left().x + reference.bottom_right().x) / 2;
 
@@ -33,7 +33,7 @@ impl HorizontalAlignment for Center {
 pub struct Left;
 
 impl HorizontalAlignment for Left {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.top_left().x - object.top_left().x
     }
 }
@@ -43,7 +43,7 @@ impl HorizontalAlignment for Left {
 pub struct Right;
 
 impl HorizontalAlignment for Right {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bottom_right().x - object.bottom_right().x
     }
 }
@@ -53,7 +53,7 @@ impl HorizontalAlignment for Right {
 pub struct LeftToRight;
 
 impl HorizontalAlignment for LeftToRight {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.bottom_right().x + 1) - object.top_left().x
     }
 }
@@ -64,7 +64,7 @@ pub struct RightToLeft;
 
 /// Align the bottom edge of the object to the top edge of the reference, non-overlapping
 impl HorizontalAlignment for RightToLeft {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.top_left().x - 1) - object.bottom_right().x
     }
 }
@@ -72,14 +72,13 @@ impl HorizontalAlignment for RightToLeft {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use embedded_graphics::geometry::{Dimensions, Point};
-    use embedded_graphics::primitives::Rectangle;
+    use embedded_graphics::{geometry::Point, primitives::Rectangle};
 
     #[test]
     fn test_center() {
         fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
-            let center_of_reference = reference.top_left() + reference.size() / 2;
-            let center_of_result = result.top_left() + result.size() / 2;
+            let center_of_reference = reference.top_left + reference.size() / 2;
+            let center_of_result = result.top_left + result.size() / 2;
 
             // The size hasn't changed
             assert_eq!(result.size(), source.size());

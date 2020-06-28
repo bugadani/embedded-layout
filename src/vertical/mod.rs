@@ -1,13 +1,13 @@
 //! Vertical alignment options
 use crate::VerticalAlignment;
-use embedded_graphics::geometry::Dimensions;
+use crate::View;
 
 /// Keep the object's vertical coordinate unchanged
 #[derive(Copy, Clone)]
 pub struct NoAlignment;
 
 impl VerticalAlignment for NoAlignment {
-    fn align(&self, _object: &impl Dimensions, _reference: &impl Dimensions) -> i32 {
+    fn align(&self, _object: &impl View, _reference: &impl View) -> i32 {
         0
     }
 }
@@ -20,7 +20,7 @@ impl VerticalAlignment for NoAlignment {
 pub struct Center;
 
 impl VerticalAlignment for Center {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         let center_object = (object.top_left().y + object.bottom_right().y) / 2;
         let center_ref = (reference.top_left().y + reference.bottom_right().y) / 2;
 
@@ -33,7 +33,7 @@ impl VerticalAlignment for Center {
 pub struct Top;
 
 impl VerticalAlignment for Top {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.top_left().y - object.top_left().y
     }
 }
@@ -43,7 +43,7 @@ impl VerticalAlignment for Top {
 pub struct Bottom;
 
 impl VerticalAlignment for Bottom {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bottom_right().y - object.bottom_right().y
     }
 }
@@ -53,7 +53,7 @@ impl VerticalAlignment for Bottom {
 pub struct TopToBottom;
 
 impl VerticalAlignment for TopToBottom {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.bottom_right().y + 1) - object.top_left().y
     }
 }
@@ -63,7 +63,7 @@ impl VerticalAlignment for TopToBottom {
 pub struct BottomToTop;
 
 impl VerticalAlignment for BottomToTop {
-    fn align(&self, object: &impl Dimensions, reference: &impl Dimensions) -> i32 {
+    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.top_left().y - 1) - object.bottom_right().y
     }
 }
@@ -71,14 +71,13 @@ impl VerticalAlignment for BottomToTop {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use embedded_graphics::geometry::{Dimensions, Point};
-    use embedded_graphics::primitives::Rectangle;
+    use embedded_graphics::{geometry::Point, primitives::Rectangle};
 
     #[test]
     fn test_center() {
         fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
-            let center_of_reference = reference.top_left() + reference.size() / 2;
-            let center_of_result = result.top_left() + result.size() / 2;
+            let center_of_reference = reference.top_left + reference.size() / 2;
+            let center_of_result = result.top_left + result.size() / 2;
 
             // The size hasn't changed
             assert_eq!(result.size(), source.size());
