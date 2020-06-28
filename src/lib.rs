@@ -44,12 +44,14 @@ pub mod horizontal;
 pub mod vertical;
 
 mod view;
+mod align;
 
 pub use view::View;
+pub use align::{Align, AlignMut};
 
 /// The essentials
 pub mod prelude {
-    pub use crate::{horizontal, vertical, Align, DisplayArea, View};
+    pub use crate::{horizontal, vertical, Align, AlignMut, DisplayArea, View};
 }
 
 /// Helper trait to retrieve display area as a `Rectangle`.
@@ -86,47 +88,4 @@ pub trait HorizontalAlignment: Copy + Clone {
 /// Vertical alignment assumes lower coordinate values are higher up
 pub trait VerticalAlignment: Copy + Clone {
     fn align(&self, what: &impl View, reference: &impl View) -> i32;
-}
-
-/// This trait enables alignment operations of `embedded-graphics` primitives
-pub trait Align: Transform {
-    fn align_to<H, V>(self, reference: &impl View, horizontal: H, vertical: V) -> Self
-    where
-        H: HorizontalAlignment,
-        V: VerticalAlignment;
-
-    fn align_to_mut<H, V>(
-        &mut self,
-        reference: &impl View,
-        horizontal: H,
-        vertical: V,
-    ) -> &mut Self
-    where
-        H: HorizontalAlignment,
-        V: VerticalAlignment;
-}
-
-impl<T> Align for T
-where
-    T: View,
-{
-    fn align_to<H, V>(self, reference: &impl View, horizontal: H, vertical: V) -> Self
-    where
-        H: HorizontalAlignment,
-        V: VerticalAlignment,
-    {
-        let h = horizontal.align(&self, reference);
-        let v = vertical.align(&self, reference);
-        self.translate(Point::new(h, v))
-    }
-
-    fn align_to_mut<H, V>(&mut self, reference: &impl View, horizontal: H, vertical: V) -> &mut Self
-    where
-        H: HorizontalAlignment,
-        V: VerticalAlignment,
-    {
-        let h = horizontal.align(self, reference);
-        let v = vertical.align(self, reference);
-        self.translate_mut(Point::new(h, v))
-    }
 }
