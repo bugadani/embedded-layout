@@ -7,7 +7,6 @@ Unreleased
 
 ## Changed:
 
- * Extract `AlignMut` out of `Align`
  * **breaking:** Change API to work with a reference to the reference box
 
 0.0.2 (2020-06-26)

@@ -45,13 +45,16 @@ pub mod vertical;
 
 mod view;
 mod align;
+mod rect_helper;
 
 pub use view::View;
-pub use align::{Align, AlignMut};
+pub use align::Align;
+
+use rect_helper::RectExt;
 
 /// The essentials
 pub mod prelude {
-    pub use crate::{horizontal, vertical, Align, AlignMut, DisplayArea, View};
+    pub use crate::{horizontal, vertical, Align, DisplayArea, View, rect_helper::RectExt};
 }
 
 /// Helper trait to retrieve display area as a `Rectangle`.
@@ -68,12 +71,9 @@ where
     T: DrawTarget<C>,
 {
     fn display_area(&self) -> Rectangle {
-        Rectangle::new(
+        Rectangle::with_size(
             Point::new(0, 0),
-            Point::new(
-                (self.size().width - 1) as i32,
-                (self.size().height - 1) as i32,
-            ),
+            self.size(),
         )
     }
 }
