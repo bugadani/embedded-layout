@@ -2,10 +2,10 @@
 //!
 //! Lay out display objects either horizontally, or vertically.
 
+use crate::{prelude::*, HorizontalAlignment, VerticalAlignment};
 use embedded_graphics::geometry::Point;
 use embedded_graphics::prelude::*;
 use embedded_graphics::primitives::Rectangle;
-use crate::{prelude::*, HorizontalAlignment, VerticalAlignment};
 
 pub trait LayoutDirection: Copy + Clone {
     type Alignment;
@@ -60,20 +60,17 @@ impl<V: LinearLayoutVerticalAlignment> LayoutDirection for Horizontal<V> {
         Self { alignment }
     }
 
-    fn measure(&self, view: &impl View, total_size: Size) -> Size
-    {
+    fn measure(&self, view: &impl View, total_size: Size) -> Size {
         let Size { width, height } = RectExt::size(&view.bounds());
 
         Size::new(total_size.width + width, total_size.height.max(height))
     }
 
-    fn layout_first(&self, view: &mut impl View, bounds: &Rectangle)
-    {
+    fn layout_first(&self, view: &mut impl View, bounds: &Rectangle) {
         view.align_to(bounds, horizontal::Left, self.alignment);
     }
 
-    fn layout(&self, view: &mut impl View, bounds: &Rectangle, previous_view: &impl View)
-    {
+    fn layout(&self, view: &mut impl View, bounds: &Rectangle, previous_view: &impl View) {
         view.align_to(
             previous_view,
             horizontal::LeftToRight,
@@ -89,20 +86,17 @@ impl<H: LinearLayoutHorizontalAlignment> LayoutDirection for Vertical<H> {
         Self { alignment }
     }
 
-    fn measure(&self, view: &impl View, total_size: Size) -> Size
-    {
+    fn measure(&self, view: &impl View, total_size: Size) -> Size {
         let Size { width, height } = RectExt::size(&view.bounds());
 
         Size::new(total_size.width.max(width), total_size.height + height)
     }
 
-    fn layout_first(&self, view: &mut impl View, bounds: &Rectangle)
-    {
+    fn layout_first(&self, view: &mut impl View, bounds: &Rectangle) {
         view.align_to(bounds, self.alignment, vertical::Top);
     }
 
-    fn layout(&self, view: &mut impl View, bounds: &Rectangle, previous_view: &impl View)
-    {
+    fn layout(&self, view: &mut impl View, bounds: &Rectangle, previous_view: &impl View) {
         view.align_to(
             previous_view,
             horizontal::NoAlignment,
@@ -160,8 +154,7 @@ impl<H: LinearLayoutHorizontalAlignment> LinearLayout<Vertical<H>> {
 }
 
 impl<DIR: LayoutDirection> LinearLayout<DIR> {
-    pub fn arrange(&self, views: &mut [&mut impl View]) -> Rectangle
-    {
+    pub fn arrange(&self, views: &mut [&mut impl View]) -> Rectangle {
         if views.len() == 0 {
             return Rectangle::new(self.top_left, self.top_left);
         }
@@ -234,10 +227,9 @@ mod test {
         let mut r2 = Rectangle::new(Point::new(5, 10), Point::new(10, 12)); // 6x3
         let mut r3 = Rectangle::new(Point::new(-5, 0), Point::new(-2, 4)); // 4x5
 
-        let bounding =
-            LinearLayout::vertical(Point::new(-5, -5))
-                .with_horizontal_alignment(horizontal::Right)
-                .arrange(&mut [&mut r1, &mut r2, &mut r3]);
+        let bounding = LinearLayout::vertical(Point::new(-5, -5))
+            .with_horizontal_alignment(horizontal::Right)
+            .arrange(&mut [&mut r1, &mut r2, &mut r3]);
 
         assert_eq!(RectExt::size(&bounding), Size::new(6, 10));
 
