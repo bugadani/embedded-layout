@@ -1,7 +1,7 @@
 //! Horizontal alignment options
+use crate::rect_helper::RectExt;
 use crate::HorizontalAlignment;
 use crate::View;
-use crate::rect_helper::RectExt;
 
 /// Keep the object's horizontal coordinate unchanged
 #[derive(Copy, Clone)]

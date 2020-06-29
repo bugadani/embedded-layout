@@ -1,6 +1,5 @@
-
+use crate::{prelude::*, HorizontalAlignment, VerticalAlignment};
 use embedded_graphics::geometry::Point;
-use crate::{HorizontalAlignment, VerticalAlignment, prelude::*};
 
 /// This trait enables alignment operations of `embedded-graphics` primitives
 pub trait Align {

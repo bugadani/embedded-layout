@@ -1,11 +1,8 @@
 //! `View` trait
 //!
 //! `View` is a basic trait that represents something that can be displayed.
-use embedded_graphics::{
-    prelude::*,
-    primitives::Rectangle,
-};
 use crate::rect_helper::RectExt;
+use embedded_graphics::{prelude::*, primitives::Rectangle};
 
 /// A view is the base unit for most of the `embedded-layout` operations.
 ///
@@ -18,7 +15,10 @@ pub trait View {
     fn bounds(&self) -> Rectangle;
 }
 
-impl<T> View for T where T: Transform + Dimensions {
+impl<T> View for T
+where
+    T: Transform + Dimensions,
+{
     fn size(&self) -> Size {
         let bounds = self.bounds();
         RectExt::size(&bounds)

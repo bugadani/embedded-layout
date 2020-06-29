@@ -1,7 +1,4 @@
-use embedded_graphics::{
-    prelude::*,
-    primitives::Rectangle,
-};
+use embedded_graphics::{prelude::*, primitives::Rectangle};
 
 pub trait RectExt {
     fn with_size(top_left: Point, size: Size) -> Rectangle;
@@ -16,10 +13,7 @@ impl RectExt for Rectangle {
     fn with_size(top_left: Point, size: Size) -> Rectangle {
         Rectangle::new(
             top_left,
-            Point::new(
-                (size.width - 1) as i32,
-                (size.height - 1) as i32,
-            ),
+            Point::new((size.width - 1) as i32, (size.height - 1) as i32),
         )
     }
 
@@ -43,9 +37,6 @@ impl RectExt for Rectangle {
     }
 
     fn center(&self) -> Point {
-        Point::new(
-            self.center_x(),
-            self.center_y(),
-        )
+        Point::new(self.center_x(), self.center_y())
     }
 }

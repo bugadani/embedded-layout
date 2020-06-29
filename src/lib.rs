@@ -43,18 +43,18 @@ use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 pub mod horizontal;
 pub mod vertical;
 
-mod view;
 mod align;
 mod rect_helper;
+mod view;
 
-pub use view::View;
 pub use align::Align;
+pub use view::View;
 
 use rect_helper::RectExt;
 
 /// The essentials
 pub mod prelude {
-    pub use crate::{horizontal, vertical, Align, DisplayArea, View, rect_helper::RectExt};
+    pub use crate::{horizontal, rect_helper::RectExt, vertical, Align, DisplayArea, View};
 }
 
 /// Helper trait to retrieve display area as a `Rectangle`.
@@ -71,10 +71,7 @@ where
     T: DrawTarget<C>,
 {
     fn display_area(&self) -> Rectangle {
-        Rectangle::with_size(
-            Point::new(0, 0),
-            self.size(),
-        )
+        Rectangle::with_size(Point::new(0, 0), self.size())
     }
 }
 
