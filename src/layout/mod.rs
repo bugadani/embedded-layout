@@ -88,6 +88,10 @@ impl View for ChainTerminator {
 
 /// Group multiple `View`s together
 ///
+/// `ViewGroup` takes ownership over the views, so make sure you set them up before creating
+/// the group.
+/// The bounds and size of a `ViewGroup` envelops all the contained `View`s.
+///
 /// Note: translating an empty `ViewGroup` has no effect
 pub struct ViewGroup<C: ViewChainElement> {
     views: C,
