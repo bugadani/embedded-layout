@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use embedded_graphics::{geometry::Point, primitives::Rectangle};
+use embedded_graphics::primitives::Rectangle;
 
 pub trait ViewChainElement: View {
     const HAS_BOUNDS: bool;
@@ -15,7 +15,22 @@ pub struct ViewLink<V: View, C: ViewChainElement> {
     pub next: C,
 }
 
-impl<V: View, C: ViewChainElement> ViewChainElement for ViewLink<V, C> {
+impl<C, V, VC> Drawable<C> for ViewLink<V, VC>
+where
+    C: PixelColor,
+    V: View,
+    for<'a> &'a V: Drawable<C>,
+    VC: ViewChainElement + Drawable<C>,
+{
+    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+        self.view.draw(display)?;
+        self.next.draw(display)?;
+
+        Ok(())
+    }
+}
+
+impl<V: View, VC: ViewChainElement> ViewChainElement for ViewLink<V, VC> {
     const HAS_BOUNDS: bool = true;
 
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
@@ -52,6 +67,12 @@ impl ViewChainElement for ChainTerminator {
 
     fn for_each(&mut self, _op: &mut impl FnMut(&mut dyn View)) {
         // nothing to do
+    }
+}
+
+impl<C: PixelColor> Drawable<C> for ChainTerminator {
+    fn draw<D: DrawTarget<C>>(self, _display: &mut D) -> Result<(), D::Error> {
+        Ok(())
     }
 }
 
@@ -106,12 +127,24 @@ impl<C: ViewChainElement> View for ViewGroup<C> {
     }
 }
 
+impl<C: PixelColor, VC: ViewChainElement + Drawable<C>> Drawable<C> for ViewGroup<VC> {
+    /// Draw the graphics object using the supplied DrawTarget.
+    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+        self.views.draw(display)
+    }
+}
+
 #[cfg(test)]
 mod test {
-    use crate::layout::*;
+    use crate::{
+        layout::{ViewChainElement, ViewGroup},
+        prelude::*,
+    };
+    use embedded_graphics::mock_display::MockDisplay;
     use embedded_graphics::{
-        geometry::{Point, Size},
+        pixelcolor::BinaryColor,
         primitives::{Circle, Rectangle},
+        style::PrimitiveStyle,
     };
 
     #[test]
@@ -129,10 +162,13 @@ mod test {
     #[test]
     fn test() {
         // Check if multiple different views can be included in the view group
+        let style = PrimitiveStyle::with_fill(BinaryColor::On);
         let mut vg = ViewGroup::new()
-            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
-            .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)))
-            .add_view(Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)));
+            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
+            .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
+            .add_view(
+                Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style),
+            );
 
         assert_eq!(Size::new(10, 20), vg.size());
         assert_eq!(
@@ -147,5 +183,10 @@ mod test {
             Rectangle::new(Point::new(0, -2), Point::new(9, 17)),
             vg.bounds()
         );
+
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        vg.draw(&mut disp).unwrap();
     }
 }
