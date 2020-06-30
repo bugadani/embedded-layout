@@ -5,7 +5,13 @@ pub trait ViewChainElement: View {
     const HAS_BOUNDS: bool;
 }
 
-pub struct ChainTerminator;
+/// Chain element that can store a `View` in a `ViewGroup`
+///
+/// You probably shouldn't ever use this struct
+pub struct ViewLink<V: View, C: ViewChainElement> {
+    pub view: V,
+    pub next: C,
+}
 
 impl<V: View, C: ViewChainElement> ViewChainElement for ViewLink<V, C> {
     const HAS_BOUNDS: bool = true;
@@ -29,10 +35,10 @@ impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
     }
 }
 
-pub struct ViewLink<V: View, C: ViewChainElement> {
-    pub view: V,
-    pub next: C,
-}
+/// The last chain element that marks the end of a `ViewGroup`
+///
+/// You probably shouldn't ever use this struct
+pub struct ChainTerminator;
 
 impl ViewChainElement for ChainTerminator {
     const HAS_BOUNDS: bool = false;
@@ -49,11 +55,15 @@ impl View for ChainTerminator {
     }
 }
 
+/// Group multiple `View`s together
+///
+/// Note: translating an empty `ViewGroup` has no effect
 pub struct ViewGroup<C: ViewChainElement> {
     views: C,
 }
 
 impl ViewGroup<ChainTerminator> {
+    /// Create a new, empty `ViewGroup` object
     pub fn new() -> Self {
         Self {
             views: ChainTerminator,
