@@ -1,22 +1,17 @@
 use crate::prelude::*;
 use embedded_graphics::{geometry::Point, primitives::Rectangle};
 
-pub struct ChainTerminator;
-pub struct ViewLink<V: View, C: ViewChainElement> {
-    pub view: V,
-    pub next: C,
-}
-
-pub trait ViewChainElement {
+pub trait ViewChainElement: View {
     const HAS_BOUNDS: bool;
-
-    fn bounds(&self) -> Rectangle;
-    fn translate(&mut self, by: Point);
 }
+
+pub struct ChainTerminator;
 
 impl<V: View, C: ViewChainElement> ViewChainElement for ViewLink<V, C> {
     const HAS_BOUNDS: bool = true;
+}
 
+impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
     fn bounds(&self) -> Rectangle {
         let bounds = self.view.bounds();
 
@@ -27,21 +22,30 @@ impl<V: View, C: ViewChainElement> ViewChainElement for ViewLink<V, C> {
         }
     }
 
-    fn translate(&mut self, by: Point) {
+    fn translate(&mut self, by: Point) -> &mut Self {
         self.view.translate(by);
         self.next.translate(by);
+        self
     }
+}
+
+pub struct ViewLink<V: View, C: ViewChainElement> {
+    pub view: V,
+    pub next: C,
 }
 
 impl ViewChainElement for ChainTerminator {
     const HAS_BOUNDS: bool = false;
+}
 
+impl View for ChainTerminator {
     fn bounds(&self) -> Rectangle {
         Rectangle::new(Point::zero(), Point::zero())
     }
 
-    fn translate(&mut self, _by: Point) {
+    fn translate(&mut self, _by: Point) -> &mut Self {
         // nothing to do
+        self
     }
 }
 
