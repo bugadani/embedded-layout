@@ -3,6 +3,8 @@ use embedded_graphics::{geometry::Point, primitives::Rectangle};
 
 pub trait ViewChainElement: View {
     const HAS_BOUNDS: bool;
+
+    fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View));
 }
 
 /// Chain element that can store a `View` in a `ViewGroup`
@@ -15,6 +17,12 @@ pub struct ViewLink<V: View, C: ViewChainElement> {
 
 impl<V: View, C: ViewChainElement> ViewChainElement for ViewLink<V, C> {
     const HAS_BOUNDS: bool = true;
+
+    fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
+        // Keep order of elements
+        self.next.for_each(op);
+        op(&mut self.view);
+    }
 }
 
 impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
@@ -28,10 +36,9 @@ impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
         }
     }
 
-    fn translate(&mut self, by: Point) -> &mut Self {
+    fn translate(&mut self, by: Point) {
         self.view.translate(by);
         self.next.translate(by);
-        self
     }
 }
 
@@ -42,6 +49,10 @@ pub struct ChainTerminator;
 
 impl ViewChainElement for ChainTerminator {
     const HAS_BOUNDS: bool = false;
+
+    fn for_each(&mut self, _op: &mut impl FnMut(&mut dyn View)) {
+        // nothing to do
+    }
 }
 
 impl View for ChainTerminator {
@@ -49,9 +60,8 @@ impl View for ChainTerminator {
         Rectangle::new(Point::zero(), Point::zero())
     }
 
-    fn translate(&mut self, _by: Point) -> &mut Self {
+    fn translate(&mut self, _by: Point) {
         // nothing to do
-        self
     }
 }
 
@@ -80,12 +90,15 @@ impl<C: ViewChainElement> ViewGroup<C> {
             },
         }
     }
+
+    fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
+        self.views.for_each(op);
+    }
 }
 
 impl<C: ViewChainElement> View for ViewGroup<C> {
-    fn translate(&mut self, by: Point) -> &mut Self {
+    fn translate(&mut self, by: Point) {
         self.views.translate(by);
-        self
     }
 
     fn bounds(&self) -> Rectangle {

@@ -23,7 +23,8 @@ where
     {
         let h = horizontal.align(self, reference);
         let v = vertical.align(self, reference);
-        self.translate(Point::new(h, v))
+        self.translate(Point::new(h, v));
+        self
     }
 }
 

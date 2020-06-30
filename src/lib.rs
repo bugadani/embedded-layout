@@ -67,7 +67,7 @@ pub trait View {
         RectExt::size(&self.bounds())
     }
 
-    fn translate(&mut self, by: Point) -> &mut Self;
+    fn translate(&mut self, by: Point);
     fn bounds(&self) -> Rectangle;
 }
 
@@ -75,8 +75,8 @@ impl<T> View for T
 where
     T: Transform + Dimensions,
 {
-    fn translate(&mut self, by: Point) -> &mut Self {
-        self.translate_mut(by)
+    fn translate(&mut self, by: Point) {
+        self.translate_mut(by);
     }
 
     fn bounds(&self) -> Rectangle {
