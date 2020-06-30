@@ -87,6 +87,16 @@ mod test {
     use embedded_graphics::{prelude::*, primitives::Rectangle};
 
     #[test]
+    fn test_sized() {
+        let rect0 = Rectangle::with_size(Point::new(-1, -1), Size::new(3, 3));
+
+        assert_eq!(
+            Point::new(1, 1),
+            rect0.bottom_right
+        );
+    }
+
+    #[test]
     fn test_enveloping() {
         let rect0 = Rectangle::new(Point::new(-1, -1), Point::new(0, 0));
         let rect1 = Rectangle::new(Point::zero(), Point::new(1, 1));
@@ -97,22 +107,6 @@ mod test {
         assert_eq!(
             Rectangle::new(Point::new(-1, -1), Point::new(2, 2),),
             rect0.enveloping(&rect2)
-        );
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::prelude::*;
-    use embedded_graphics::{prelude::*, primitives::Rectangle};
-
-    #[test]
-    fn test_sized() {
-        let rect0 = Rectangle::with_size(Point::new(-1, -1), Size::new(3, 3));
-
-        assert_eq!(
-            Point::new(1, 1),
-            rect0.bottom_right
         );
     }
 }
