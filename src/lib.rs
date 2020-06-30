@@ -40,49 +40,61 @@
 
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
-pub mod horizontal;
-pub mod vertical;
-
 mod align;
-mod rect_helper;
-mod view;
+mod utils;
 
-pub use align::Align;
-pub use view::View;
-
-use rect_helper::RectExt;
+use utils::rect_helper::RectExt;
 
 /// The essentials
 pub mod prelude {
-    pub use crate::{horizontal, rect_helper::RectExt, vertical, Align, DisplayArea, View};
+    pub use crate::{
+        align::{horizontal, vertical, Align},
+        utils::{display_area::DisplayArea, rect_helper::RectExt},
+        View,
+    };
 }
 
-/// Helper trait to retrieve display area as a `Rectangle`.
-pub trait DisplayArea<C>: DrawTarget<C>
-where
-    C: PixelColor,
-{
-    fn display_area(&self) -> Rectangle;
+/// A view is the base unit for most of the `embedded-layout` operations.
+///
+/// Views must have a size and a position, so they need to implement the `Dimensions` and
+/// `Transform` traits.
+pub trait View {
+    /// Get the size of a View.
+    fn size(&self) -> Size;
+    fn translate(&mut self, by: Point) -> &mut Self;
+    fn bounds(&self) -> Rectangle;
 }
 
-impl<C, T> DisplayArea<C> for T
+impl<T> View for T
 where
-    C: PixelColor,
-    T: DrawTarget<C>,
+    T: Transform + Dimensions,
 {
-    fn display_area(&self) -> Rectangle {
-        Rectangle::with_size(Point::new(0, 0), self.size())
+    fn size(&self) -> Size {
+        let bounds = self.bounds();
+        RectExt::size(&bounds)
+    }
+
+    fn translate(&mut self, by: Point) -> &mut Self {
+        self.translate_mut(by)
+    }
+
+    fn bounds(&self) -> Rectangle {
+        Rectangle::new(self.top_left(), self.bottom_right())
     }
 }
 
-/// Implement this trait for horizontal alignment algorithms
-pub trait HorizontalAlignment: Copy + Clone {
-    fn align(&self, what: &impl View, reference: &impl View) -> i32;
-}
+#[cfg(test)]
+mod test {
+    use crate::prelude::*;
+    use embedded_graphics::{
+        geometry::{Point, Size},
+        primitives::Rectangle,
+    };
 
-/// Implement this trait for vertical alignment algorithms
-///
-/// Vertical alignment assumes lower coordinate values are higher up
-pub trait VerticalAlignment: Copy + Clone {
-    fn align(&self, what: &impl View, reference: &impl View) -> i32;
+    #[test]
+    fn test_size() {
+        let rect = Rectangle::new(Point::zero(), Point::new(1, 2));
+
+        assert_eq!(RectExt::size(&rect), Size::new(2, 3));
+    }
 }

@@ -1,7 +1,5 @@
 //! Vertical alignment options
-use crate::rect_helper::RectExt;
-use crate::VerticalAlignment;
-use crate::View;
+use crate::{align::VerticalAlignment, prelude::*};
 
 /// Keep the object's vertical coordinate unchanged
 #[derive(Copy, Clone)]
