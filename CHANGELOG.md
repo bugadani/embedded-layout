@@ -4,6 +4,7 @@ Unreleased
 ## Added:
 
  * `View` trait
+ * `ViewGroup` struct to allow working with multiple views
 
 ## Changed:
 
