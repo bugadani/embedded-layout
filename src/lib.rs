@@ -41,6 +41,7 @@
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 mod align;
+mod layout;
 mod utils;
 
 use utils::rect_helper::RectExt;
