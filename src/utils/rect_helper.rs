@@ -13,7 +13,10 @@ impl RectExt for Rectangle {
     fn with_size(top_left: Point, size: Size) -> Rectangle {
         Rectangle::new(
             top_left,
-            Point::new((size.width - 1) as i32, (size.height - 1) as i32),
+            top_left + Point::new(
+                (size.width - 1) as i32,
+                (size.height - 1) as i32,
+            ),
         )
     }
 
@@ -38,5 +41,22 @@ impl RectExt for Rectangle {
 
     fn center(&self) -> Point {
         Point::new(self.center_x(), self.center_y())
+    }
+}
+
+
+#[cfg(test)]
+mod test {
+    use crate::prelude::*;
+    use embedded_graphics::{prelude::*, primitives::Rectangle};
+
+    #[test]
+    fn test_sized() {
+        let rect0 = Rectangle::with_size(Point::new(-1, -1), Size::new(3, 3));
+
+        assert_eq!(
+            Point::new(1, 1),
+            rect0.bottom_right
+        );
     }
 }
