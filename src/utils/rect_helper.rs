@@ -1,11 +1,34 @@
+//! `Rectangle` utility methods
+//!
+//! This module implements a few usfeul extensions to `Rectangle`.
 use embedded_graphics::{prelude::*, primitives::Rectangle};
 
+/// The trait that describes the extension methods.
 pub trait RectExt {
+
+    /// Create a new `Rectangle` from a top left point and a `Size`
     fn with_size(top_left: Point, size: Size) -> Rectangle;
+
+    /// Return the `Size` of the `Rectangle`
+    ///
+    /// The `size` method provided by `embedded-graphics 0.6.2` returns an incorrect value.
     fn size(&self) -> Size;
 
+    /// Return the horizontal center coordinate
+    ///
+    /// *Note:* when an object's width is an even number, the returned center point will not
+    ///         be perfectly in the middle.
     fn center_x(&self) -> i32;
+
+    /// Return the vertical center coordinate
+    ///
+    /// *Note:* when an object's height is an even number, the returned center point will not
+    ///         be perfectly in the middle.
     fn center_y(&self) -> i32;
+
+    /// Return the center point
+    /// *Note:* when an object's width or height is an even number, the returned center point will
+    ///         not be perfectly in the middle.
     fn center(&self) -> Point;
 }
 
@@ -43,7 +66,6 @@ impl RectExt for Rectangle {
         Point::new(self.center_x(), self.center_y())
     }
 }
-
 
 #[cfg(test)]
 mod test {

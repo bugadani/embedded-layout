@@ -7,6 +7,9 @@ pub trait DisplayArea<C>
 where
     C: PixelColor,
 {
+    /// Return the display area as a `Rectangle`
+    ///
+    /// This method is provided mainly to make it simpler to align to edges of the display.
     fn display_area(&self) -> Rectangle;
 }
 
@@ -16,6 +19,6 @@ where
     T: DrawTarget<C>,
 {
     fn display_area(&self) -> Rectangle {
-        Rectangle::with_size(Point::new(0, 0), self.size())
+        Rectangle::with_size(Point::zero(), self.size())
     }
 }
