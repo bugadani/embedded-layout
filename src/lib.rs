@@ -60,7 +60,10 @@ pub mod prelude {
 /// `Transform` traits.
 pub trait View {
     /// Get the size of a View.
-    fn size(&self) -> Size;
+    fn size(&self) -> Size {
+        RectExt::size(&self.bounds())
+    }
+
     fn translate(&mut self, by: Point) -> &mut Self;
     fn bounds(&self) -> Rectangle;
 }
@@ -69,11 +72,6 @@ impl<T> View for T
 where
     T: Transform + Dimensions,
 {
-    fn size(&self) -> Size {
-        let bounds = self.bounds();
-        RectExt::size(&bounds)
-    }
-
     fn translate(&mut self, by: Point) -> &mut Self {
         self.translate_mut(by)
     }
