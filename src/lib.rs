@@ -52,6 +52,8 @@ pub mod prelude {
         utils::{display_area::DisplayArea, rect_helper::RectExt},
         View,
     };
+
+    pub use embedded_graphics::prelude::*;
 }
 
 /// A view is the base unit for most of the `embedded-layout` operations.
