@@ -34,11 +34,16 @@ where
 
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
         if VCE::IS_TERMINATOR {
-            self.view.align_to(&bounds, horizontal::Left, vertical::Bottom);
+            self.view
+                .align_to(&bounds, horizontal::Left, vertical::Bottom);
         } else {
             let previous = self.next.arrange(bounds);
 
-            self.view.align_to(&previous.bounds(), horizontal::LeftToRight, vertical::Bottom);
+            self.view.align_to(
+                &previous.bounds(),
+                horizontal::LeftToRight,
+                vertical::Bottom,
+            );
         }
         self.view.bounds()
     }
@@ -84,7 +89,8 @@ where
         } else {
             let previous = self.next.arrange(bounds);
 
-            self.view.align_to(&previous.bounds(), horizontal::Left, vertical::TopToBottom);
+            self.view
+                .align_to(&previous.bounds(), horizontal::Left, vertical::TopToBottom);
         }
         self.view.bounds()
     }
@@ -170,6 +176,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::{layout::linear::LinearLayout, prelude::*};
+    use embedded_graphics::mock_display::MockDisplay;
     use embedded_graphics::{
         pixelcolor::BinaryColor,
         primitives::{Circle, Rectangle},
@@ -203,6 +210,79 @@ mod test {
             .size();
 
         assert_eq!(Size::new(10, 40), size);
+    }
+
+    #[test]
+    fn layout_arrange_vertical() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let mut view_group = LinearLayout::vertical()
+            .add_view(rect)
+            .add_view(rect2)
+            .arrange();
+
+        view_group.translate(Point::new(1, 2));
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "           ",
+                "           ",
+                " ##########",
+                " #        #",
+                " #        #",
+                " #        #",
+                " ##########",
+                " #####     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #####     ",
+            ])
+        );
+    }
+
+    #[test]
+    fn layout_arrange_horizontal() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let mut view_group = LinearLayout::horizontal()
+            .add_view(rect)
+            .add_view(rect2)
+            .arrange();
+
+        view_group.translate(Point::new(1, 2));
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "                ",
+                "                ",
+                "           #####",
+                "           #   #",
+                "           #   #",
+                "           #   #",
+                "           #   #",
+                " ###########   #",
+                " #        ##   #",
+                " #        ##   #",
+                " #        ##   #",
+                " ###############",
+            ])
+        );
     }
 
     #[test]
