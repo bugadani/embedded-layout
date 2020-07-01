@@ -8,6 +8,8 @@
 use crate::prelude::*;
 use embedded_graphics::primitives::Rectangle;
 
+pub mod linear;
+
 pub trait ViewChainElement: View {
     const HAS_BOUNDS: bool;
 
