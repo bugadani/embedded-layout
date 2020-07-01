@@ -6,7 +6,7 @@ use super::*;
 pub trait LayoutDirection: Copy + Clone {}
 pub trait LayoutOperation<LD: LayoutDirection> {
     fn measure(&self) -> Size;
-    fn arrange(&self);
+    fn arrange(&mut self, bounds: Rectangle) -> Rectangle;
 }
 
 /// Horizontal layout direction
@@ -15,7 +15,7 @@ pub struct Horizontal;
 impl LayoutDirection for Horizontal {}
 impl<V, VCE> LayoutOperation<Horizontal> for ViewLink<V, VCE>
 where
-    V: View,
+    V: View + Align,
     VCE: ViewChainElement + LayoutOperation<Horizontal>,
 {
     fn measure(&self) -> Size {
@@ -32,11 +32,15 @@ where
         }
     }
 
-    fn arrange(&self) {
+    fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
         if VCE::IS_TERMINATOR {
+            self.view.align_to(&bounds, horizontal::Left, vertical::Bottom);
         } else {
+            let previous = self.next.arrange(bounds);
+
+            self.view.align_to(&previous.bounds(), horizontal::LeftToRight, vertical::Bottom);
         }
-        todo!();
+        self.view.bounds()
     }
 }
 
@@ -45,8 +49,9 @@ impl LayoutOperation<Horizontal> for ChainTerminator {
         Size::new(0, 0)
     }
 
-    fn arrange(&self) {
+    fn arrange(&mut self, _bounds: Rectangle) -> Rectangle {
         // Nothing to do
+        Rectangle::new(Point::zero(), Point::zero())
     }
 }
 
@@ -56,7 +61,7 @@ pub struct Vertical;
 impl LayoutDirection for Vertical {}
 impl<V, VCE> LayoutOperation<Vertical> for ViewLink<V, VCE>
 where
-    V: View,
+    V: View + Align,
     VCE: ViewChainElement + LayoutOperation<Vertical>,
 {
     fn measure(&self) -> Size {
@@ -73,11 +78,15 @@ where
         }
     }
 
-    fn arrange(&self) {
+    fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
         if VCE::IS_TERMINATOR {
+            self.view.align_to(&bounds, horizontal::Left, vertical::Top);
         } else {
+            let previous = self.next.arrange(bounds);
+
+            self.view.align_to(&previous.bounds(), horizontal::Left, vertical::TopToBottom);
         }
-        todo!();
+        self.view.bounds()
     }
 }
 
@@ -86,8 +95,9 @@ impl LayoutOperation<Vertical> for ChainTerminator {
         Size::new(0, 0)
     }
 
-    fn arrange(&self) {
+    fn arrange(&mut self, _bounds: Rectangle) -> Rectangle {
         // Nothing to do
+        Rectangle::new(Point::zero(), Point::zero())
     }
 }
 
@@ -141,8 +151,13 @@ where
     VCE: ViewChainElement + LayoutOperation<LD>,
 {
     /// Arrange the views according to the layout properties and return the views as a `ViewGroup`.
-    pub fn arrange(self) -> ViewGroup<VCE> {
-        todo!("actually arrange views");
+    /// Notes:
+    ///  - the top right point is always (0, 0)
+    ///  - for horizontal layouts, the elements will be vertically bottom aligned
+    ///  - for vertical layouts, the elements will be horizontally left aligned
+    pub fn arrange(mut self) -> ViewGroup<VCE> {
+        let bounds = Rectangle::with_size(Point::zero(), self.size());
+        self.views.views.arrange(bounds);
         self.views
     }
 
