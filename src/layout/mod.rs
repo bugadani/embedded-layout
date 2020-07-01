@@ -11,7 +11,7 @@ use embedded_graphics::primitives::Rectangle;
 pub mod linear;
 
 pub trait ViewChainElement: View {
-    const HAS_BOUNDS: bool;
+    const IS_TERMINATOR: bool;
 
     fn view_count() -> usize;
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View));
@@ -41,7 +41,7 @@ where
 }
 
 impl<V: View, VC: ViewChainElement> ViewChainElement for ViewLink<V, VC> {
-    const HAS_BOUNDS: bool = true;
+    const IS_TERMINATOR: bool = false;
 
     fn view_count() -> usize {
         1 + VC::view_count()
@@ -58,7 +58,7 @@ impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
     fn bounds(&self) -> Rectangle {
         let bounds = self.view.bounds();
 
-        if C::HAS_BOUNDS {
+        if !C::IS_TERMINATOR {
             bounds.enveloping(&self.next.bounds())
         } else {
             bounds
@@ -77,7 +77,7 @@ impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
 pub struct ChainTerminator;
 
 impl ViewChainElement for ChainTerminator {
-    const HAS_BOUNDS: bool = false;
+    const IS_TERMINATOR: bool = true;
 
     fn view_count() -> usize {
         0
@@ -112,7 +112,7 @@ impl View for ChainTerminator {
 ///
 /// Note: translating an empty `ViewGroup` has no effect
 pub struct ViewGroup<C: ViewChainElement> {
-    views: C,
+    pub(crate) views: C,
 }
 
 impl ViewGroup<ChainTerminator> {
