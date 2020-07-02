@@ -1,4 +1,53 @@
 //! Linear layout
+//!
+//! A linear layout is a list of `View`s that are placed one after the other along
+//! the horizontal or vertical axis.
+//!
+//! The main flow when working with a `LinearLayout` is the following:
+//!  - Create the layout: you need to choose which orientation you want your views arranged in
+//!  - Optionally, set secondary alignment
+//!  - Add views you want to arrange
+//!  - Call `arrange` to finalize view placement
+//!  - Align the returned `ViewGroup` to where you want it to be displayed
+//!  - Call `draw` to display the views
+//!
+//! # Orientation
+//!
+//! When constructing a `LinearLayout` object, you need to choose an orientation along which
+//! the views will be arranged. This can either be horizontal or vertical.
+//!
+//! ## Examples:
+//!
+//! Create a `LinearLayout` with two pieces of text, where one is below the other:
+//!
+//! ```rust
+//! # use embedded_layout::prelude::*;
+//! # use embedded_layout::layout::linear::LinearLayout;
+//! # use embedded_graphics::{
+//! #    fonts::{Font6x8, Text},
+//! #     pixelcolor::BinaryColor,
+//! #     style::TextStyleBuilder,
+//! # };
+//! let text_style = TextStyleBuilder::new(Font6x8)
+//!                         .text_color(BinaryColor::On)
+//!                         .build();
+//!
+//! let _ = LinearLayout::vertical()
+//!             .add_view(Text::new("Hello,", Point::zero()).into_styled(text_style))
+//!             .add_view(Text::new("World!", Point::zero()).into_styled(text_style))
+//!             .arrange();
+//! ```
+//!
+//! # Secondary alignment
+//!
+//! Secondary alignment means the alignment on the "other" axis:
+//!  - horizontal alignment in vertical linear layouts
+//!  - vertical alignment in horizontal linear layouts
+//!
+//! By default, the secondary alignments are the following:
+//!  - Horizontal orientation: `vertical::Bottom`
+//!  - Vertical orientation: `horizontal::Left`
+//!
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
@@ -22,6 +71,8 @@ use layout_operation::LayoutOperation;
 /// A `LinearLayout` object is not a `View`, it does not have a location, instead it is used to
 /// arrange a group of views into a `ViewGroup` object using the `arrange` method. It does have a
 /// `size` however.
+///
+/// For more information and examples see the module level documentation.
 pub struct LinearLayout<LD: LayoutDirection, VC: ViewChainElement> {
     direction: LD,
     views: ViewGroup<VC>,
