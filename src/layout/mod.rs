@@ -222,4 +222,20 @@ mod test {
 
         vg.draw(&mut disp).unwrap();
     }
+
+    #[test]
+    fn test_align() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        // Check if multiple different views can be included in the view group
+        let style = PrimitiveStyle::with_fill(BinaryColor::On);
+        let rect3 = Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style);
+        ViewGroup::new()
+            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
+            .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
+            .align_to(&rect3, horizontal::LeftToRight, vertical::TopToBottom)
+            .draw(&mut disp)
+            .unwrap();
+    }
 }

@@ -5,7 +5,7 @@ embedded-layout
 
 **Note:** This library is currently highly experimental. Expect API breakage with every update.
 
-## Examples
+## Example
 
 The examples are based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator). The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
 
@@ -18,7 +18,6 @@ use embedded_graphics_simulator::{
 
 use embedded_graphics::{
     fonts::{Font6x8, Text},
-    geometry::Point,
     pixelcolor::BinaryColor,
     prelude::*,
     style::TextStyleBuilder,
@@ -48,6 +47,32 @@ fn main() -> Result<(), core::convert::Infallible> {
     Window::new("Hello World", &output_settings).show_static(&display);
     Ok(())
 }
+```
+
+Use `LinearLayout` to arrange multiple objects:
+
+```rust
+use embedded_layout::prelude::*;
+use embedded_layout::layout::linear::LinearLayout;
+use embedded_graphics::{
+    fonts::{Font6x8, Text},
+    pixelcolor::BinaryColor,
+    style::TextStyleBuilder,
+};
+
+let display_area = disp.display_area();
+
+let text_style = TextStyleBuilder::new(Font6x8)
+                        .text_color(BinaryColor::On)
+                        .build();
+
+LinearLayout::vertical()
+            .add_view(Text::new("Hello,", Point::zero()).into_styled(text_style))
+            .add_view(Text::new("World!", Point::zero()).into_styled(text_style))
+            .arrange()
+            .align_to(&display_area, horizontal::Center, vertical::Center)
+            .draw(&mut disp)
+            .unwrap();
 ```
 
 [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/

@@ -16,7 +16,6 @@
 //!
 //! use embedded_graphics::{
 //!     fonts::{Font6x8, Text},
-//!     geometry::Point,
 //!     pixelcolor::BinaryColor,
 //!     prelude::*,
 //!     style::TextStyleBuilder,
@@ -48,6 +47,35 @@
 //! }
 //! ```
 //!
+//! Use `LinearLayout` to arrange multiple objects:
+//!
+//! ```rust
+//! # use embedded_graphics::mock_display::MockDisplay;
+//! # let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+//! #
+//! use embedded_layout::prelude::*;
+//! use embedded_layout::layout::linear::LinearLayout;
+//! use embedded_graphics::{
+//!     fonts::{Font6x8, Text},
+//!     pixelcolor::BinaryColor,
+//!     style::TextStyleBuilder,
+//! };
+//!
+//! let display_area = disp.display_area();
+//!
+//! let text_style = TextStyleBuilder::new(Font6x8)
+//!                         .text_color(BinaryColor::On)
+//!                         .build();
+//!
+//! LinearLayout::vertical()
+//!             .add_view(Text::new("Hello,", Point::zero()).into_styled(text_style))
+//!             .add_view(Text::new("World!", Point::zero()).into_styled(text_style))
+//!             .arrange()
+//!             .align_to(&display_area, horizontal::Center, vertical::Center)
+//!             .draw(&mut disp)
+//!             .unwrap();
+//! ```
+//!
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 
 #![cfg_attr(not(test), no_std)]
@@ -57,7 +85,7 @@
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 mod align;
-mod layout;
+pub mod layout;
 mod utils;
 
 use utils::rect_helper::RectExt;
