@@ -19,8 +19,8 @@ pub trait ViewChainElement: View {
 ///
 /// You probably shouldn't ever use this struct
 pub struct ViewLink<V: View, C: ViewChainElement> {
-    pub view: V,
-    pub next: C,
+    pub(crate) view: V,
+    pub(crate) next: C,
 }
 
 impl<C, V, VC> Drawable<C> for ViewLink<V, VC>
