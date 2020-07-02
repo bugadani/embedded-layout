@@ -1,3 +1,10 @@
+//! Layout module
+//!
+//! This module implements layouts that can be used to work with multiple `View`s easily.
+//! Layouts are either `View` objects, or can be used to return `View` objects.
+//!
+//! The base of all layouts is the `ViewGroup` which binds multiple `View`s together.
+
 use crate::prelude::*;
 use embedded_graphics::primitives::Rectangle;
 
@@ -116,6 +123,9 @@ impl ViewGroup<ChainTerminator> {
 }
 
 impl<C: ViewChainElement> ViewGroup<C> {
+    /// Bind a `View` to this `ViewGroup`
+    ///
+    /// The `View` remains at it's current location, until the `ViewGroup` is translated.
     fn add_view<V: View>(self, view: V) -> ViewGroup<ViewLink<V, C>> {
         ViewGroup {
             views: ViewLink {
@@ -125,6 +135,7 @@ impl<C: ViewChainElement> ViewGroup<C> {
         }
     }
 
+    /// Run the callback on each included `View` objects
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
         self.views.for_each(op);
     }
