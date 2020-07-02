@@ -1,11 +1,19 @@
 //! Vertical alignment options
-use crate::{align::VerticalAlignment, prelude::*};
+use crate::{
+    align::{Alignment, VerticalAlignment},
+    prelude::*,
+};
 
 /// Keep the object's vertical coordinate unchanged
 #[derive(Copy, Clone)]
 pub struct NoAlignment;
+impl VerticalAlignment for NoAlignment {}
 
-impl VerticalAlignment for NoAlignment {
+impl Alignment for NoAlignment {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, _object: &impl View, _reference: &impl View) -> i32 {
         0
     }
@@ -17,8 +25,13 @@ impl VerticalAlignment for NoAlignment {
 ///         the integer cordinates used.
 #[derive(Copy, Clone)]
 pub struct Center;
+impl VerticalAlignment for Center {}
 
-impl VerticalAlignment for Center {
+impl Alignment for Center {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bounds().center_y() - object.bounds().center_y()
     }
@@ -27,8 +40,13 @@ impl VerticalAlignment for Center {
 /// Align the top edge of the object to the top edge of the reference
 #[derive(Copy, Clone)]
 pub struct Top;
+impl VerticalAlignment for Top {}
 
-impl VerticalAlignment for Top {
+impl Alignment for Top {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bounds().top_left.y - object.bounds().top_left.y
     }
@@ -37,8 +55,13 @@ impl VerticalAlignment for Top {
 /// Align the bottom edge of the object to the bottom edge of the reference
 #[derive(Copy, Clone)]
 pub struct Bottom;
+impl VerticalAlignment for Bottom {}
 
-impl VerticalAlignment for Bottom {
+impl Alignment for Bottom {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bounds().bottom_right.y - object.bounds().bottom_right.y
     }
@@ -47,8 +70,12 @@ impl VerticalAlignment for Bottom {
 /// Align the top edge of the object to the bottom edge of the reference, non-overlapping
 #[derive(Copy, Clone)]
 pub struct TopToBottom;
+impl VerticalAlignment for TopToBottom {}
 
-impl VerticalAlignment for TopToBottom {
+impl Alignment for TopToBottom {
+    fn new() -> Self {
+        Self
+    }
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.bounds().bottom_right.y + 1) - object.bounds().top_left.y
     }
@@ -57,8 +84,13 @@ impl VerticalAlignment for TopToBottom {
 /// Align the bottom edge of the object to the top edge of the reference, non-overlapping
 #[derive(Copy, Clone)]
 pub struct BottomToTop;
+impl VerticalAlignment for BottomToTop {}
 
-impl VerticalAlignment for BottomToTop {
+impl Alignment for BottomToTop {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.bounds().top_left.y - 1) - object.bounds().bottom_right.y
     }

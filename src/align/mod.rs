@@ -28,14 +28,18 @@ where
     }
 }
 
-/// Implement this trait for horizontal alignment algorithms
-pub trait HorizontalAlignment: Copy + Clone {
+/// Common trait for alignment operations
+pub trait Alignment: Copy + Clone {
+    /// Create a new alignment object
+    fn new() -> Self;
+    /// Align one coordinate of `View` to the given reference
     fn align(&self, what: &impl View, reference: &impl View) -> i32;
 }
+
+/// Implement this trait for horizontal alignment algorithms
+pub trait HorizontalAlignment: Alignment {}
 
 /// Implement this trait for vertical alignment algorithms
 ///
 /// Vertical alignment assumes lower coordinate values are higher up
-pub trait VerticalAlignment: Copy + Clone {
-    fn align(&self, what: &impl View, reference: &impl View) -> i32;
-}
+pub trait VerticalAlignment: Alignment {}

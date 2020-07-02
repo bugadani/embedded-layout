@@ -1,11 +1,19 @@
 //! Horizontal alignment options
-use crate::{align::HorizontalAlignment, prelude::*};
+use crate::{
+    align::{Alignment, HorizontalAlignment},
+    prelude::*,
+};
 
 /// Keep the object's horizontal coordinate unchanged
 #[derive(Copy, Clone)]
 pub struct NoAlignment;
+impl HorizontalAlignment for NoAlignment {}
 
-impl HorizontalAlignment for NoAlignment {
+impl Alignment for NoAlignment {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, _object: &impl View, _reference: &impl View) -> i32 {
         0
     }
@@ -17,8 +25,13 @@ impl HorizontalAlignment for NoAlignment {
 ///         the integer cordinates used.
 #[derive(Copy, Clone)]
 pub struct Center;
+impl HorizontalAlignment for Center {}
 
-impl HorizontalAlignment for Center {
+impl Alignment for Center {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bounds().center_x() - object.bounds().center_x()
     }
@@ -27,8 +40,13 @@ impl HorizontalAlignment for Center {
 /// Align the left edge of the object to the left edge of the reference
 #[derive(Copy, Clone)]
 pub struct Left;
+impl HorizontalAlignment for Left {}
 
-impl HorizontalAlignment for Left {
+impl Alignment for Left {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bounds().top_left.x - object.bounds().top_left.x
     }
@@ -37,8 +55,13 @@ impl HorizontalAlignment for Left {
 /// Align the right edge of the object to the right edge of the reference
 #[derive(Copy, Clone)]
 pub struct Right;
+impl HorizontalAlignment for Right {}
 
-impl HorizontalAlignment for Right {
+impl Alignment for Right {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         reference.bounds().bottom_right.x - object.bounds().bottom_right.x
     }
@@ -47,8 +70,13 @@ impl HorizontalAlignment for Right {
 /// Align the left edge of the object to the right edge of the reference, non-overlapping
 #[derive(Copy, Clone)]
 pub struct LeftToRight;
+impl HorizontalAlignment for LeftToRight {}
 
-impl HorizontalAlignment for LeftToRight {
+impl Alignment for LeftToRight {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.bounds().bottom_right.x + 1) - object.bounds().top_left.x
     }
@@ -57,9 +85,13 @@ impl HorizontalAlignment for LeftToRight {
 /// Align the right edge of the object to the left edge of the reference, non-overlapping
 #[derive(Copy, Clone)]
 pub struct RightToLeft;
+impl HorizontalAlignment for RightToLeft {}
 
-/// Align the bottom edge of the object to the top edge of the reference, non-overlapping
-impl HorizontalAlignment for RightToLeft {
+impl Alignment for RightToLeft {
+    fn new() -> Self {
+        Self
+    }
+
     fn align(&self, object: &impl View, reference: &impl View) -> i32 {
         (reference.bounds().top_left.x - 1) - object.bounds().bottom_right.x
     }
