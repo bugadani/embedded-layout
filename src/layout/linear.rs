@@ -1,6 +1,19 @@
 //! Linear layout
 
 use super::*;
+use crate::align::{Alignment, HorizontalAlignment, VerticalAlignment};
+
+/// Secondary alignment is used to align views perpendicular to the placement axis.
+///
+/// For example, use `horizontal::Right` to align views to the right in a vertical linear layout.
+pub trait SecondaryAlignment: Alignment {}
+
+impl SecondaryAlignment for horizontal::Left {}
+impl SecondaryAlignment for horizontal::Center {}
+impl SecondaryAlignment for horizontal::Right {}
+impl SecondaryAlignment for vertical::Top {}
+impl SecondaryAlignment for vertical::Center {}
+impl SecondaryAlignment for vertical::Bottom {}
 
 /// Helper trait that describes a layout direction.
 pub trait LayoutDirection: Copy + Clone {}
@@ -11,12 +24,28 @@ pub trait LayoutOperation<LD: LayoutDirection> {
 
 /// Horizontal layout direction
 #[derive(Copy, Clone)]
-pub struct Horizontal;
-impl LayoutDirection for Horizontal {}
-impl<V, VCE> LayoutOperation<Horizontal> for ViewLink<V, VCE>
+pub struct Horizontal<Secondary: SecondaryAlignment + VerticalAlignment> {
+    secondary: Secondary,
+}
+
+impl Default for Horizontal<vertical::Bottom> {
+    fn default() -> Self {
+        Self {
+            secondary: vertical::Bottom,
+        }
+    }
+}
+
+impl<Secondary> LayoutDirection for Horizontal<Secondary> where
+    Secondary: SecondaryAlignment + VerticalAlignment
+{
+}
+
+impl<V, VCE, Secondary> LayoutOperation<Horizontal<Secondary>> for ViewLink<V, VCE>
 where
     V: View + Align,
-    VCE: ViewChainElement + LayoutOperation<Horizontal>,
+    VCE: ViewChainElement + LayoutOperation<Horizontal<Secondary>>,
+    Secondary: SecondaryAlignment + VerticalAlignment,
 {
     fn measure(&self) -> Size {
         // Counting this way assumes that views are aligned and not cascading in the other direction
@@ -35,21 +64,24 @@ where
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
         if VCE::IS_TERMINATOR {
             self.view
-                .align_to(&bounds, horizontal::Left, vertical::Bottom);
+                .align_to(&bounds, horizontal::Left, Secondary::new());
         } else {
             let previous = self.next.arrange(bounds);
 
             self.view.align_to(
                 &previous.bounds(),
                 horizontal::LeftToRight,
-                vertical::Bottom,
+                Secondary::new(),
             );
         }
         self.view.bounds()
     }
 }
 
-impl LayoutOperation<Horizontal> for ChainTerminator {
+impl<Secondary> LayoutOperation<Horizontal<Secondary>> for ChainTerminator
+where
+    Secondary: SecondaryAlignment + VerticalAlignment,
+{
     fn measure(&self) -> Size {
         Size::new(0, 0)
     }
@@ -62,12 +94,28 @@ impl LayoutOperation<Horizontal> for ChainTerminator {
 
 /// Vertical layout direction
 #[derive(Copy, Clone)]
-pub struct Vertical;
-impl LayoutDirection for Vertical {}
-impl<V, VCE> LayoutOperation<Vertical> for ViewLink<V, VCE>
+pub struct Vertical<Secondary: SecondaryAlignment + HorizontalAlignment> {
+    secondary: Secondary,
+}
+
+impl Default for Vertical<horizontal::Left> {
+    fn default() -> Self {
+        Self {
+            secondary: horizontal::Left,
+        }
+    }
+}
+
+impl<Secondary> LayoutDirection for Vertical<Secondary> where
+    Secondary: SecondaryAlignment + HorizontalAlignment
+{
+}
+
+impl<V, VCE, Secondary> LayoutOperation<Vertical<Secondary>> for ViewLink<V, VCE>
 where
     V: View + Align,
-    VCE: ViewChainElement + LayoutOperation<Vertical>,
+    VCE: ViewChainElement + LayoutOperation<Vertical<Secondary>>,
+    Secondary: SecondaryAlignment + HorizontalAlignment,
 {
     fn measure(&self) -> Size {
         // Counting this way assumes that views are aligned and not cascading in the other direction
@@ -85,18 +133,21 @@ where
 
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
         if VCE::IS_TERMINATOR {
-            self.view.align_to(&bounds, horizontal::Left, vertical::Top);
+            self.view.align_to(&bounds, Secondary::new(), vertical::Top);
         } else {
             let previous = self.next.arrange(bounds);
 
             self.view
-                .align_to(&previous.bounds(), horizontal::Left, vertical::TopToBottom);
+                .align_to(&previous.bounds(), Secondary::new(), vertical::TopToBottom);
         }
         self.view.bounds()
     }
 }
 
-impl LayoutOperation<Vertical> for ChainTerminator {
+impl<Secondary> LayoutOperation<Vertical<Secondary>> for ChainTerminator
+where
+    Secondary: SecondaryAlignment + HorizontalAlignment,
+{
     fn measure(&self) -> Size {
         Size::new(0, 0)
     }
@@ -118,22 +169,60 @@ pub struct LinearLayout<LD: LayoutDirection, VC: ViewChainElement> {
     views: ViewGroup<VC>,
 }
 
-impl LinearLayout<Horizontal, ChainTerminator> {
+impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     pub fn horizontal() -> Self {
         Self {
-            direction: Horizontal,
+            direction: Horizontal::default(),
             views: ViewGroup::new(),
         }
     }
 }
 
-impl LinearLayout<Vertical, ChainTerminator> {
+impl LinearLayout<Vertical<horizontal::Left>, ChainTerminator> {
     /// Create a new, empty `LinearLayout` that places views vertically next to each other
     pub fn vertical() -> Self {
         Self {
-            direction: Vertical,
+            direction: Vertical::default(),
             views: ViewGroup::new(),
+        }
+    }
+}
+
+impl<S, VCE> LinearLayout<Horizontal<S>, VCE>
+where
+    S: SecondaryAlignment + VerticalAlignment,
+    VCE: ViewChainElement,
+{
+    /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec>, VCE>
+    where
+        Sec: SecondaryAlignment + VerticalAlignment,
+    {
+        LinearLayout {
+            direction: Horizontal {
+                secondary: alignment,
+            },
+            views: self.views,
+        }
+    }
+}
+
+impl<S, VCE> LinearLayout<Vertical<S>, VCE>
+where
+    S: SecondaryAlignment + HorizontalAlignment,
+    VCE: ViewChainElement,
+{
+    /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec>, VCE>
+    where
+        Sec: SecondaryAlignment + HorizontalAlignment,
+    {
+        LinearLayout {
+            direction: Vertical {
+                secondary: alignment,
+            },
+            views: self.views,
         }
     }
 }
@@ -252,6 +341,46 @@ mod test {
     }
 
     #[test]
+    fn layout_arrange_vertical_secondary() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let mut view_group = LinearLayout::vertical()
+            .with_alignment(horizontal::Right)
+            .add_view(rect)
+            .add_view(rect2)
+            .arrange();
+
+        view_group.translate(Point::new(1, 2));
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "           ",
+                "           ",
+                " ##########",
+                " #        #",
+                " #        #",
+                " #        #",
+                " ##########",
+                "      #####",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #####",
+            ])
+        );
+    }
+
+    #[test]
     fn layout_arrange_horizontal() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
@@ -281,6 +410,41 @@ mod test {
                 " #        ##   #",
                 " #        ##   #",
                 " ###############",
+            ])
+        );
+    }
+
+    #[test]
+    fn layout_arrange_horizontal_secondary() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let mut view_group = LinearLayout::horizontal()
+            .with_alignment(vertical::Top)
+            .add_view(rect)
+            .add_view(rect2)
+            .arrange();
+
+        view_group.translate(Point::new(1, 2));
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "                ",
+                "                ",
+                " ###############",
+                " #        ##   #",
+                " #        ##   #",
+                " #        ##   #",
+                " ###########   #",
+                "           #   #",
+                "           #   #",
+                "           #   #",
+                "           #   #",
+                "           #####",
             ])
         );
     }
