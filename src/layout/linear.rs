@@ -6,14 +6,59 @@ use crate::align::{Alignment, HorizontalAlignment, VerticalAlignment};
 /// Secondary alignment is used to align views perpendicular to the placement axis.
 ///
 /// For example, use `horizontal::Right` to align views to the right in a vertical linear layout.
-pub trait SecondaryAlignment: Alignment {}
+pub trait SecondaryAlignment: Alignment {
+    fn measure(prev: Size, view: &impl View) -> Size;
+}
 
-impl SecondaryAlignment for horizontal::Left {}
-impl SecondaryAlignment for horizontal::Center {}
-impl SecondaryAlignment for horizontal::Right {}
-impl SecondaryAlignment for vertical::Top {}
-impl SecondaryAlignment for vertical::Center {}
-impl SecondaryAlignment for vertical::Bottom {}
+fn max_width(prev_size: Size, view: &impl View) -> Size {
+    let view_size = RectExt::size(&view.bounds());
+
+    Size::new(
+        prev_size.width.max(view_size.width),
+        prev_size.height + view_size.height,
+    )
+}
+
+impl SecondaryAlignment for horizontal::Left {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        max_width(prev_size, view)
+    }
+}
+impl SecondaryAlignment for horizontal::Center {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        max_width(prev_size, view)
+    }
+}
+impl SecondaryAlignment for horizontal::Right {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        max_width(prev_size, view)
+    }
+}
+
+fn max_height(prev_size: Size, view: &impl View) -> Size {
+    let view_size = RectExt::size(&view.bounds());
+
+    Size::new(
+        prev_size.width + view_size.width,
+        prev_size.height.max(view_size.height),
+    )
+}
+
+impl SecondaryAlignment for vertical::Top {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        max_height(prev_size, view)
+    }
+}
+impl SecondaryAlignment for vertical::Center {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        max_height(prev_size, view)
+    }
+}
+impl SecondaryAlignment for vertical::Bottom {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        max_height(prev_size, view)
+    }
+}
 
 /// Helper trait that describes a layout direction.
 pub trait LayoutDirection: Copy + Clone {}
@@ -54,10 +99,7 @@ where
             current_el_size
         } else {
             let prev_size = self.next.measure();
-            Size::new(
-                prev_size.width + current_el_size.width,
-                prev_size.height.max(current_el_size.height),
-            )
+            Secondary::measure(prev_size, &self.view)
         }
     }
 
@@ -124,10 +166,7 @@ where
             current_el_size
         } else {
             let prev_size = self.next.measure();
-            Size::new(
-                prev_size.width.max(current_el_size.width),
-                prev_size.height + current_el_size.height,
-            )
+            Secondary::measure(prev_size, &self.view)
         }
     }
 
