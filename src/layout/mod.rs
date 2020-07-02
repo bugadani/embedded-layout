@@ -4,6 +4,7 @@ use embedded_graphics::primitives::Rectangle;
 pub trait ViewChainElement: View {
     const HAS_BOUNDS: bool;
 
+    fn view_count() -> usize;
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View));
 }
 
@@ -32,6 +33,10 @@ where
 
 impl<V: View, VC: ViewChainElement> ViewChainElement for ViewLink<V, VC> {
     const HAS_BOUNDS: bool = true;
+
+    fn view_count() -> usize {
+        1 + VC::view_count()
+    }
 
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
         // Keep order of elements
@@ -64,6 +69,10 @@ pub struct ChainTerminator;
 
 impl ViewChainElement for ChainTerminator {
     const HAS_BOUNDS: bool = false;
+
+    fn view_count() -> usize {
+        0
+    }
 
     fn for_each(&mut self, _op: &mut impl FnMut(&mut dyn View)) {
         // nothing to do
@@ -119,6 +128,11 @@ impl<C: ViewChainElement> ViewGroup<C> {
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
         self.views.for_each(op);
     }
+
+    /// Returns the number of views in this `ViewGroup`
+    fn view_count(&self) -> usize {
+        C::view_count()
+    }
 }
 
 impl<C: ViewChainElement> View for ViewGroup<C> {
@@ -158,7 +172,9 @@ mod test {
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
             .add_view(Circle::new(Point::zero(), 5));
 
-        fn check_vg<C: ViewChainElement>(_vg: &ViewGroup<C>) {}
+        fn check_vg<C: ViewChainElement>(vg: &ViewGroup<C>) {
+            assert_eq!(2, vg.view_count());
+        }
 
         check_vg(&vg);
     }
