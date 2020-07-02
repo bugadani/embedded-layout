@@ -120,15 +120,13 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let mut source = rect1;
-        source.align_to(&rect2, horizontal::NoAlignment, vertical::Center);
-        check_center_alignment(rect1, rect2, source);
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::Center);
+        check_center_alignment(rect1, rect2, result);
 
         // Test the other direction
 
-        let mut source = rect2;
-        source.align_to(&rect1, horizontal::NoAlignment, vertical::Center);
-        check_center_alignment(rect2, rect1, source);
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::Center);
+        check_center_alignment(rect2, rect1, result);
     }
 
     #[test]
@@ -147,14 +145,12 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let mut source = rect1;
-        source.align_to(&rect2, horizontal::NoAlignment, vertical::Top);
-        check_top_alignment(rect1, rect2, source);
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::Top);
+        check_top_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let mut source = rect2;
-        source.align_to(&rect1, horizontal::NoAlignment, vertical::Top);
-        check_top_alignment(rect2, rect1, source);
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::Top);
+        check_top_alignment(rect2, rect1, result);
     }
 
     #[test]
@@ -173,14 +169,12 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let mut source = rect1;
-        source.align_to(&rect2, horizontal::NoAlignment, vertical::Bottom);
-        check_bottom_alignment(rect1, rect2, source);
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::Bottom);
+        check_bottom_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let mut source = rect2;
-        source.align_to(&rect1, horizontal::NoAlignment, vertical::Bottom);
-        check_bottom_alignment(rect2, rect1, source);
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::Bottom);
+        check_bottom_alignment(rect2, rect1, result);
     }
 
     #[test]
@@ -203,14 +197,12 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let mut source = rect1;
-        source.align_to(&rect2, horizontal::NoAlignment, vertical::TopToBottom);
-        check_to_to_bottom_alignment(rect1, rect2, source);
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::TopToBottom);
+        check_to_to_bottom_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let mut source = rect2;
-        source.align_to(&rect1, horizontal::NoAlignment, vertical::TopToBottom);
-        check_to_to_bottom_alignment(rect2, rect1, source);
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::TopToBottom);
+        check_to_to_bottom_alignment(rect2, rect1, result);
     }
 
     #[test]
@@ -233,13 +225,11 @@ mod test {
         let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
-        let mut source = rect1;
-        source.align_to(&rect2, horizontal::NoAlignment, vertical::BottomToTop);
-        check_to_to_bottom_alignment(rect1, rect2, source);
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::BottomToTop);
+        check_to_to_bottom_alignment(rect1, rect2, result);
 
         // Test the other direction
-        let mut source = rect2;
-        source.align_to(&rect1, horizontal::NoAlignment, vertical::BottomToTop);
-        check_to_to_bottom_alignment(rect2, rect1, source);
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::BottomToTop);
+        check_to_to_bottom_alignment(rect2, rect1, result);
     }
 }
