@@ -19,6 +19,15 @@ fn max_width(prev_size: Size, view: &impl View) -> Size {
     )
 }
 
+fn cascading(prev_size: Size, view: &impl View) -> Size {
+    let view_size = RectExt::size(&view.bounds());
+
+    Size::new(
+        prev_size.width + view_size.width,
+        prev_size.height + view_size.height,
+    )
+}
+
 impl SecondaryAlignment for horizontal::Left {
     fn measure(prev_size: Size, view: &impl View) -> Size {
         max_width(prev_size, view)
@@ -32,6 +41,16 @@ impl SecondaryAlignment for horizontal::Center {
 impl SecondaryAlignment for horizontal::Right {
     fn measure(prev_size: Size, view: &impl View) -> Size {
         max_width(prev_size, view)
+    }
+}
+impl SecondaryAlignment for horizontal::RightToLeft {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        cascading(prev_size, view)
+    }
+}
+impl SecondaryAlignment for horizontal::LeftToRight {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        cascading(prev_size, view)
     }
 }
 
@@ -57,6 +76,16 @@ impl SecondaryAlignment for vertical::Center {
 impl SecondaryAlignment for vertical::Bottom {
     fn measure(prev_size: Size, view: &impl View) -> Size {
         max_height(prev_size, view)
+    }
+}
+impl SecondaryAlignment for vertical::TopToBottom {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        cascading(prev_size, view)
+    }
+}
+impl SecondaryAlignment for vertical::BottomToTop {
+    fn measure(prev_size: Size, view: &impl View) -> Size {
+        cascading(prev_size, view)
     }
 }
 
