@@ -188,11 +188,11 @@ impl<C: ViewChainElement> View for ViewGroup<C> {
     }
 }
 
-impl<C, VC> Drawable<C> for &ViewGroup<VC>
+impl<'a, C, VC> Drawable<C> for &'a ViewGroup<VC>
 where
     C: PixelColor,
     VC: ViewChainElement,
-    for<'a> &'a VC: Drawable<C>,
+    &'a VC: Drawable<C>,
 {
     /// Draw the graphics object using the supplied DrawTarget.
     #[inline]
