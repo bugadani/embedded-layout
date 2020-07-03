@@ -37,11 +37,8 @@ where
         } else {
             let previous = self.next.arrange(bounds);
 
-            self.view.align_to_mut(
-                &previous.bounds(),
-                horizontal::LeftToRight,
-                Secondary::new(),
-            );
+            self.view
+                .align_to_mut(&previous, horizontal::LeftToRight, Secondary::new());
         }
         self.view.bounds()
     }
