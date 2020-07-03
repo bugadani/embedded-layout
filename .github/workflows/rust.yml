@@ -20,6 +20,7 @@ jobs:
       with:
         toolchain: nightly
         override: true
+        components: rustfmt, clippy
     - name: Check formatting
       run: cargo fmt --all -- --check
     - name: Build
