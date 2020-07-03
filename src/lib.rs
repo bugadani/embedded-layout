@@ -49,7 +49,7 @@
 //!
 //! Use `LinearLayout` to arrange multiple objects:
 //!
-//! ```rust
+//! ```rust-no_run
 //! use embedded_graphics_simulator::{
 //!     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window,
 //! };
