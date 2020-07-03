@@ -3,6 +3,7 @@ use crate::{
     align::{Alignment, HorizontalAlignment},
     prelude::*,
 };
+use embedded_graphics::primitives::Rectangle;
 
 /// Keep the object's horizontal coordinate unchanged
 #[derive(Copy, Clone)]
@@ -14,7 +15,7 @@ impl Alignment for NoAlignment {
         Self
     }
 
-    fn align(&self, _object: &impl View, _reference: &impl View) -> i32 {
+    fn align(&self, _object: Rectangle, _reference: Rectangle) -> i32 {
         0
     }
 }
@@ -32,8 +33,8 @@ impl Alignment for Center {
         Self
     }
 
-    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
-        reference.bounds().center_x() - object.bounds().center_x()
+    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
+        reference.center_x() - object.center_x()
     }
 }
 
@@ -47,8 +48,8 @@ impl Alignment for Left {
         Self
     }
 
-    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
-        reference.bounds().top_left.x - object.bounds().top_left.x
+    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
+        reference.top_left.x - object.top_left.x
     }
 }
 
@@ -62,8 +63,8 @@ impl Alignment for Right {
         Self
     }
 
-    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
-        reference.bounds().bottom_right.x - object.bounds().bottom_right.x
+    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
+        reference.bottom_right.x - object.bottom_right.x
     }
 }
 
@@ -77,8 +78,8 @@ impl Alignment for LeftToRight {
         Self
     }
 
-    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
-        (reference.bounds().bottom_right.x + 1) - object.bounds().top_left.x
+    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
+        (reference.bottom_right.x + 1) - object.top_left.x
     }
 }
 
@@ -92,8 +93,8 @@ impl Alignment for RightToLeft {
         Self
     }
 
-    fn align(&self, object: &impl View, reference: &impl View) -> i32 {
-        (reference.bounds().top_left.x - 1) - object.bounds().bottom_right.x
+    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
+        (reference.top_left.x - 1) - object.bottom_right.x
     }
 }
 

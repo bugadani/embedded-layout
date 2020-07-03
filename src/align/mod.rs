@@ -1,5 +1,5 @@
 use crate::prelude::*;
-use embedded_graphics::geometry::Point;
+use embedded_graphics::primitives::Rectangle;
 
 pub mod horizontal;
 pub mod vertical;
@@ -34,8 +34,11 @@ where
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
-        let h = horizontal.align(&self, reference);
-        let v = vertical.align(&self, reference);
+        let self_bounds = self.bounds();
+        let reference_bounds = reference.bounds();
+
+        let h = horizontal.align(self_bounds, reference_bounds);
+        let v = vertical.align(self_bounds, reference_bounds);
         self.translate(Point::new(h, v));
         self
     }
@@ -46,8 +49,11 @@ where
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
-        let h = horizontal.align(self, reference);
-        let v = vertical.align(self, reference);
+        let self_bounds = self.bounds();
+        let reference_bounds = reference.bounds();
+
+        let h = horizontal.align(self_bounds, reference_bounds);
+        let v = vertical.align(self_bounds, reference_bounds);
         self.translate(Point::new(h, v));
         self
     }
@@ -59,7 +65,7 @@ pub trait Alignment: Copy + Clone {
     fn new() -> Self;
 
     /// Align one coordinate of `View` to the given reference
-    fn align(&self, what: &impl View, reference: &impl View) -> i32;
+    fn align(&self, what: Rectangle, reference: Rectangle) -> i32;
 }
 
 /// Implement this trait for horizontal alignment algorithms
