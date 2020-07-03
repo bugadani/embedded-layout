@@ -9,7 +9,7 @@ pub trait SecondaryAlignment: Alignment {
 }
 
 fn max_width(prev_size: Size, view: &impl View) -> Size {
-    let view_size = RectExt::size(&view.bounds());
+    let view_size = view.size();
 
     Size::new(
         prev_size.width.max(view_size.width),
@@ -18,7 +18,7 @@ fn max_width(prev_size: Size, view: &impl View) -> Size {
 }
 
 fn cascading(prev_size: Size, view: &impl View) -> Size {
-    let view_size = RectExt::size(&view.bounds());
+    let view_size = view.size();
 
     Size::new(
         prev_size.width + view_size.width,
@@ -58,7 +58,7 @@ impl SecondaryAlignment for horizontal::LeftToRight {
 }
 
 fn max_height(prev_size: Size, view: &impl View) -> Size {
-    let view_size = RectExt::size(&view.bounds());
+    let view_size = view.size();
 
     Size::new(
         prev_size.width + view_size.width,
