@@ -83,7 +83,7 @@ where
             let previous = self.next.arrange(bounds);
 
             self.view
-                .align_to_mut(&previous.bounds(), Secondary::new(), vertical::TopToBottom);
+                .align_to_mut(&previous, Secondary::new(), vertical::TopToBottom);
         }
         self.view.bounds()
     }
