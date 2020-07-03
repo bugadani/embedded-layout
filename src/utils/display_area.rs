@@ -18,6 +18,7 @@ where
     C: PixelColor,
     T: DrawTarget<C>,
 {
+    #[inline]
     fn display_area(&self) -> Rectangle {
         Rectangle::with_size(Point::zero(), self.size())
     }

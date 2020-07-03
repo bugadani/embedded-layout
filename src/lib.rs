@@ -51,6 +51,8 @@
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 
 #![cfg_attr(not(test), no_std)]
+#![deny(missing_docs)]
+#![deny(clippy::missing_inline_in_public_items)]
 
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
@@ -77,11 +79,15 @@ pub mod prelude {
 /// `Transform` traits.
 pub trait View {
     /// Get the size of a View.
+    #[inline]
     fn size(&self) -> Size {
         RectExt::size(&self.bounds())
     }
 
+    /// Move the origin of an object by a given number of (x, y) pixels
     fn translate(&mut self, by: Point);
+
+    /// Returns the bounding box of the `View` as a `Rectangle`
     fn bounds(&self) -> Rectangle;
 }
 
@@ -89,10 +95,12 @@ impl<T> View for T
 where
     T: Transform + Dimensions,
 {
+    #[inline]
     fn translate(&mut self, by: Point) {
         self.translate_mut(by);
     }
 
+    #[inline]
     fn bounds(&self) -> Rectangle {
         Rectangle::new(self.top_left(), self.bottom_right())
     }

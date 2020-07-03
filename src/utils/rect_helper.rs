@@ -29,10 +29,13 @@ pub trait RectExt {
     /// *Note:* when an object's width or height is an even number, the returned center point will
     ///         not be perfectly in the middle.
     fn center(&self) -> Point;
+
+    /// Return the bounding `Rectangle` that encompasses both `Rectangles`
     fn enveloping(&self, other: &Rectangle) -> Rectangle;
 }
 
 impl RectExt for Rectangle {
+    #[inline]
     fn with_size(top_left: Point, size: Size) -> Rectangle {
         Rectangle::new(
             top_left,
@@ -40,6 +43,7 @@ impl RectExt for Rectangle {
         )
     }
 
+    #[inline]
     fn size(&self) -> Size {
         // TODO: remove if fixed in embedded-graphics
         let top_left = self.top_left;
@@ -51,18 +55,22 @@ impl RectExt for Rectangle {
         Size::new(width, height)
     }
 
+    #[inline]
     fn center_x(&self) -> i32 {
         (self.top_left.x + self.bottom_right.x) / 2
     }
 
+    #[inline]
     fn center_y(&self) -> i32 {
         (self.top_left.y + self.bottom_right.y) / 2
     }
 
+    #[inline]
     fn center(&self) -> Point {
         Point::new(self.center_x(), self.center_y())
     }
 
+    #[inline]
     fn enveloping(&self, other: &Rectangle) -> Rectangle {
         Rectangle::new(
             Point::new(
