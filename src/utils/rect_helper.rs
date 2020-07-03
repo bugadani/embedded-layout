@@ -11,6 +11,7 @@ pub trait RectExt {
     /// Return the `Size` of the `Rectangle`
     ///
     /// The `size` method provided by `embedded-graphics 0.6.2` returns an incorrect value.
+    /// *Note:* Implementation assumes top_left and bottom_right coordinates are specified properly
     fn size(&self) -> Size;
 
     /// Return the horizontal center coordinate
@@ -46,11 +47,8 @@ impl RectExt for Rectangle {
     #[inline]
     fn size(&self) -> Size {
         // TODO: remove if fixed in embedded-graphics
-        let top_left = self.top_left;
-        let bottom_right = self.bottom_right;
-
-        let width = (top_left.x - bottom_right.x).abs() as u32 + 1;
-        let height = (top_left.y - bottom_right.y).abs() as u32 + 1;
+        let width = (self.bottom_right.x - self.top_left.x) as u32 + 1;
+        let height = (self.bottom_right.y - self.top_left.y) as u32 + 1;
 
         Size::new(width, height)
     }
