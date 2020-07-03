@@ -1,21 +1,3 @@
-embedded-layout
-===============
-
-`embedded-layout` extends [`embedded-graphics`] with basic layout functions.
-
-**Note:** This library is currently highly experimental. Expect API breakage with every update.
-
-`embedded-layout` consists of two main parts:
- - alignments that can be used to position two objects relative to one another
- - layouts that can be used to arrange multiple views
-
-## Example
-
-The examples are based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator). The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
-
-![embedded-layout example](assets/embedded-layout.png)
-
-```rust
 use embedded_graphics_simulator::{
     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window,
 };
@@ -73,6 +55,3 @@ fn main() -> Result<(), core::convert::Infallible> {
     Window::new("Layout example", &output_settings).show_static(&display);
     Ok(())
 }
-```
-
-[`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
