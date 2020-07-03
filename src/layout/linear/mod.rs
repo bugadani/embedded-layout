@@ -80,6 +80,7 @@ pub struct LinearLayout<LD: LayoutDirection, VC: ViewChainElement> {
 
 impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    #[inline]
     pub fn horizontal() -> Self {
         Self {
             direction: Horizontal::default(),
@@ -90,6 +91,7 @@ impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
 
 impl LinearLayout<Vertical<horizontal::Left>, ChainTerminator> {
     /// Create a new, empty `LinearLayout` that places views vertically next to each other
+    #[inline]
     pub fn vertical() -> Self {
         Self {
             direction: Vertical::default(),
@@ -104,6 +106,7 @@ where
     VCE: ViewChainElement,
 {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    #[inline]
     pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec>, VCE>
     where
         Sec: SecondaryAlignment + VerticalAlignment,
@@ -123,6 +126,7 @@ where
     VCE: ViewChainElement,
 {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    #[inline]
     pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec>, VCE>
     where
         Sec: SecondaryAlignment + HorizontalAlignment,
@@ -141,6 +145,7 @@ impl<LD: LayoutDirection, VCE: ViewChainElement> LinearLayout<LD, VCE> {
     ///
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
+    #[inline]
     pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, ViewLink<V, VCE>> {
         LinearLayout {
             direction: self.direction,
@@ -159,6 +164,7 @@ where
     ///  - the top right point is always (0, 0)
     ///  - for horizontal layouts, the elements will be vertically bottom aligned
     ///  - for vertical layouts, the elements will be horizontally left aligned
+    #[inline]
     pub fn arrange(mut self) -> ViewGroup<VCE> {
         let bounds = Rectangle::with_size(Point::zero(), self.size());
         self.views.views.arrange(bounds);
@@ -166,6 +172,7 @@ where
     }
 
     /// Returns the current size the layout will take up after `arrange`.
+    #[inline]
     pub fn size(&self) -> Size {
         self.views.views.measure()
     }

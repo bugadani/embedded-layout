@@ -10,10 +10,16 @@ use embedded_graphics::primitives::Rectangle;
 
 pub mod linear;
 
+/// Implementation detail necessary to store multiple different types of `Views`
+/// in a `ViewGroup`
 pub trait ViewChainElement: View {
+    /// `true` if this chain element marks the end of a chain
     const IS_TERMINATOR: bool;
 
+    /// Return the number of `Views` linked to this chain element
     fn view_count() -> usize;
+
+    /// Run an operation on each of the `Views` linked to this chain element
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View));
 }
 
@@ -32,6 +38,7 @@ where
     for<'a> &'a V: Drawable<C>,
     VC: ViewChainElement + Drawable<C>,
 {
+    #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
         self.view.draw(display)?;
         self.next.draw(display)?;
@@ -43,10 +50,12 @@ where
 impl<V: View, VC: ViewChainElement> ViewChainElement for ViewLink<V, VC> {
     const IS_TERMINATOR: bool = false;
 
+    #[inline]
     fn view_count() -> usize {
         1 + VC::view_count()
     }
 
+    #[inline]
     fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
         // Keep order of elements
         self.next.for_each(op);
@@ -55,6 +64,7 @@ impl<V: View, VC: ViewChainElement> ViewChainElement for ViewLink<V, VC> {
 }
 
 impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
+    #[inline]
     fn bounds(&self) -> Rectangle {
         let bounds = self.view.bounds();
 
@@ -65,6 +75,7 @@ impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
         }
     }
 
+    #[inline]
     fn translate(&mut self, by: Point) {
         self.view.translate(by);
         self.next.translate(by);
@@ -79,26 +90,31 @@ pub struct ChainTerminator;
 impl ViewChainElement for ChainTerminator {
     const IS_TERMINATOR: bool = true;
 
+    #[inline]
     fn view_count() -> usize {
         0
     }
 
+    #[inline]
     fn for_each(&mut self, _op: &mut impl FnMut(&mut dyn View)) {
         // nothing to do
     }
 }
 
 impl<C: PixelColor> Drawable<C> for ChainTerminator {
+    #[inline]
     fn draw<D: DrawTarget<C>>(self, _display: &mut D) -> Result<(), D::Error> {
         Ok(())
     }
 }
 
 impl View for ChainTerminator {
+    #[inline]
     fn bounds(&self) -> Rectangle {
         Rectangle::new(Point::zero(), Point::zero())
     }
 
+    #[inline]
     fn translate(&mut self, _by: Point) {
         // nothing to do
     }
@@ -117,10 +133,18 @@ pub struct ViewGroup<C: ViewChainElement> {
 
 impl ViewGroup<ChainTerminator> {
     /// Create a new, empty `ViewGroup` object
-    pub fn new() -> Self {
+    #[inline]
+    pub const fn new() -> Self {
         Self {
             views: ChainTerminator,
         }
+    }
+}
+
+impl Default for ViewGroup<ChainTerminator> {
+    #[inline]
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -128,7 +152,8 @@ impl<C: ViewChainElement> ViewGroup<C> {
     /// Bind a `View` to this `ViewGroup`
     ///
     /// The `View` remains at it's current location, until the `ViewGroup` is translated.
-    fn add_view<V: View>(self, view: V) -> ViewGroup<ViewLink<V, C>> {
+    #[inline]
+    pub fn add_view<V: View>(self, view: V) -> ViewGroup<ViewLink<V, C>> {
         ViewGroup {
             views: ViewLink {
                 view,
@@ -138,21 +163,25 @@ impl<C: ViewChainElement> ViewGroup<C> {
     }
 
     /// Run the callback on each included `View` objects
-    fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
+    #[inline]
+    pub fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
         self.views.for_each(op);
     }
 
     /// Returns the number of views in this `ViewGroup`
-    fn view_count(&self) -> usize {
+    #[inline]
+    pub fn view_count(&self) -> usize {
         C::view_count()
     }
 }
 
 impl<C: ViewChainElement> View for ViewGroup<C> {
+    #[inline]
     fn translate(&mut self, by: Point) {
         self.views.translate(by);
     }
 
+    #[inline]
     fn bounds(&self) -> Rectangle {
         self.views.bounds()
     }
@@ -160,6 +189,7 @@ impl<C: ViewChainElement> View for ViewGroup<C> {
 
 impl<C: PixelColor, VC: ViewChainElement + Drawable<C>> Drawable<C> for ViewGroup<VC> {
     /// Draw the graphics object using the supplied DrawTarget.
+    #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
         self.views.draw(display)
     }

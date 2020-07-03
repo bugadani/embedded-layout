@@ -13,6 +13,7 @@ pub struct Horizontal<Secondary: SecondaryAlignment + VerticalAlignment> {
 }
 
 impl Default for Horizontal<vertical::Bottom> {
+    #[inline]
     fn default() -> Self {
         Self {
             secondary: vertical::Bottom,
@@ -32,6 +33,7 @@ pub struct Vertical<Secondary: SecondaryAlignment + HorizontalAlignment> {
 }
 
 impl Default for Vertical<horizontal::Left> {
+    #[inline]
     fn default() -> Self {
         Self {
             secondary: horizontal::Left,
