@@ -25,7 +25,7 @@ where
             current_el_size
         } else {
             let prev_size = self.next.measure();
-            Secondary::measure(prev_size, &self.view)
+            Secondary::measure(prev_size, current_el_size)
         }
     }
 
@@ -69,7 +69,7 @@ where
             current_el_size
         } else {
             let prev_size = self.next.measure();
-            Secondary::measure(prev_size, &self.view)
+            Secondary::measure(prev_size, current_el_size)
         }
     }
 
