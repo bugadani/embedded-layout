@@ -9,7 +9,7 @@ embedded-layout
 
 The examples are based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator). The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
 
-### Draw some text to the center of the display:
+### Draw some text to the center of the display
 
 ```rust
 use embedded_graphics_simulator::{
@@ -49,7 +49,7 @@ fn main() -> Result<(), core::convert::Infallible> {
 }
 ```
 
-Use `LinearLayout` to arrange multiple objects:
+### Use `LinearLayout` to arrange multiple objects
 
 ![LinearLayout example](assets/linear_layout.png)
 
@@ -94,7 +94,5 @@ fn main() -> Result<(), core::convert::Infallible> {
     Ok(())
 }
 ```
-
-This example is based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator) and can be run using `cargo run --example linear_layout`
 
 [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/

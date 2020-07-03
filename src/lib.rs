@@ -5,11 +5,13 @@
 //!
 //! ## Examples
 //!
-//! The examples are based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator). The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
+//! The examples are based on [the `embedded-graphics` simulator]. The simulator is built on top of
+//! `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"`
+//! environment variable so that running the examples produce a screenshot image instead of a window.
 //!
-//! ### Draw some text to the center of the display:
+//! ### Draw some text to the center of the display
 //!
-//! ```rust-no_run
+//! ```no_run
 //! use embedded_graphics_simulator::{
 //!     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window,
 //! };
@@ -47,9 +49,9 @@
 //! }
 //! ```
 //!
-//! Use `LinearLayout` to arrange multiple objects:
+//! ### Use `LinearLayout` to arrange multiple objects
 //!
-//! ```rust-no_run
+//! ```no_run
 //! use embedded_graphics_simulator::{
 //!     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window,
 //! };
@@ -91,9 +93,8 @@
 //! }
 //! ```
 //!
-//! This example is based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator) and can be run using `cargo run --example linear_layout`
-//!
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
+//! [the `embedded-graphics` simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]
