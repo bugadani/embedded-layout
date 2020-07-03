@@ -3,35 +3,49 @@
 //! This crate extends `embedded-graphics` objects that implement the `Transform` trait
 //! to be aligned to other objects that have `Dimensions`.
 //!
-//! # Example
+//! ## Examples
 //!
-//! Draw some text to the center of the display:
+//! The examples are based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator). The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
 //!
-//! ```rust
-//! # use embedded_graphics::mock_display::MockDisplay;
-//! # let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-//! #
-//! use embedded_layout::prelude::*;
-//! use embedded_graphics::{
-//!     prelude::*,
-//!     fonts::{Font6x8, Text},
-//!     geometry::Point,
-//!     primitives::Rectangle,
-//!     pixelcolor::BinaryColor,
-//!     style::TextStyleBuilder,
+//! ### Draw some text to the center of the display:
+//!
+//! ```rust-no_run
+//! use embedded_graphics_simulator::{
+//!     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window,
 //! };
 //!
-//! let display_area = disp.display_area();
+//! use embedded_graphics::{
+//!     fonts::{Font6x8, Text},
+//!     geometry::Point,
+//!     pixelcolor::BinaryColor,
+//!     prelude::*,
+//!     style::TextStyleBuilder,
+//! };
+//! use embedded_layout::prelude::*;
 //!
-//! let text_style = TextStyleBuilder::new(Font6x8)
-//!                         .text_color(BinaryColor::On)
-//!                         .build();
+//! fn main() -> Result<(), core::convert::Infallible> {
+//!     let mut display: SimulatorDisplay<BinaryColor> = SimulatorDisplay::new(Size::new(129, 129));
 //!
-//! Text::new("Hello, world!", Point::zero())
-//!      .into_styled(text_style)
-//!      .align_to(&display_area, horizontal::Center, vertical::Center)
-//!      .draw(&mut disp)
-//!      .unwrap();
+//!     // Create a Rectangle from the display's dimensions
+//!     let display_area = display.display_area();
+//!
+//!     let text_style = TextStyleBuilder::new(Font6x8)
+//!         .text_color(BinaryColor::On)
+//!         .build();
+//!
+//!     Text::new("Hello, World!", Point::zero())
+//!         .into_styled(text_style)
+//!         // align text to the display
+//!         .align_to(&display_area, horizontal::Center, vertical::Center)
+//!         .draw(&mut display)
+//!         .unwrap();
+//!
+//!     let output_settings = OutputSettingsBuilder::new()
+//!         .theme(BinaryColorTheme::OledBlue)
+//!         .build();
+//!     Window::new("Hello World", &output_settings).show_static(&display);
+//!     Ok(())
+//! }
 //! ```
 //!
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
