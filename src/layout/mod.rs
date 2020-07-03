@@ -31,12 +31,13 @@ pub struct ViewLink<V: View, C: ViewChainElement> {
     pub(crate) next: C,
 }
 
-impl<C, V, VC> Drawable<C> for ViewLink<V, VC>
+impl<'a, C, V, VC> Drawable<C> for &'a ViewLink<V, VC>
 where
     C: PixelColor,
     V: View,
-    for<'a> &'a V: Drawable<C>,
-    VC: ViewChainElement + Drawable<C>,
+    &'a V: Drawable<C>,
+    VC: ViewChainElement,
+    &'a VC: Drawable<C>,
 {
     #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
@@ -101,7 +102,7 @@ impl ViewChainElement for ChainTerminator {
     }
 }
 
-impl<C: PixelColor> Drawable<C> for ChainTerminator {
+impl<C: PixelColor> Drawable<C> for &ChainTerminator {
     #[inline]
     fn draw<D: DrawTarget<C>>(self, _display: &mut D) -> Result<(), D::Error> {
         Ok(())
@@ -187,7 +188,12 @@ impl<C: ViewChainElement> View for ViewGroup<C> {
     }
 }
 
-impl<C: PixelColor, VC: ViewChainElement + Drawable<C>> Drawable<C> for ViewGroup<VC> {
+impl<C, VC> Drawable<C> for &ViewGroup<VC>
+where
+    C: PixelColor,
+    VC: ViewChainElement,
+    for<'a> &'a VC: Drawable<C>,
+{
     /// Draw the graphics object using the supplied DrawTarget.
     #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
@@ -258,13 +264,49 @@ mod test {
         // This tests that the view group implements Drawable as expected
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
-        // Check if multiple different views can be included in the view group
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
         let rect3 = Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style);
         ViewGroup::new()
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
             .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
             .align_to(&rect3, horizontal::LeftToRight, vertical::TopToBottom)
+            .draw(&mut disp)
+            .unwrap();
+    }
+
+    #[test]
+    fn test_empty() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        ViewGroup::new().draw(&mut disp).unwrap();
+    }
+
+    #[test]
+    fn test_empty_nested() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        ViewGroup::new()
+            .add_view(ViewGroup::new())
+            .draw(&mut disp)
+            .unwrap();
+    }
+
+    #[test]
+    fn test_nested() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        let style = PrimitiveStyle::with_fill(BinaryColor::On);
+        ViewGroup::new()
+            .add_view(Rectangle::new(Point::zero(), Point::new(10, 5)).into_styled(style))
+            .add_view(
+                ViewGroup::new()
+                    .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
+                    .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style)),
+            )
+            .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
             .draw(&mut disp)
             .unwrap();
     }
