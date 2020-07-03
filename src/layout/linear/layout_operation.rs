@@ -20,8 +20,7 @@ where
     Secondary: SecondaryAlignment + VerticalAlignment,
 {
     fn measure(&self) -> Size {
-        // Counting this way assumes that views are aligned and not cascading in the other direction
-        let current_el_size = RectExt::size(&self.view.bounds());
+        let current_el_size = self.view.size();
         if VCE::IS_TERMINATOR {
             current_el_size
         } else {
@@ -65,8 +64,7 @@ where
     Secondary: SecondaryAlignment + HorizontalAlignment,
 {
     fn measure(&self) -> Size {
-        // Counting this way assumes that views are aligned and not cascading in the other direction
-        let current_el_size = RectExt::size(&self.view.bounds());
+        let current_el_size = self.view.size();
         if VCE::IS_TERMINATOR {
             current_el_size
         } else {
