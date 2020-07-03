@@ -5,6 +5,7 @@ Unreleased
 
  * `View` trait
  * `ViewGroup` struct to allow working with multiple views
+ * `LinearLayout` to arrange `View`s sequentially along the horizontal or vertical axis
 
 ## Changed:
 
