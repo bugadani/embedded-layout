@@ -58,7 +58,6 @@
 //!
 //! use embedded_graphics::{
 //!     fonts::{Font6x8, Text},
-//!     geometry::Point,
 //!     pixelcolor::BinaryColor,
 //!     prelude::*,
 //!     style::TextStyleBuilder,
