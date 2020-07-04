@@ -189,7 +189,7 @@ mod test {
     };
 
     #[test]
-    fn sanity_check() {
+    fn compile_check() {
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20)).into_styled(style);
         let circ = Circle::new(Point::zero(), 10).into_styled(style);

@@ -215,7 +215,7 @@ mod test {
     };
 
     #[test]
-    fn sanity_check() {
+    fn compile_check() {
         // Check if multiple different views can be included in the view group
         let vg = ViewGroup::new()
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
@@ -226,6 +226,43 @@ mod test {
         }
 
         check_vg(&vg);
+    }
+
+    #[test]
+    fn compile_check_empty() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        ViewGroup::new().draw(&mut disp).unwrap();
+    }
+
+    #[test]
+    fn compile_check_empty_nested() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        ViewGroup::new()
+            .add_view(ViewGroup::new())
+            .draw(&mut disp)
+            .unwrap();
+    }
+
+    #[test]
+    fn compile_check_complex_nested() {
+        // This tests that the view group implements Drawable as expected
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        let style = PrimitiveStyle::with_fill(BinaryColor::On);
+        ViewGroup::new()
+            .add_view(Rectangle::new(Point::zero(), Point::new(10, 5)).into_styled(style))
+            .add_view(
+                ViewGroup::new()
+                    .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
+                    .add_view(Circle::new(Point::zero(), 5).into_styled(style)),
+            )
+            .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
+            .draw(&mut disp)
+            .unwrap();
     }
 
     #[test]
@@ -270,43 +307,6 @@ mod test {
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
             .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
             .align_to(&rect3, horizontal::LeftToRight, vertical::TopToBottom)
-            .draw(&mut disp)
-            .unwrap();
-    }
-
-    #[test]
-    fn test_empty() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        ViewGroup::new().draw(&mut disp).unwrap();
-    }
-
-    #[test]
-    fn test_empty_nested() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        ViewGroup::new()
-            .add_view(ViewGroup::new())
-            .draw(&mut disp)
-            .unwrap();
-    }
-
-    #[test]
-    fn test_nested() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        ViewGroup::new()
-            .add_view(Rectangle::new(Point::zero(), Point::new(10, 5)).into_styled(style))
-            .add_view(
-                ViewGroup::new()
-                    .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
-                    .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style)),
-            )
-            .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
             .draw(&mut disp)
             .unwrap();
     }
