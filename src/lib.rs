@@ -50,8 +50,7 @@
 //!     prelude::*,
 //!     style::TextStyleBuilder,
 //! };
-//! use embedded_layout::layout::linear::LinearLayout;
-//! use embedded_layout::prelude::*;
+//! use embedded_layout::{layout::linear::LinearLayout, prelude::*};
 //!
 //! let display_area = display.display_area();
 //!

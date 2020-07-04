@@ -8,8 +8,7 @@ use embedded_graphics::{
     prelude::*,
     style::TextStyleBuilder,
 };
-use embedded_layout::layout::linear::LinearLayout;
-use embedded_layout::prelude::*;
+use embedded_layout::{layout::linear::LinearLayout, prelude::*};
 
 fn main() -> Result<(), core::convert::Infallible> {
     let mut display: SimulatorDisplay<BinaryColor> = SimulatorDisplay::new(Size::new(64, 48));

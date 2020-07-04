@@ -207,8 +207,8 @@ mod test {
         layout::{ViewChainElement, ViewGroup},
         prelude::*,
     };
-    use embedded_graphics::mock_display::MockDisplay;
     use embedded_graphics::{
+        mock_display::MockDisplay,
         pixelcolor::BinaryColor,
         primitives::{Circle, Rectangle},
         style::PrimitiveStyle,

@@ -5,8 +5,10 @@ use crate::{
 };
 use embedded_graphics::primitives::Rectangle;
 
-use super::layout_direction::{Horizontal, LayoutDirection, Vertical};
-use super::secondary_alignment::SecondaryAlignment;
+use super::{
+    layout_direction::{Horizontal, LayoutDirection, Vertical},
+    secondary_alignment::SecondaryAlignment,
+};
 
 pub trait LayoutOperation<LD: LayoutDirection> {
     fn measure(&self) -> Size;
