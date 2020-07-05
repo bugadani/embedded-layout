@@ -59,7 +59,7 @@ use embedded_graphics::primitives::Rectangle;
 mod layout_element;
 mod orientation;
 mod secondary_alignment;
-mod spacing;
+pub mod spacing;
 
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
@@ -187,8 +187,10 @@ where
     ///  - for vertical layouts, the elements will be horizontally left aligned
     #[inline]
     pub fn arrange(mut self) -> ViewGroup<LE> {
-        let bounds = Rectangle::with_size(Point::zero(), self.size());
-        self.views.views.arrange(bounds, &self.spacing);
+        let bounds = Rectangle::with_size(Point::zero(), self.views.views.measure());
+        self.views
+            .views
+            .arrange(bounds, &self.spacing, self.views.view_count());
         self.views
     }
 
@@ -206,7 +208,10 @@ where
 #[cfg(test)]
 mod test {
     use crate::{
-        layout::linear::{spacing::FixedMargin, LinearLayout},
+        layout::linear::{
+            spacing::{DistributeFill, FixedMargin},
+            LinearLayout,
+        },
         prelude::*,
     };
     use embedded_graphics::{
@@ -448,6 +453,46 @@ mod test {
                 "             #   #",
                 "             #   #",
                 "             #####",
+            ])
+        );
+    }
+
+    #[test]
+    fn layout_spacing_distribute_fill() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::zero(), Size::new(2, 2)).into_styled(style);
+        let view_group = LinearLayout::vertical()
+            .with_spacing(DistributeFill(18))
+            .add_view(rect)
+            .add_view(rect)
+            .add_view(rect)
+            .add_view(rect)
+            .arrange();
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "##            ",
+                "##            ",
+                "              ",
+                "              ",
+                "              ",
+                "              ",
+                "##            ",
+                "##            ",
+                "              ",
+                "              ",
+                "              ",
+                "##            ",
+                "##            ",
+                "              ",
+                "              ",
+                "              ",
+                "##            ",
+                "##            "
             ])
         );
     }

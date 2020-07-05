@@ -25,7 +25,13 @@ pub trait Orientation: Copy + Clone {
     fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size;
 
     /// Adjust object position in layout, based on element spacing
-    fn adjust_placement(view: &mut impl View, spacing: &impl ElementSpacing, n: usize, size: Size);
+    fn adjust_placement(
+        view: &mut impl View,
+        spacing: &impl ElementSpacing,
+        n: usize,
+        size: Size,
+        count: usize,
+    );
 }
 
 /// Horizontal layout direction
@@ -59,8 +65,17 @@ where
     }
 
     #[inline]
-    fn adjust_placement(view: &mut impl View, spacing: &impl ElementSpacing, n: usize, size: Size) {
-        view.translate(Point::new(spacing.modify_placement(n, size.width), 0));
+    fn adjust_placement(
+        view: &mut impl View,
+        spacing: &impl ElementSpacing,
+        n: usize,
+        size: Size,
+        count: usize,
+    ) {
+        view.translate(Point::new(
+            spacing.modify_placement(n, count, size.width),
+            0,
+        ));
     }
 }
 
@@ -95,7 +110,16 @@ where
     }
 
     #[inline]
-    fn adjust_placement(view: &mut impl View, spacing: &impl ElementSpacing, n: usize, size: Size) {
-        view.translate(Point::new(0, spacing.modify_placement(n, size.height)));
+    fn adjust_placement(
+        view: &mut impl View,
+        spacing: &impl ElementSpacing,
+        n: usize,
+        size: Size,
+        count: usize,
+    ) {
+        view.translate(Point::new(
+            0,
+            spacing.modify_placement(n, count, size.height),
+        ));
     }
 }

@@ -12,7 +12,12 @@ use embedded_graphics::primitives::Rectangle;
 
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
     fn measure(&self) -> Size;
-    fn arrange(&mut self, bounds: Rectangle, spacing: &impl ElementSpacing) -> Rectangle;
+    fn arrange(
+        &mut self,
+        bounds: Rectangle,
+        spacing: &impl ElementSpacing,
+        count: usize,
+    ) -> Rectangle;
 }
 
 impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
@@ -31,7 +36,12 @@ where
         }
     }
 
-    fn arrange(&mut self, bounds: Rectangle, spacing: &impl ElementSpacing) -> Rectangle {
+    fn arrange(
+        &mut self,
+        bounds: Rectangle,
+        spacing: &impl ElementSpacing,
+        count: usize,
+    ) -> Rectangle {
         if VCE::IS_TERMINATOR {
             self.object.align_to_mut(
                 &bounds,
@@ -39,7 +49,7 @@ where
                 LD::FirstVerticalAlignment::default(),
             );
         } else {
-            let previous = self.next.arrange(bounds, spacing);
+            let previous = self.next.arrange(bounds, spacing, count);
 
             self.object.align_to_mut(
                 &previous,
@@ -52,6 +62,7 @@ where
             spacing,
             VCE::count(),
             RectExt::size(&bounds),
+            count,
         );
         self.object.bounds()
     }
@@ -62,7 +73,12 @@ impl<LD: Orientation> LayoutElement<LD> for Guard {
         Size::new(0, 0)
     }
 
-    fn arrange(&mut self, _bounds: Rectangle, _spacing: &impl ElementSpacing) -> Rectangle {
+    fn arrange(
+        &mut self,
+        _bounds: Rectangle,
+        _spacing: &impl ElementSpacing,
+        _count: usize,
+    ) -> Rectangle {
         // Nothing to do
         Rectangle::new(Point::zero(), Point::zero())
     }
