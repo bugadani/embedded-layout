@@ -1,3 +1,10 @@
+Unreleased
+==========
+
+## Changed:
+
+ * **breaking:** Renamed `layout_direction::LayoutDirection` to `orientation::Orientation`
+
 0.0.3 (2020-07-04)
 ==================
 
