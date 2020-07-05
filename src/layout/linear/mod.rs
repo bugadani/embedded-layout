@@ -59,11 +59,13 @@ use embedded_graphics::primitives::Rectangle;
 mod layout_element;
 mod orientation;
 mod secondary_alignment;
+mod spacing;
 
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 
 use layout_element::LayoutElement;
+use spacing::{ElementSpacing, Tight};
 
 /// LinearLayout
 ///
@@ -73,41 +75,45 @@ use layout_element::LayoutElement;
 /// `size` however.
 ///
 /// For more information and examples see the module level documentation.
-pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
+pub struct LinearLayout<LD: Orientation, ELS: ElementSpacing, VC: ViewChainElement> {
     direction: LD,
+    spacing: ELS,
     views: ViewGroup<VC>,
 }
 
-impl LinearLayout<Horizontal<vertical::Bottom>, Guard> {
+impl LinearLayout<Horizontal<vertical::Bottom>, Tight, Guard> {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
     pub fn horizontal() -> Self {
         Self {
             direction: Horizontal::default(),
+            spacing: Tight,
             views: ViewGroup::new(),
         }
     }
 }
 
-impl LinearLayout<Vertical<horizontal::Left>, Guard> {
+impl LinearLayout<Vertical<horizontal::Left>, Tight, Guard> {
     /// Create a new, empty `LinearLayout` that places views vertically next to each other
     #[inline]
     pub fn vertical() -> Self {
         Self {
             direction: Vertical::default(),
+            spacing: Tight,
             views: ViewGroup::new(),
         }
     }
 }
 
-impl<S, VCE> LinearLayout<Horizontal<S>, VCE>
+impl<S, ELS, VCE> LinearLayout<Horizontal<S>, ELS, VCE>
 where
     S: SecondaryAlignment + VerticalAlignment,
+    ELS: ElementSpacing,
     VCE: ViewChainElement,
 {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
-    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec>, VCE>
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec>, ELS, VCE>
     where
         Sec: SecondaryAlignment + VerticalAlignment,
     {
@@ -115,19 +121,21 @@ where
             direction: Horizontal {
                 secondary: alignment,
             },
+            spacing: self.spacing,
             views: self.views,
         }
     }
 }
 
-impl<S, VCE> LinearLayout<Vertical<S>, VCE>
+impl<S, ELS, VCE> LinearLayout<Vertical<S>, ELS, VCE>
 where
     S: SecondaryAlignment + HorizontalAlignment,
+    ELS: ElementSpacing,
     VCE: ViewChainElement,
 {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
-    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec>, VCE>
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec>, ELS, VCE>
     where
         Sec: SecondaryAlignment + HorizontalAlignment,
     {
@@ -135,14 +143,16 @@ where
             direction: Vertical {
                 secondary: alignment,
             },
+            spacing: self.spacing,
             views: self.views,
         }
     }
 }
 
-impl<LD, LE> LinearLayout<LD, LE>
+impl<LD, ELS, LE> LinearLayout<LD, ELS, LE>
 where
     LD: Orientation,
+    ELS: ElementSpacing,
     LE: LayoutElement<LD>,
 {
     /// Add a `View` to the layout
@@ -150,9 +160,10 @@ where
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
     #[inline]
-    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, LE>> {
+    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, ELS, Link<V, LE>> {
         LinearLayout {
             direction: self.direction,
+            spacing: self.spacing,
             views: self.views.add_view(view),
         }
     }
