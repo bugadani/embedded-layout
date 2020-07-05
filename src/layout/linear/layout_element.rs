@@ -7,15 +7,15 @@ use embedded_graphics::primitives::Rectangle;
 
 use super::{orientation::Orientation, secondary_alignment::SecondaryAlignment};
 
-pub trait LayoutOperation<LD: Orientation> {
+pub trait LayoutElement<LD: Orientation>: ViewChainElement {
     fn measure(&self) -> Size;
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle;
 }
 
-impl<V, VCE, LD> LayoutOperation<LD> for Link<V, VCE>
+impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
 where
     V: View + Align,
-    VCE: ViewChainElement + LayoutOperation<LD>,
+    VCE: LayoutElement<LD>,
     LD: Orientation,
 {
     fn measure(&self) -> Size {
@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<LD: Orientation> LayoutOperation<LD> for Guard {
+impl<LD: Orientation> LayoutElement<LD> for Guard {
     fn measure(&self) -> Size {
         Size::new(0, 0)
     }

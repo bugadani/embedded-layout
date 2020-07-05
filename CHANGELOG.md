@@ -4,6 +4,7 @@ Unreleased
 ## Changed:
 
  * **breaking:** Renamed `layout_direction::LayoutDirection` to `orientation::Orientation`
+ * **breaking:** Renamed `layout_operation::LayoutOpeartion` to `layout_element::LayoutElement`
 
 0.0.3 (2020-07-04)
 ==================

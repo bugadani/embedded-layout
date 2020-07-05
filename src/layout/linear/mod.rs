@@ -56,14 +56,14 @@ use crate::{
 };
 use embedded_graphics::primitives::Rectangle;
 
-mod layout_operation;
+mod layout_element;
 mod orientation;
 mod secondary_alignment;
 
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 
-use layout_operation::LayoutOperation;
+use layout_element::LayoutElement;
 
 /// LinearLayout
 ///
@@ -140,32 +140,30 @@ where
     }
 }
 
-impl<LD: Orientation, VCE: ViewChainElement> LinearLayout<LD, VCE> {
+impl<LD, LE> LinearLayout<LD, LE>
+where
+    LD: Orientation,
+    LE: LayoutElement<LD>,
+{
     /// Add a `View` to the layout
     ///
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
     #[inline]
-    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, VCE>> {
+    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, LE>> {
         LinearLayout {
             direction: self.direction,
             views: self.views.add_view(view),
         }
     }
-}
 
-impl<LD, VCE> LinearLayout<LD, VCE>
-where
-    LD: Orientation,
-    VCE: ViewChainElement + LayoutOperation<LD>,
-{
     /// Arrange the views according to the layout properties and return the views as a `ViewGroup`.
     /// Notes:
     ///  - the top right point is always (0, 0)
     ///  - for horizontal layouts, the elements will be vertically bottom aligned
     ///  - for vertical layouts, the elements will be horizontally left aligned
     #[inline]
-    pub fn arrange(mut self) -> ViewGroup<VCE> {
+    pub fn arrange(mut self) -> ViewGroup<LE> {
         let bounds = Rectangle::with_size(Point::zero(), self.size());
         self.views.views.arrange(bounds);
         self.views
