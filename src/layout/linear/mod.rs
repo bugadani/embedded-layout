@@ -51,7 +51,7 @@
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
-    layout::{ChainTerminator, ViewChainElement, ViewGroup, ViewLink},
+    layout::{Guard, Link, ViewChainElement, ViewGroup},
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
@@ -78,7 +78,7 @@ pub struct LinearLayout<LD: LayoutDirection, VC: ViewChainElement> {
     views: ViewGroup<VC>,
 }
 
-impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
+impl LinearLayout<Horizontal<vertical::Bottom>, Guard> {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
     pub fn horizontal() -> Self {
@@ -89,7 +89,7 @@ impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
     }
 }
 
-impl LinearLayout<Vertical<horizontal::Left>, ChainTerminator> {
+impl LinearLayout<Vertical<horizontal::Left>, Guard> {
     /// Create a new, empty `LinearLayout` that places views vertically next to each other
     #[inline]
     pub fn vertical() -> Self {
@@ -146,7 +146,7 @@ impl<LD: LayoutDirection, VCE: ViewChainElement> LinearLayout<LD, VCE> {
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
     #[inline]
-    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, ViewLink<V, VCE>> {
+    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, VCE>> {
         LinearLayout {
             direction: self.direction,
             views: self.views.add_view(view),

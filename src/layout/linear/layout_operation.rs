@@ -1,6 +1,6 @@
 use crate::{
     align::Alignment,
-    layout::{ChainTerminator, ViewChainElement, ViewLink},
+    layout::{Guard, Link, ViewChainElement},
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
@@ -12,14 +12,14 @@ pub trait LayoutOperation<LD: LayoutDirection> {
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle;
 }
 
-impl<V, VCE, LD> LayoutOperation<LD> for ViewLink<V, VCE>
+impl<V, VCE, LD> LayoutOperation<LD> for Link<V, VCE>
 where
     V: View + Align,
     VCE: ViewChainElement + LayoutOperation<LD>,
     LD: LayoutDirection,
 {
     fn measure(&self) -> Size {
-        let current_el_size = self.view.size();
+        let current_el_size = self.object.size();
         if VCE::IS_TERMINATOR {
             current_el_size
         } else {
@@ -30,7 +30,7 @@ where
 
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
         if VCE::IS_TERMINATOR {
-            self.view.align_to_mut(
+            self.object.align_to_mut(
                 &bounds,
                 LD::FirstHorizontalAlignment::new(),
                 LD::FirstVerticalAlignment::new(),
@@ -38,17 +38,17 @@ where
         } else {
             let previous = self.next.arrange(bounds);
 
-            self.view.align_to_mut(
+            self.object.align_to_mut(
                 &previous,
                 LD::HorizontalAlignment::new(),
                 LD::VerticalAlignment::new(),
             );
         }
-        self.view.bounds()
+        self.object.bounds()
     }
 }
 
-impl<LD: LayoutDirection> LayoutOperation<LD> for ChainTerminator {
+impl<LD: LayoutDirection> LayoutOperation<LD> for Guard {
     fn measure(&self) -> Size {
         Size::new(0, 0)
     }
