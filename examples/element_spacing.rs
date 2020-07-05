@@ -10,12 +10,9 @@ use embedded_graphics::{
     style::{PrimitiveStyle, TextStyle},
 };
 use embedded_layout::{
-    layout::{
-        linear::{
-            spacing::{DistributeFill, FixedMargin},
-            LinearLayout,
-        },
-        ViewGroup,
+    layout::linear::{
+        spacing::{DistributeFill, FixedMargin},
+        LinearLayout,
     },
     prelude::*,
 };
@@ -49,7 +46,6 @@ fn main() -> Result<(), core::convert::Infallible> {
 
     // Lay out and draw the views
     LinearLayout::vertical()
-        .with_alignment(horizontal::Center)
         .with_spacing(FixedMargin(10))
         .add_view(
             LinearLayout::horizontal()
