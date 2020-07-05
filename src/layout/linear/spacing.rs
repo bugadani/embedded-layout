@@ -10,7 +10,7 @@ pub trait ElementSpacing {
     fn modify_measurement(&self, measured_size: u32, objects: usize) -> u32;
 
     /// Calculate the margin for the nth object
-    fn modify_placement(&self, n: usize) -> i32;
+    fn modify_placement(&self, n: usize, total_size: u32) -> i32;
 }
 
 /// Lay out objects tightly
@@ -20,7 +20,7 @@ impl ElementSpacing for Tight {
         measured_size
     }
 
-    fn modify_placement(&self, _n: usize) -> i32 {
+    fn modify_placement(&self, _n: usize, _total_size: u32) -> i32 {
         0
     }
 }
@@ -40,7 +40,11 @@ impl ElementSpacing for FixedMargin {
     }
 
     #[inline]
-    fn modify_placement(&self, _n: usize) -> i32 {
-        self.0
+    fn modify_placement(&self, n: usize, _total_size: u32) -> i32 {
+        if n == 0 {
+            0
+        } else {
+            self.0
+        }
     }
 }

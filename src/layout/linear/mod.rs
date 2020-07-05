@@ -188,14 +188,18 @@ where
     #[inline]
     pub fn arrange(mut self) -> ViewGroup<LE> {
         let bounds = Rectangle::with_size(Point::zero(), self.size());
-        self.views.views.arrange(bounds);
+        self.views.views.arrange(bounds, &self.spacing);
         self.views
     }
 
     /// Returns the current size the layout will take up after `arrange`.
     #[inline]
     pub fn size(&self) -> Size {
-        self.views.views.measure()
+        LD::adjust_size(
+            self.views.views.measure(),
+            self.views.view_count(),
+            &self.spacing,
+        )
     }
 }
 
@@ -387,6 +391,29 @@ mod test {
                 "           #####",
             ])
         );
+    }
+
+    #[test]
+    fn layout_spacing_size() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let size = LinearLayout::horizontal()
+            .with_spacing(FixedMargin(2))
+            .with_alignment(vertical::Top)
+            .add_view(rect)
+            .add_view(rect2)
+            .size();
+
+        assert_eq!(Size::new(17, 10), size);
+
+        let size = LinearLayout::vertical()
+            .with_spacing(FixedMargin(2))
+            .add_view(rect)
+            .add_view(rect2)
+            .size();
+
+        assert_eq!(Size::new(10, 17), size);
     }
 
     #[test]

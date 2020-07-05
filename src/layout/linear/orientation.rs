@@ -1,6 +1,6 @@
 use crate::{
     align::{Alignment, HorizontalAlignment, VerticalAlignment},
-    layout::linear::secondary_alignment::SecondaryAlignment,
+    layout::linear::{secondary_alignment::SecondaryAlignment, spacing::ElementSpacing},
     prelude::*,
 };
 
@@ -20,6 +20,12 @@ pub trait Orientation: Copy + Clone {
 
     /// Secondary alignment that will be applied to all the views
     type Secondary: SecondaryAlignment + Alignment;
+
+    /// Adjust measured size based on element spacing
+    fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size;
+
+    /// Adjust object position in layout, based on element spacing
+    fn adjust_placement(view: &mut impl View, spacing: &impl ElementSpacing, n: usize, size: Size);
 }
 
 /// Horizontal layout direction
@@ -46,6 +52,16 @@ where
     type FirstVerticalAlignment = Secondary;
     type VerticalAlignment = Secondary;
     type Secondary = Secondary;
+
+    #[inline]
+    fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size {
+        Size::new(spacing.modify_measurement(size.width, objects), size.height)
+    }
+
+    #[inline]
+    fn adjust_placement(view: &mut impl View, spacing: &impl ElementSpacing, n: usize, size: Size) {
+        view.translate(Point::new(spacing.modify_placement(n, size.width), 0));
+    }
 }
 
 /// Vertical layout direction
@@ -72,4 +88,14 @@ where
     type FirstVerticalAlignment = vertical::Top;
     type VerticalAlignment = vertical::TopToBottom;
     type Secondary = Secondary;
+
+    #[inline]
+    fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size {
+        Size::new(size.width, spacing.modify_measurement(size.height, objects))
+    }
+
+    #[inline]
+    fn adjust_placement(view: &mut impl View, spacing: &impl ElementSpacing, n: usize, size: Size) {
+        view.translate(Point::new(0, spacing.modify_placement(n, size.height)));
+    }
 }

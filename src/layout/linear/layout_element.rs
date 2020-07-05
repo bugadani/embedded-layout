@@ -1,14 +1,18 @@
 use crate::{
-    layout::{Guard, Link, ViewChainElement},
+    layout::{
+        linear::{
+            orientation::Orientation, secondary_alignment::SecondaryAlignment,
+            spacing::ElementSpacing,
+        },
+        Guard, Link, ViewChainElement,
+    },
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
 
-use super::{orientation::Orientation, secondary_alignment::SecondaryAlignment};
-
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
     fn measure(&self) -> Size;
-    fn arrange(&mut self, bounds: Rectangle) -> Rectangle;
+    fn arrange(&mut self, bounds: Rectangle, spacing: &impl ElementSpacing) -> Rectangle;
 }
 
 impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
@@ -27,7 +31,7 @@ where
         }
     }
 
-    fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
+    fn arrange(&mut self, bounds: Rectangle, spacing: &impl ElementSpacing) -> Rectangle {
         if VCE::IS_TERMINATOR {
             self.object.align_to_mut(
                 &bounds,
@@ -35,7 +39,7 @@ where
                 LD::FirstVerticalAlignment::default(),
             );
         } else {
-            let previous = self.next.arrange(bounds);
+            let previous = self.next.arrange(bounds, spacing);
 
             self.object.align_to_mut(
                 &previous,
@@ -43,6 +47,12 @@ where
                 LD::VerticalAlignment::default(),
             );
         }
+        LD::adjust_placement(
+            &mut self.object,
+            spacing,
+            VCE::count(),
+            RectExt::size(&bounds),
+        );
         self.object.bounds()
     }
 }
@@ -52,7 +62,7 @@ impl<LD: Orientation> LayoutElement<LD> for Guard {
         Size::new(0, 0)
     }
 
-    fn arrange(&mut self, _bounds: Rectangle) -> Rectangle {
+    fn arrange(&mut self, _bounds: Rectangle, _spacing: &impl ElementSpacing) -> Rectangle {
         // Nothing to do
         Rectangle::new(Point::zero(), Point::zero())
     }
