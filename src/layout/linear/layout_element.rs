@@ -1,5 +1,4 @@
 use crate::{
-    align::Alignment,
     layout::{Guard, Link, ViewChainElement},
     prelude::*,
 };
@@ -32,16 +31,16 @@ where
         if VCE::IS_TERMINATOR {
             self.object.align_to_mut(
                 &bounds,
-                LD::FirstHorizontalAlignment::new(),
-                LD::FirstVerticalAlignment::new(),
+                LD::FirstHorizontalAlignment::default(),
+                LD::FirstVerticalAlignment::default(),
             );
         } else {
             let previous = self.next.arrange(bounds);
 
             self.object.align_to_mut(
                 &previous,
-                LD::HorizontalAlignment::new(),
-                LD::VerticalAlignment::new(),
+                LD::HorizontalAlignment::default(),
+                LD::VerticalAlignment::default(),
             );
         }
         self.object.bounds()

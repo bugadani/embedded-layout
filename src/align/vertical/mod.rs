@@ -6,15 +6,11 @@ use crate::{
 use embedded_graphics::primitives::Rectangle;
 
 /// Keep the object's vertical coordinate unchanged
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct NoAlignment;
 impl VerticalAlignment for NoAlignment {}
 
 impl Alignment for NoAlignment {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, _object: Rectangle, _reference: Rectangle) -> i32 {
         0
     }
@@ -24,74 +20,55 @@ impl Alignment for NoAlignment {
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
 ///         the integer cordinates used.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Center;
 impl VerticalAlignment for Center {}
 
 impl Alignment for Center {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         reference.center_y() - object.center_y()
     }
 }
 
 /// Align the top edge of the object to the top edge of the reference
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Top;
 impl VerticalAlignment for Top {}
 
 impl Alignment for Top {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         reference.top_left.y - object.top_left.y
     }
 }
 
 /// Align the bottom edge of the object to the bottom edge of the reference
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Bottom;
 impl VerticalAlignment for Bottom {}
 
 impl Alignment for Bottom {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         reference.bottom_right.y - object.bottom_right.y
     }
 }
 
 /// Align the top edge of the object to the bottom edge of the reference, non-overlapping
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct TopToBottom;
 impl VerticalAlignment for TopToBottom {}
 
 impl Alignment for TopToBottom {
-    fn new() -> Self {
-        Self
-    }
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         (reference.bottom_right.y + 1) - object.top_left.y
     }
 }
 
 /// Align the bottom edge of the object to the top edge of the reference, non-overlapping
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct BottomToTop;
 impl VerticalAlignment for BottomToTop {}
 
 impl Alignment for BottomToTop {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         (reference.top_left.y - 1) - object.bottom_right.y
     }

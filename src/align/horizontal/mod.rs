@@ -6,15 +6,11 @@ use crate::{
 use embedded_graphics::primitives::Rectangle;
 
 /// Keep the object's horizontal coordinate unchanged
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct NoAlignment;
 impl HorizontalAlignment for NoAlignment {}
 
 impl Alignment for NoAlignment {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, _object: Rectangle, _reference: Rectangle) -> i32 {
         0
     }
@@ -24,75 +20,55 @@ impl Alignment for NoAlignment {
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
 ///         the integer cordinates used.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Center;
 impl HorizontalAlignment for Center {}
 
 impl Alignment for Center {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         reference.center_x() - object.center_x()
     }
 }
 
 /// Align the left edge of the object to the left edge of the reference
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Left;
 impl HorizontalAlignment for Left {}
 
 impl Alignment for Left {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         reference.top_left.x - object.top_left.x
     }
 }
 
 /// Align the right edge of the object to the right edge of the reference
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct Right;
 impl HorizontalAlignment for Right {}
 
 impl Alignment for Right {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         reference.bottom_right.x - object.bottom_right.x
     }
 }
 
 /// Align the left edge of the object to the right edge of the reference, non-overlapping
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct LeftToRight;
 impl HorizontalAlignment for LeftToRight {}
 
 impl Alignment for LeftToRight {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         (reference.bottom_right.x + 1) - object.top_left.x
     }
 }
 
 /// Align the right edge of the object to the left edge of the reference, non-overlapping
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Default)]
 pub struct RightToLeft;
 impl HorizontalAlignment for RightToLeft {}
 
 impl Alignment for RightToLeft {
-    fn new() -> Self {
-        Self
-    }
-
     fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
         (reference.top_left.x - 1) - object.bottom_right.x
     }

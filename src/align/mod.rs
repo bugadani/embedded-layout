@@ -60,10 +60,7 @@ where
 }
 
 /// Common trait for alignment operations
-pub trait Alignment: Copy + Clone {
-    /// Create a new alignment object
-    fn new() -> Self;
-
+pub trait Alignment: Copy + Clone + Default {
     /// Align one coordinate of `View` to the given reference
     fn align(&self, what: Rectangle, reference: Rectangle) -> i32;
 }
