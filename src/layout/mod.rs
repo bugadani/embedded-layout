@@ -33,12 +33,12 @@ where
 
 impl<V: View, VC: ViewChainElement> ViewChainElement for Link<V, VC> {}
 
-impl<V: View, C: ViewChainElement> View for Link<V, C> {
+impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     #[inline]
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
 
-        if !C::IS_TERMINATOR {
+        if !VC::IS_TERMINATOR {
             bounds.enveloping(&self.next.bounds())
         } else {
             bounds
