@@ -51,16 +51,16 @@
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
-    layout::{ChainTerminator, ViewChainElement, ViewGroup, ViewLink},
+    layout::{Guard, Link, ViewChainElement, ViewGroup},
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
 
-mod layout_direction;
 mod layout_operation;
+mod orientation;
 mod secondary_alignment;
 
-pub use layout_direction::{Horizontal, LayoutDirection, Vertical};
+pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 
 use layout_operation::LayoutOperation;
@@ -73,12 +73,12 @@ use layout_operation::LayoutOperation;
 /// `size` however.
 ///
 /// For more information and examples see the module level documentation.
-pub struct LinearLayout<LD: LayoutDirection, VC: ViewChainElement> {
+pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
     direction: LD,
     views: ViewGroup<VC>,
 }
 
-impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
+impl LinearLayout<Horizontal<vertical::Bottom>, Guard> {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
     pub fn horizontal() -> Self {
@@ -89,7 +89,7 @@ impl LinearLayout<Horizontal<vertical::Bottom>, ChainTerminator> {
     }
 }
 
-impl LinearLayout<Vertical<horizontal::Left>, ChainTerminator> {
+impl LinearLayout<Vertical<horizontal::Left>, Guard> {
     /// Create a new, empty `LinearLayout` that places views vertically next to each other
     #[inline]
     pub fn vertical() -> Self {
@@ -140,13 +140,13 @@ where
     }
 }
 
-impl<LD: LayoutDirection, VCE: ViewChainElement> LinearLayout<LD, VCE> {
+impl<LD: Orientation, VCE: ViewChainElement> LinearLayout<LD, VCE> {
     /// Add a `View` to the layout
     ///
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
     #[inline]
-    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, ViewLink<V, VCE>> {
+    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, VCE>> {
         LinearLayout {
             direction: self.direction,
             views: self.views.add_view(view),
@@ -156,7 +156,7 @@ impl<LD: LayoutDirection, VCE: ViewChainElement> LinearLayout<LD, VCE> {
 
 impl<LD, VCE> LinearLayout<LD, VCE>
 where
-    LD: LayoutDirection,
+    LD: Orientation,
     VCE: ViewChainElement + LayoutOperation<LD>,
 {
     /// Arrange the views according to the layout properties and return the views as a `ViewGroup`.

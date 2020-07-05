@@ -5,33 +5,16 @@
 //!
 //! The base of all layouts is the `ViewGroup` which binds multiple `View`s together.
 
-use crate::prelude::*;
+use crate::{prelude::*, utils::object_chain::*};
 use embedded_graphics::primitives::Rectangle;
 
 pub mod linear;
 
 /// Implementation detail necessary to store multiple different types of `Views`
 /// in a `ViewGroup`
-pub trait ViewChainElement: View {
-    /// `true` if this chain element marks the end of a chain
-    const IS_TERMINATOR: bool;
+pub trait ViewChainElement: ChainElement + View {}
 
-    /// Return the number of `Views` linked to this chain element
-    fn view_count() -> usize;
-
-    /// Run an operation on each of the `Views` linked to this chain element
-    fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View));
-}
-
-/// Chain element that can store a `View` in a `ViewGroup`
-///
-/// You probably shouldn't ever use this struct
-pub struct ViewLink<V: View, C: ViewChainElement> {
-    pub(crate) view: V,
-    pub(crate) next: C,
-}
-
-impl<'a, C, V, VC> Drawable<C> for &'a ViewLink<V, VC>
+impl<'a, C, V, VC> Drawable<C> for &'a Link<V, VC>
 where
     C: PixelColor,
     V: View,
@@ -41,35 +24,21 @@ where
 {
     #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
-        self.view.draw(display)?;
+        self.object.draw(display)?;
         self.next.draw(display)?;
 
         Ok(())
     }
 }
 
-impl<V: View, VC: ViewChainElement> ViewChainElement for ViewLink<V, VC> {
-    const IS_TERMINATOR: bool = false;
+impl<V: View, VC: ViewChainElement> ViewChainElement for Link<V, VC> {}
 
-    #[inline]
-    fn view_count() -> usize {
-        1 + VC::view_count()
-    }
-
-    #[inline]
-    fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
-        // Keep order of elements
-        self.next.for_each(op);
-        op(&mut self.view);
-    }
-}
-
-impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
+impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     #[inline]
     fn bounds(&self) -> Rectangle {
-        let bounds = self.view.bounds();
+        let bounds = self.object.bounds();
 
-        if !C::IS_TERMINATOR {
+        if !VC::IS_TERMINATOR {
             bounds.enveloping(&self.next.bounds())
         } else {
             bounds
@@ -78,38 +47,21 @@ impl<V: View, C: ViewChainElement> View for ViewLink<V, C> {
 
     #[inline]
     fn translate(&mut self, by: Point) {
-        self.view.translate(by);
+        self.object.translate(by);
         self.next.translate(by);
     }
 }
 
-/// The last chain element that marks the end of a `ViewGroup`
-///
-/// You probably shouldn't ever use this struct
-pub struct ChainTerminator;
+impl ViewChainElement for Guard {}
 
-impl ViewChainElement for ChainTerminator {
-    const IS_TERMINATOR: bool = true;
-
-    #[inline]
-    fn view_count() -> usize {
-        0
-    }
-
-    #[inline]
-    fn for_each(&mut self, _op: &mut impl FnMut(&mut dyn View)) {
-        // nothing to do
-    }
-}
-
-impl<C: PixelColor> Drawable<C> for &ChainTerminator {
+impl<C: PixelColor> Drawable<C> for &Guard {
     #[inline]
     fn draw<D: DrawTarget<C>>(self, _display: &mut D) -> Result<(), D::Error> {
         Ok(())
     }
 }
 
-impl View for ChainTerminator {
+impl View for Guard {
     #[inline]
     fn bounds(&self) -> Rectangle {
         Rectangle::new(Point::zero(), Point::zero())
@@ -132,17 +84,15 @@ pub struct ViewGroup<C: ViewChainElement> {
     pub(crate) views: C,
 }
 
-impl ViewGroup<ChainTerminator> {
+impl ViewGroup<Guard> {
     /// Create a new, empty `ViewGroup` object
     #[inline]
     pub const fn new() -> Self {
-        Self {
-            views: ChainTerminator,
-        }
+        Self { views: Guard }
     }
 }
 
-impl Default for ViewGroup<ChainTerminator> {
+impl Default for ViewGroup<Guard> {
     #[inline]
     fn default() -> Self {
         Self::new()
@@ -154,25 +104,19 @@ impl<C: ViewChainElement> ViewGroup<C> {
     ///
     /// The `View` remains at it's current location, until the `ViewGroup` is translated.
     #[inline]
-    pub fn add_view<V: View>(self, view: V) -> ViewGroup<ViewLink<V, C>> {
+    pub fn add_view<V: View>(self, view: V) -> ViewGroup<Link<V, C>> {
         ViewGroup {
-            views: ViewLink {
-                view,
+            views: Link {
+                object: view,
                 next: self.views,
             },
         }
     }
 
-    /// Run the callback on each included `View` objects
-    #[inline]
-    pub fn for_each(&mut self, op: &mut impl FnMut(&mut dyn View)) {
-        self.views.for_each(op);
-    }
-
     /// Returns the number of views in this `ViewGroup`
     #[inline]
     pub fn view_count(&self) -> usize {
-        C::view_count()
+        C::count()
     }
 }
 
