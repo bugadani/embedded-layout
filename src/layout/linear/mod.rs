@@ -64,8 +64,10 @@ mod spacing;
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 
+pub use spacing::{ElementSpacing, FixedMargin};
+
 use layout_element::LayoutElement;
-use spacing::{ElementSpacing, Tight};
+use spacing::Tight;
 
 /// LinearLayout
 ///
@@ -168,6 +170,16 @@ where
         }
     }
 
+    /// Change the element spacing
+    #[inline]
+    pub fn with_spacing<ES: ElementSpacing>(self, spacing: ES) -> LinearLayout<LD, ES, LE> {
+        LinearLayout {
+            direction: self.direction,
+            spacing: spacing,
+            views: self.views,
+        }
+    }
+
     /// Arrange the views according to the layout properties and return the views as a `ViewGroup`.
     /// Notes:
     ///  - the top right point is always (0, 0)
@@ -189,7 +201,10 @@ where
 
 #[cfg(test)]
 mod test {
-    use crate::{layout::linear::LinearLayout, prelude::*};
+    use crate::{
+        layout::linear::{spacing::FixedMargin, LinearLayout},
+        prelude::*,
+    };
     use embedded_graphics::{
         mock_display::MockDisplay,
         pixelcolor::BinaryColor,
@@ -370,6 +385,42 @@ mod test {
                 "           #   #",
                 "           #   #",
                 "           #####",
+            ])
+        );
+    }
+
+    #[test]
+    fn layout_spacing() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let mut view_group = LinearLayout::horizontal()
+            .with_spacing(FixedMargin(2))
+            .with_alignment(vertical::Top)
+            .add_view(rect)
+            .add_view(rect2)
+            .arrange();
+
+        view_group.translate(Point::new(1, 2));
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "                  ",
+                "                  ",
+                " ##########  #####",
+                " #        #  #   #",
+                " #        #  #   #",
+                " #        #  #   #",
+                " ##########  #   #",
+                "             #   #",
+                "             #   #",
+                "             #   #",
+                "             #   #",
+                "             #####",
             ])
         );
     }
