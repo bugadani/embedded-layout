@@ -5,9 +5,9 @@ use crate::{
 };
 use embedded_graphics::primitives::Rectangle;
 
-use super::{layout_direction::LayoutDirection, secondary_alignment::SecondaryAlignment};
+use super::{orientation::Orientation, secondary_alignment::SecondaryAlignment};
 
-pub trait LayoutOperation<LD: LayoutDirection> {
+pub trait LayoutOperation<LD: Orientation> {
     fn measure(&self) -> Size;
     fn arrange(&mut self, bounds: Rectangle) -> Rectangle;
 }
@@ -16,7 +16,7 @@ impl<V, VCE, LD> LayoutOperation<LD> for Link<V, VCE>
 where
     V: View + Align,
     VCE: ViewChainElement + LayoutOperation<LD>,
-    LD: LayoutDirection,
+    LD: Orientation,
 {
     fn measure(&self) -> Size {
         let current_el_size = self.object.size();
@@ -48,7 +48,7 @@ where
     }
 }
 
-impl<LD: LayoutDirection> LayoutOperation<LD> for Guard {
+impl<LD: Orientation> LayoutOperation<LD> for Guard {
     fn measure(&self) -> Size {
         Size::new(0, 0)
     }

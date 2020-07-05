@@ -56,11 +56,11 @@ use crate::{
 };
 use embedded_graphics::primitives::Rectangle;
 
-mod layout_direction;
 mod layout_operation;
+mod orientation;
 mod secondary_alignment;
 
-pub use layout_direction::{Horizontal, LayoutDirection, Vertical};
+pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 
 use layout_operation::LayoutOperation;
@@ -73,7 +73,7 @@ use layout_operation::LayoutOperation;
 /// `size` however.
 ///
 /// For more information and examples see the module level documentation.
-pub struct LinearLayout<LD: LayoutDirection, VC: ViewChainElement> {
+pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
     direction: LD,
     views: ViewGroup<VC>,
 }
@@ -140,7 +140,7 @@ where
     }
 }
 
-impl<LD: LayoutDirection, VCE: ViewChainElement> LinearLayout<LD, VCE> {
+impl<LD: Orientation, VCE: ViewChainElement> LinearLayout<LD, VCE> {
     /// Add a `View` to the layout
     ///
     /// Views will be laid out sequentially, keeping the order in which they were added to the
@@ -156,7 +156,7 @@ impl<LD: LayoutDirection, VCE: ViewChainElement> LinearLayout<LD, VCE> {
 
 impl<LD, VCE> LinearLayout<LD, VCE>
 where
-    LD: LayoutDirection,
+    LD: Orientation,
     VCE: ViewChainElement + LayoutOperation<LD>,
 {
     /// Arrange the views according to the layout properties and return the views as a `ViewGroup`.

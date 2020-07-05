@@ -4,21 +4,21 @@ use crate::{
     prelude::*,
 };
 
-/// Helper trait that describes a layout direction.
-pub trait LayoutDirection: Copy + Clone {
-    ///
+/// Helper trait that describes a linear layout orientation.
+pub trait Orientation: Copy + Clone {
+    /// This horizontal alignment will be applied to the first view
     type FirstHorizontalAlignment: HorizontalAlignment;
 
-    ///
+    /// This horizontal alignment will be applied to the rest of the views
     type HorizontalAlignment: HorizontalAlignment;
 
-    ///
+    /// This vertical alignment will be applied to the first view
     type FirstVerticalAlignment: VerticalAlignment;
 
-    ///
+    /// This vertical alignment will be applied to the rest of the views
     type VerticalAlignment: VerticalAlignment;
 
-    ///
+    /// Secondary alignment that will be applied to all the views
     type Secondary: SecondaryAlignment + Alignment;
 }
 
@@ -37,7 +37,7 @@ impl Default for Horizontal<vertical::Bottom> {
     }
 }
 
-impl<Secondary> LayoutDirection for Horizontal<Secondary>
+impl<Secondary> Orientation for Horizontal<Secondary>
 where
     Secondary: SecondaryAlignment + VerticalAlignment,
 {
@@ -63,7 +63,7 @@ impl Default for Vertical<horizontal::Left> {
     }
 }
 
-impl<Secondary> LayoutDirection for Vertical<Secondary>
+impl<Secondary> Orientation for Vertical<Secondary>
 where
     Secondary: SecondaryAlignment + HorizontalAlignment,
 {
