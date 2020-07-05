@@ -1,4 +1,4 @@
-//! This example is an approcimate reimplementation of the `embedded-graphics` Hello, World! example
+//! This example is an approximate reimplementation of the `embedded-graphics` Hello, World! example
 use embedded_graphics_simulator::{
     BinaryColorTheme, OutputSettingsBuilder, SimulatorDisplay, Window,
 };
