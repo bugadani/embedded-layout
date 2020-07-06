@@ -13,6 +13,12 @@ pub trait Orientation: Copy + Clone {
     /// Secondary alignment that will be applied to all the views
     type Secondary: SecondaryAlignment + Alignment;
 
+    /// Destructure `Size` into (primary_size, secondary_size)
+    fn destructure_size(size: Size) -> (u32, u32);
+
+    /// Create a `Size` from primary and secondary size values
+    fn create_size(primary: u32, secondary: u32) -> Size;
+
     /// Adjust measured size based on element spacing
     fn adjust_size(self, size: Size, objects: usize) -> Size;
 
@@ -89,11 +95,21 @@ where
     type Secondary = Secondary;
 
     #[inline]
+    fn destructure_size(size: Size) -> (u32, u32) {
+        (size.width, size.height)
+    }
+
+    #[inline]
+    fn create_size(primary: u32, secondary: u32) -> Size {
+        Size::new(primary, secondary)
+    }
+
+    #[inline]
     fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
+        let (primary_size, _) = Self::destructure_size(RectExt::size(bounds));
         view.align_to_mut(bounds, horizontal::Left, Secondary::default());
         view.translate(Point::new(
-            self.spacing
-                .modify_placement(0, count, RectExt::size(bounds).width),
+            self.spacing.modify_placement(0, count, primary_size),
             0,
         ));
     }
@@ -107,22 +123,24 @@ where
         n: usize,
         count: usize,
     ) {
+        let (primary_size, _) = Self::destructure_size(size);
         view.align_to_mut(
             previous,
             horizontal::LeftToRight::default(),
             Secondary::default(),
         );
         view.translate(Point::new(
-            self.spacing.modify_placement(n, count, size.width),
+            self.spacing.modify_placement(n, count, primary_size),
             0,
         ));
     }
 
     #[inline]
     fn adjust_size(self, size: Size, objects: usize) -> Size {
-        Size::new(
-            self.spacing.modify_measurement(size.width, objects),
-            size.height,
+        let (primary_size, secondary_size) = Self::destructure_size(size);
+        Self::create_size(
+            self.spacing.modify_measurement(primary_size, objects),
+            secondary_size,
         )
     }
 }
@@ -186,11 +204,22 @@ where
     type Secondary = Secondary;
 
     #[inline]
+    fn destructure_size(size: Size) -> (u32, u32) {
+        (size.height, size.width)
+    }
+
+    #[inline]
+    fn create_size(primary: u32, secondary: u32) -> Size {
+        Size::new(secondary, primary)
+    }
+
+    #[inline]
     fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
+        let (primary_size, _) = Self::destructure_size(RectExt::size(bounds));
+
         view.align_to_mut(bounds, Secondary::default(), vertical::Top);
         view.translate(Point::new(
-            self.spacing
-                .modify_placement(0, count, RectExt::size(bounds).width),
+            self.spacing.modify_placement(0, count, primary_size),
             0,
         ));
     }
@@ -204,18 +233,20 @@ where
         n: usize,
         count: usize,
     ) {
+        let (primary_size, _) = Self::destructure_size(size);
         view.align_to_mut(previous, Secondary::default(), vertical::TopToBottom);
         view.translate(Point::new(
             0,
-            self.spacing.modify_placement(n, count, size.height),
+            self.spacing.modify_placement(n, count, primary_size),
         ));
     }
 
     #[inline]
     fn adjust_size(self, size: Size, objects: usize) -> Size {
-        Size::new(
-            size.width,
-            self.spacing.modify_measurement(size.height, objects),
+        let (primary_size, secondary_size) = Self::destructure_size(size);
+        Self::create_size(
+            self.spacing.modify_measurement(primary_size, objects),
+            secondary_size,
         )
     }
 }
