@@ -34,12 +34,7 @@ where
         H: HorizontalAlignment,
         V: VerticalAlignment,
     {
-        let self_bounds = self.bounds();
-        let reference_bounds = reference.bounds();
-
-        let h = horizontal.align(self_bounds, reference_bounds);
-        let v = vertical.align(self_bounds, reference_bounds);
-        self.translate(Point::new(h, v));
+        self.align_to_mut(reference, horizontal, vertical);
         self
     }
 
