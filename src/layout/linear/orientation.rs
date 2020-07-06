@@ -10,18 +10,6 @@ use embedded_graphics::primitives::Rectangle;
 
 /// Helper trait that describes a linear layout orientation.
 pub trait Orientation: Copy + Clone {
-    /// This horizontal alignment will be applied to the first view
-    type FirstHorizontalAlignment: HorizontalAlignment;
-
-    /// This horizontal alignment will be applied to the rest of the views
-    type HorizontalAlignment: HorizontalAlignment;
-
-    /// This vertical alignment will be applied to the first view
-    type FirstVerticalAlignment: VerticalAlignment;
-
-    /// This vertical alignment will be applied to the rest of the views
-    type VerticalAlignment: VerticalAlignment;
-
     /// Secondary alignment that will be applied to all the views
     type Secondary: SecondaryAlignment + Alignment;
 
@@ -98,19 +86,11 @@ where
     Secondary: SecondaryAlignment + VerticalAlignment,
     Spacing: ElementSpacing,
 {
-    type FirstHorizontalAlignment = horizontal::Left;
-    type HorizontalAlignment = horizontal::LeftToRight;
-    type FirstVerticalAlignment = Secondary;
-    type VerticalAlignment = Secondary;
     type Secondary = Secondary;
 
     #[inline]
     fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
-        view.align_to_mut(
-            bounds,
-            Self::FirstHorizontalAlignment::default(),
-            Self::FirstVerticalAlignment::default(),
-        );
+        view.align_to_mut(bounds, horizontal::Left, Secondary::default());
         view.translate(Point::new(
             self.spacing
                 .modify_placement(0, count, RectExt::size(bounds).width),
@@ -129,8 +109,8 @@ where
     ) {
         view.align_to_mut(
             previous,
-            Self::HorizontalAlignment::default(),
-            Self::VerticalAlignment::default(),
+            horizontal::LeftToRight::default(),
+            Secondary::default(),
         );
         view.translate(Point::new(
             self.spacing.modify_placement(n, count, size.width),
@@ -203,19 +183,11 @@ where
     Secondary: SecondaryAlignment + HorizontalAlignment,
     Spacing: ElementSpacing,
 {
-    type FirstHorizontalAlignment = Secondary;
-    type HorizontalAlignment = Secondary;
-    type FirstVerticalAlignment = vertical::Top;
-    type VerticalAlignment = vertical::TopToBottom;
     type Secondary = Secondary;
 
     #[inline]
     fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
-        view.align_to_mut(
-            bounds,
-            Self::FirstHorizontalAlignment::default(),
-            Self::FirstVerticalAlignment::default(),
-        );
+        view.align_to_mut(bounds, Secondary::default(), vertical::Top);
         view.translate(Point::new(
             self.spacing
                 .modify_placement(0, count, RectExt::size(bounds).width),
@@ -232,11 +204,7 @@ where
         n: usize,
         count: usize,
     ) {
-        view.align_to_mut(
-            previous,
-            Self::HorizontalAlignment::default(),
-            Self::VerticalAlignment::default(),
-        );
+        view.align_to_mut(previous, Secondary::default(), vertical::TopToBottom);
         view.translate(Point::new(
             0,
             self.spacing.modify_placement(n, count, size.height),
