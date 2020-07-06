@@ -30,13 +30,13 @@ where
 
     fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle {
         if VCE::IS_TERMINATOR {
-            orientation.place_first(&mut self.object, &bounds, count);
+            orientation.place_first(&mut self.object, bounds, count);
         } else {
             let previous = self.next.arrange(bounds, orientation, count);
             orientation.place_nth(
                 &mut self.object,
                 RectExt::size(&bounds),
-                &previous,
+                previous,
                 VCE::count(),
                 count,
             );

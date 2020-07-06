@@ -22,15 +22,15 @@ pub trait Orientation: Copy + Clone {
     /// Adjust measured size based on element spacing
     fn adjust_size(self, size: Size, objects: usize) -> Size;
 
-    ///
-    fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize);
+    /// Place first view
+    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize);
 
-    ///
+    /// Place nth view
     fn place_nth(
         &self,
         view: &mut impl View,
         size: Size,
-        previous: &Rectangle,
+        previous: Rectangle,
         n: usize,
         count: usize,
     );
@@ -52,7 +52,7 @@ where
     Secondary: SecondaryAlignment + VerticalAlignment,
     Spacing: ElementSpacing,
 {
-    ///
+    /// Change secondary alignment
     #[inline]
     pub fn with_secondary_alignment<Sec: SecondaryAlignment + VerticalAlignment>(
         self,
@@ -64,7 +64,7 @@ where
         }
     }
 
-    ///
+    /// Change element spacing
     #[inline]
     pub fn with_spacing<ElSpacing: ElementSpacing>(
         self,
@@ -105,12 +105,20 @@ where
     }
 
     #[inline]
-    fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
-        let (primary_size, _) = Self::destructure_size(RectExt::size(bounds));
-        view.align_to_mut(bounds, horizontal::Left, Secondary::default());
+    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize) {
+        let (primary_size, _) = Self::destructure_size(RectExt::size(&bounds));
+        let view_bounds = view.bounds();
+
         view.translate(Point::new(
-            self.spacing.modify_placement(0, count, primary_size),
-            0,
+            self.spacing.align(
+                horizontal::Left,
+                view_bounds,
+                bounds,
+                0,
+                count,
+                primary_size,
+            ),
+            Secondary::default().align(view_bounds, bounds),
         ));
     }
 
@@ -119,19 +127,23 @@ where
         &self,
         view: &mut impl View,
         size: Size,
-        previous: &Rectangle,
+        previous: Rectangle,
         n: usize,
         count: usize,
     ) {
         let (primary_size, _) = Self::destructure_size(size);
-        view.align_to_mut(
-            previous,
-            horizontal::LeftToRight::default(),
-            Secondary::default(),
-        );
+        let view_bounds = view.bounds();
+
         view.translate(Point::new(
-            self.spacing.modify_placement(n, count, primary_size),
-            0,
+            self.spacing.align(
+                horizontal::LeftToRight,
+                view_bounds,
+                previous,
+                n,
+                count,
+                primary_size,
+            ),
+            Secondary::default().align(view_bounds, previous),
         ));
     }
 
@@ -171,7 +183,7 @@ where
     Secondary: SecondaryAlignment + HorizontalAlignment,
     Spacing: ElementSpacing,
 {
-    ///
+    /// Change secondary alignment
     #[inline]
     pub fn with_secondary_alignment<Sec: SecondaryAlignment + HorizontalAlignment>(
         self,
@@ -183,7 +195,7 @@ where
         }
     }
 
-    ///
+    /// Change element spacing
     #[inline]
     pub fn with_spacing<ElSpacing: ElementSpacing>(
         self,
@@ -214,13 +226,14 @@ where
     }
 
     #[inline]
-    fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
-        let (primary_size, _) = Self::destructure_size(RectExt::size(bounds));
+    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize) {
+        let (primary_size, _) = Self::destructure_size(RectExt::size(&bounds));
+        let view_bounds = view.bounds();
 
-        view.align_to_mut(bounds, Secondary::default(), vertical::Top);
         view.translate(Point::new(
-            self.spacing.modify_placement(0, count, primary_size),
-            0,
+            Secondary::default().align(view_bounds, bounds),
+            self.spacing
+                .align(vertical::Top, view_bounds, bounds, 0, count, primary_size),
         ));
     }
 
@@ -229,15 +242,23 @@ where
         &self,
         view: &mut impl View,
         size: Size,
-        previous: &Rectangle,
+        previous: Rectangle,
         n: usize,
         count: usize,
     ) {
         let (primary_size, _) = Self::destructure_size(size);
-        view.align_to_mut(previous, Secondary::default(), vertical::TopToBottom);
+        let view_bounds = view.bounds();
+
         view.translate(Point::new(
-            0,
-            self.spacing.modify_placement(n, count, primary_size),
+            Secondary::default().align(view_bounds, previous),
+            self.spacing.align(
+                vertical::TopToBottom,
+                view_bounds,
+                previous,
+                n,
+                count,
+                primary_size,
+            ),
         ));
     }
 

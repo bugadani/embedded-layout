@@ -4,13 +4,24 @@
 //! The default spacing is `Tight`, which means objects are placed right next to each other,
 //! without any space between them.
 
-///
+use crate::align::Alignment;
+use embedded_graphics::primitives::Rectangle;
+
+/// `ElementSpacing` base trait
 pub trait ElementSpacing: Copy + Clone {
     /// Calculate how much the total size of a layout changes by applying the current spacing
     fn modify_measurement(&self, measured_size: u32, objects: usize) -> u32;
 
-    /// Calculate the margin for the nth object
-    fn modify_placement(&self, n: usize, objects: usize, total_size: u32) -> i32;
+    /// Calculate the alignment for the nth object
+    fn align(
+        &self,
+        alignment: impl Alignment,
+        view: Rectangle,
+        reference: Rectangle,
+        n: usize,
+        objects: usize,
+        total_size: u32,
+    ) -> i32;
 }
 
 /// Lay out objects tightly
@@ -23,8 +34,16 @@ impl ElementSpacing for Tight {
     }
 
     #[inline]
-    fn modify_placement(&self, _n: usize, _objects: usize, _total_size: u32) -> i32 {
-        0
+    fn align(
+        &self,
+        alignment: impl Alignment,
+        view: Rectangle,
+        reference: Rectangle,
+        _n: usize,
+        _objects: usize,
+        _total_size: u32,
+    ) -> i32 {
+        alignment.align_with_offset(view, reference, 0)
     }
 }
 
@@ -44,12 +63,17 @@ impl ElementSpacing for FixedMargin {
     }
 
     #[inline]
-    fn modify_placement(&self, n: usize, _objects: usize, _total_size: u32) -> i32 {
-        if n == 0 {
-            0
-        } else {
-            self.0
-        }
+    fn align(
+        &self,
+        alignment: impl Alignment,
+        view: Rectangle,
+        reference: Rectangle,
+        n: usize,
+        _objects: usize,
+        _total_size: u32,
+    ) -> i32 {
+        let offset = if n == 0 { 0 } else { self.0 };
+        alignment.align_with_offset(view, reference, offset)
     }
 }
 
@@ -65,17 +89,26 @@ impl ElementSpacing for DistributeFill {
     }
 
     #[inline]
-    fn modify_placement(&self, n: usize, objects: usize, total_size: u32) -> i32 {
+    fn align(
+        &self,
+        alignment: impl Alignment,
+        view: Rectangle,
+        reference: Rectangle,
+        n: usize,
+        objects: usize,
+        total_size: u32,
+    ) -> i32 {
         let empty_space = self.0 - total_size;
         let base = empty_space as i32 / (objects as i32 - 1);
         let remainder = empty_space as usize % (objects - 1);
 
-        if n == 0 {
+        let offset = if n == 0 {
             0
         } else if n <= remainder {
             base + 1
         } else {
             base
-        }
+        };
+        alignment.align_with_offset(view, reference, offset)
     }
 }
