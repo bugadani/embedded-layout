@@ -516,14 +516,16 @@ mod test {
 
     #[test]
     fn layout_size_independent_of_view_location() {
-        let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
+        let mut rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let size1 = LinearLayout::horizontal()
             .add_view(rect)
             .add_view(rect2)
             .size();
+
+        rect.translate(Point::new(30, 50));
         let size2 = LinearLayout::horizontal()
-            .add_view(rect.translate(Point::new(30, 50)))
+            .add_view(rect)
             .add_view(rect2)
             .size();
 

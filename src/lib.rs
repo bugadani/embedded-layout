@@ -3,6 +3,46 @@
 //! This crate extends `embedded-graphics` objects that implement the `Transform` trait
 //! to be aligned to other objects that have `Dimensions`.
 //!
+//! # A note on imports
+//!
+//! `embedded-layout` reexports most of `embedded-graphics`'s `prelude` module. In most cases
+//! this means you don't have to `use embedded_graphics::prelude::*`. In case you need to,
+//! `Translate` and `Dimensions` may interfere with `embedded-layout`'s `View`, so if you are using
+//! functions of those traits, you may need to use the [fully qualified syntax] (formerly UFCS):
+//!
+//! ```compile_fail
+//! use embedded_layout::prelude::*;
+//! use embedded_graphics::prelude::*; //< this imports `Dimensions` which has a `size` function
+//! use embedded_graphics::primitives::Rectangle;
+//!
+//! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
+//! let size = rect.size(); //< this fails to compile
+//! ```
+//!
+//! The above example fails to compile with this message:
+//!
+//! ```text
+//! ---- src\lib.rs - (line 13) stdout ----
+//! error[E0034]: multiple applicable items in scope
+//! --> src\lib.rs:19:17
+//!     |
+//! 9   | let size = rect.size(); //< this fails to compile
+//!     |                 ^^^^ multiple `size` found
+//!     | [some other lines about where the candidates are]
+//! ```
+//!
+//! Here's the above example using [fully qualified syntax]:
+//!
+//! ```
+//! use embedded_layout::prelude::*;
+//! use embedded_graphics::prelude::*;
+//! use embedded_graphics::primitives::Rectangle;
+//!
+//! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
+//! let size = View::size(&rect); //< Note that we are explicitly picking which `size` to call
+//! let size = Dimensions::size(&rect);
+//! ```
+//!
 //! ## Examples
 //!
 //! The examples are based on [the `embedded-graphics` simulator]. The simulator is built on top of
@@ -71,6 +111,7 @@
 //!
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 //! [the `embedded-graphics` simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
+//! [fully qualified syntax]: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]
@@ -92,7 +133,14 @@ pub mod prelude {
         View,
     };
 
-    pub use embedded_graphics::prelude::*;
+    pub use embedded_graphics::{
+        drawable::{Drawable, Pixel},
+        fonts::Font,
+        geometry::{Point, Size},
+        image::{ImageDimensions, IntoPixelIter},
+        pixelcolor::{raw::RawData, GrayColor, IntoStorage, PixelColor, RgbColor},
+        primitives::Primitive,
+    };
 }
 
 /// A view is the base unit for most of the `embedded-layout` operations.
@@ -131,10 +179,7 @@ where
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use embedded_graphics::{
-        geometry::{Point, Size},
-        primitives::Rectangle,
-    };
+    use embedded_graphics::primitives::Rectangle;
 
     #[test]
     fn test_size() {

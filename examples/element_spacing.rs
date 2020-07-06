@@ -49,7 +49,7 @@ fn main() -> Result<(), core::convert::Infallible> {
         .with_spacing(FixedMargin(10))
         .add_view(
             LinearLayout::horizontal()
-                .with_spacing(DistributeFill(View::size(&text).width))
+                .with_spacing(DistributeFill(text.size().width))
                 .add_view(triangle)
                 .add_view(rectangle)
                 .add_view(circle)

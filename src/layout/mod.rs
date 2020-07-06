@@ -6,7 +6,7 @@
 //! The base of all layouts is the `ViewGroup` which binds multiple `View`s together.
 
 use crate::{prelude::*, utils::object_chain::*};
-use embedded_graphics::primitives::Rectangle;
+use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
 pub mod linear;
 
