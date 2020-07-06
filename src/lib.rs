@@ -119,11 +119,11 @@
 
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
-mod align;
+pub mod align;
 pub mod layout;
 mod utils;
 
-use utils::rect_helper::RectExt;
+use utils::rect_helper::RectSize;
 
 /// The essentials
 pub mod prelude {
@@ -151,7 +151,7 @@ pub trait View {
     /// Get the size of a View.
     #[inline]
     fn size(&self) -> Size {
-        RectExt::size(&self.bounds())
+        RectSize::size(&self.bounds())
     }
 
     /// Move the origin of an object by a given number of (x, y) pixels
@@ -185,6 +185,6 @@ mod test {
     fn test_size() {
         let rect = Rectangle::new(Point::zero(), Point::new(1, 2));
 
-        assert_eq!(RectExt::size(&rect), Size::new(2, 3));
+        assert_eq!(rect.size(), Size::new(2, 3));
     }
 }

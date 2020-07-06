@@ -106,7 +106,7 @@ where
 
     #[inline]
     fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize) {
-        let (primary_size, _) = Self::destructure_size(RectExt::size(&bounds));
+        let (primary_size, _) = Self::destructure_size(bounds.size());
         let view_bounds = view.bounds();
 
         view.translate(Point::new(
@@ -227,7 +227,7 @@ where
 
     #[inline]
     fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize) {
-        let (primary_size, _) = Self::destructure_size(RectExt::size(&bounds));
+        let (primary_size, _) = Self::destructure_size(bounds.size());
         let view_bounds = view.bounds();
 
         view.translate(Point::new(

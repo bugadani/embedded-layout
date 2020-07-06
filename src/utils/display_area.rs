@@ -1,6 +1,5 @@
-use embedded_graphics::{prelude::*, primitives::Rectangle};
-
-use crate::utils::rect_helper::RectExt;
+use crate::prelude::*;
+use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
 /// Helper trait to retrieve display area as a `Rectangle`.
 pub trait DisplayArea<C>

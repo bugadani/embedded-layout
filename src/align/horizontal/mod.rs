@@ -82,11 +82,11 @@ mod test {
     #[test]
     fn test_center() {
         fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
-            let center_of_reference = reference.top_left + RectExt::size(&reference) / 2;
-            let center_of_result = result.top_left + RectExt::size(&result) / 2;
+            let center_of_reference = reference.top_left + reference.size() / 2;
+            let center_of_result = result.top_left + result.size() / 2;
 
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Horizontal coordinate matches reference
             assert_eq!(center_of_result.x, center_of_reference.x);
@@ -110,7 +110,7 @@ mod test {
     fn test_left() {
         fn check_left_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Horizontal coordinate matches reference
             assert_eq!(result.top_left.x, reference.top_left.x);
@@ -134,7 +134,7 @@ mod test {
     fn test_right() {
         fn check_right_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Horizontal coordinate matches reference
             assert_eq!(result.bottom_right.x, reference.bottom_right.x);
@@ -162,7 +162,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Left is at right + 1
             assert_eq!(result.top_left.x, reference.bottom_right.x + 1);
@@ -190,7 +190,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Left is at right + 1
             assert_eq!(result.bottom_right.x, reference.top_left.x - 1);

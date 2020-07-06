@@ -35,7 +35,7 @@ where
             let previous = self.next.arrange(bounds, orientation, count);
             orientation.place_nth(
                 &mut self.object,
-                RectExt::size(&bounds),
+                bounds.size(),
                 previous,
                 VCE::count(),
                 count,

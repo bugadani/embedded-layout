@@ -82,11 +82,11 @@ mod test {
     #[test]
     fn test_center() {
         fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
-            let center_of_reference = reference.top_left + RectExt::size(&reference) / 2;
-            let center_of_result = result.top_left + RectExt::size(&result) / 2;
+            let center_of_reference = reference.top_left + reference.size() / 2;
+            let center_of_result = result.top_left + result.size() / 2;
 
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Vertical coordinate matches reference
             assert_eq!(center_of_result.y, center_of_reference.y);
@@ -111,7 +111,7 @@ mod test {
     fn test_top() {
         fn check_top_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Vertical coordinate matches reference
             assert_eq!(result.top_left.y, reference.top_left.y);
@@ -135,7 +135,7 @@ mod test {
     fn test_bottom() {
         fn check_bottom_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Vertical coordinate matches reference
             assert_eq!(result.bottom_right.y, reference.bottom_right.y);
@@ -163,7 +163,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Top is at bottom + 1
             assert_eq!(result.top_left.y, reference.bottom_right.y + 1);
@@ -191,7 +191,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Bottom is at top - 1
             assert_eq!(result.bottom_right.y, reference.top_left.y - 1);

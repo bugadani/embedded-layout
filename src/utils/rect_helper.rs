@@ -8,12 +8,6 @@ pub trait RectExt {
     /// Create a new `Rectangle` from a top left point and a `Size`
     fn with_size(top_left: Point, size: Size) -> Rectangle;
 
-    /// Return the `Size` of the `Rectangle`
-    ///
-    /// The `size` method provided by `embedded-graphics 0.6.2` returns an incorrect value.
-    /// *Note:* Implementation assumes top_left and bottom_right coordinates are specified properly
-    fn size(&self) -> Size;
-
     /// Return the horizontal center coordinate
     ///
     /// *Note:* when an object's width is an even number, the returned center point will not
@@ -45,15 +39,6 @@ impl RectExt for Rectangle {
     }
 
     #[inline]
-    fn size(&self) -> Size {
-        // TODO: remove if fixed in embedded-graphics
-        let width = (self.bottom_right.x - self.top_left.x) as u32 + 1;
-        let height = (self.bottom_right.y - self.top_left.y) as u32 + 1;
-
-        Size::new(width, height)
-    }
-
-    #[inline]
     fn center_x(&self) -> i32 {
         (self.top_left.x + self.bottom_right.x) / 2
     }
@@ -80,6 +65,28 @@ impl RectExt for Rectangle {
                 self.bottom_right.y.max(other.bottom_right.y),
             ),
         )
+    }
+}
+
+/// This trait contains an override for the buggy embedded-graphics size implementation
+///
+/// This trait is for internal use only, use `View::size` instead.
+pub trait RectSize {
+    /// Return the `Size` of the `Rectangle`
+    ///
+    /// The `size` method provided by `embedded-graphics 0.6.2` returns an incorrect value.
+    /// *Note:* Implementation assumes top_left and bottom_right coordinates are specified properly
+    fn size(&self) -> Size;
+}
+
+impl RectSize for Rectangle {
+    #[inline]
+    fn size(&self) -> Size {
+        // TODO: remove if fixed in embedded-graphics
+        let width = (self.bottom_right.x - self.top_left.x) as u32 + 1;
+        let height = (self.bottom_right.y - self.top_left.y) as u32 + 1;
+
+        Size::new(width, height)
     }
 }
 

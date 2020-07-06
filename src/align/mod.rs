@@ -1,3 +1,4 @@
+//! Alignment operations
 use crate::prelude::*;
 use embedded_graphics::primitives::Rectangle;
 
