@@ -16,10 +16,12 @@ pub trait ElementSpacing {
 /// Lay out objects tightly
 pub struct Tight;
 impl ElementSpacing for Tight {
+    #[inline]
     fn modify_measurement(&self, measured_size: u32, _objects: usize) -> u32 {
         measured_size
     }
 
+    #[inline]
     fn modify_placement(&self, _n: usize, _objects: usize, _total_size: u32) -> i32 {
         0
     }

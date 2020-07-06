@@ -1,6 +1,10 @@
 Unreleased
 ==========
 
+## Added:
+
+ * `ElementSpacing` for `LinearLayout`: distribute views in a given space or place them at a set distance from one another
+
 ## Changed:
 
  * **breaking:** Renamed `layout_direction::LayoutDirection` to `orientation::Orientation`

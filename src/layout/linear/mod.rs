@@ -5,7 +5,8 @@
 //!
 //! The main flow when working with a `LinearLayout` is the following:
 //!  - Create the layout: you need to choose which orientation you want your views arranged in
-//!  - Optionally, set secondary alignment
+//!  - Optionally, set [secondary alignment]
+//!  - Optionally, set [element spacing]
 //!  - Add views you want to arrange
 //!  - Call `arrange` to finalize view placement
 //!  - Align the returned `ViewGroup` to where you want it to be displayed
@@ -48,6 +49,18 @@
 //!  - Horizontal orientation: `vertical::Bottom`
 //!  - Vertical orientation: `horizontal::Left`
 //!
+//! # Element spacing
+//!
+//! It's possible to modify how views are placed relative to one another.
+//!  * The default is [`Tight`] which is equivalent to `FixedMargin(0)`
+//!  * [`FixedMargin(margin)`]: `margin` px distance between views, where `margin` can be negative to overlap views
+//!  * [`DistributeFill(size)`]: force the primary layout size to `size`, distribute views evenly
+//!
+//! [secondary alignment]:
+//! [element spacing]:
+//! [`Tight`]:
+//! [`FixedMargin(margin)`]:
+//! [`DistributeFill(size)`]:
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
