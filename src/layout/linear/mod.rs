@@ -136,6 +136,10 @@ where
     }
 
     /// Change the element spacing
+    ///
+    /// For available values and their properties, see [spacing]
+    ///
+    /// [spacing]: crate::layout::linear::spacing
     #[inline]
     pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Horizontal<S, ES>, VCE>
     where

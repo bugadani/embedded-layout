@@ -12,7 +12,7 @@ pub trait ElementSpacing: Copy + Clone {
     /// Calculate how much the total size of a layout changes by applying the current spacing
     fn modify_measurement(&self, measured_size: u32, objects: usize) -> u32;
 
-    /// Calculate the alignment for the nth object
+    /// Align `view` to `reference` using the element spacing rules
     fn align(
         &self,
         alignment: impl Alignment,
@@ -24,7 +24,7 @@ pub trait ElementSpacing: Copy + Clone {
     ) -> i32;
 }
 
-/// Lay out objects tightly
+/// Lay out objects tightly, leaving no space between them
 #[derive(Copy, Clone)]
 pub struct Tight;
 impl ElementSpacing for Tight {
@@ -79,7 +79,7 @@ impl ElementSpacing for FixedMargin {
 
 /// Distribute views to fill a given space
 ///
-/// Forces layout to be as high or wide as set for this spacing
+/// Forces the layout to be as high or wide as set for this spacing
 #[derive(Copy, Clone)]
 pub struct DistributeFill(pub u32);
 impl ElementSpacing for DistributeFill {
