@@ -1,9 +1,6 @@
 use crate::{
     layout::{
-        linear::{
-            orientation::Orientation, secondary_alignment::SecondaryAlignment,
-            spacing::ElementSpacing,
-        },
+        linear::{orientation::Orientation, secondary_alignment::SecondaryAlignment},
         Guard, Link, ViewChainElement,
     },
     prelude::*,
@@ -12,12 +9,7 @@ use embedded_graphics::primitives::Rectangle;
 
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
     fn measure(&self) -> Size;
-    fn arrange(
-        &mut self,
-        bounds: Rectangle,
-        spacing: &impl ElementSpacing,
-        count: usize,
-    ) -> Rectangle;
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle;
 }
 
 impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
@@ -36,34 +28,19 @@ where
         }
     }
 
-    fn arrange(
-        &mut self,
-        bounds: Rectangle,
-        spacing: &impl ElementSpacing,
-        count: usize,
-    ) -> Rectangle {
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle {
         if VCE::IS_TERMINATOR {
-            self.object.align_to_mut(
-                &bounds,
-                LD::FirstHorizontalAlignment::default(),
-                LD::FirstVerticalAlignment::default(),
-            );
+            orientation.place_first(&mut self.object, &bounds, count);
         } else {
-            let previous = self.next.arrange(bounds, spacing, count);
-
-            self.object.align_to_mut(
+            let previous = self.next.arrange(bounds, orientation, count);
+            orientation.place_nth(
+                &mut self.object,
+                RectExt::size(&bounds),
                 &previous,
-                LD::HorizontalAlignment::default(),
-                LD::VerticalAlignment::default(),
+                VCE::count(),
+                count,
             );
         }
-        LD::adjust_placement(
-            &mut self.object,
-            spacing,
-            VCE::count(),
-            RectExt::size(&bounds),
-            count,
-        );
         self.object.bounds()
     }
 }
@@ -73,12 +50,7 @@ impl<LD: Orientation> LayoutElement<LD> for Guard {
         Size::new(0, 0)
     }
 
-    fn arrange(
-        &mut self,
-        _bounds: Rectangle,
-        _spacing: &impl ElementSpacing,
-        _count: usize,
-    ) -> Rectangle {
+    fn arrange(&mut self, _bounds: Rectangle, _orientation: &LD, _count: usize) -> Rectangle {
         // Nothing to do
         Rectangle::new(Point::zero(), Point::zero())
     }

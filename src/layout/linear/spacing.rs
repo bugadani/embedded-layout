@@ -5,7 +5,7 @@
 //! without any space between them.
 
 ///
-pub trait ElementSpacing {
+pub trait ElementSpacing: Copy + Clone {
     /// Calculate how much the total size of a layout changes by applying the current spacing
     fn modify_measurement(&self, measured_size: u32, objects: usize) -> u32;
 
@@ -14,6 +14,7 @@ pub trait ElementSpacing {
 }
 
 /// Lay out objects tightly
+#[derive(Copy, Clone)]
 pub struct Tight;
 impl ElementSpacing for Tight {
     #[inline]
@@ -30,6 +31,7 @@ impl ElementSpacing for Tight {
 /// Lay out objects with fixed margin between them
 ///
 /// The margin can be negative, in which case the elements will be placed over one another.
+#[derive(Copy, Clone)]
 pub struct FixedMargin(pub i32);
 impl ElementSpacing for FixedMargin {
     #[inline]
@@ -54,6 +56,7 @@ impl ElementSpacing for FixedMargin {
 /// Distribute views to fill a given space
 ///
 /// Forces layout to be as high or wide as set for this spacing
+#[derive(Copy, Clone)]
 pub struct DistributeFill(pub u32);
 impl ElementSpacing for DistributeFill {
     #[inline]

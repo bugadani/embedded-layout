@@ -1,8 +1,12 @@
 use crate::{
     align::{Alignment, HorizontalAlignment, VerticalAlignment},
-    layout::linear::{secondary_alignment::SecondaryAlignment, spacing::ElementSpacing},
+    layout::linear::{
+        secondary_alignment::SecondaryAlignment,
+        spacing::{ElementSpacing, Tight},
+    },
     prelude::*,
 };
+use embedded_graphics::primitives::Rectangle;
 
 /// Helper trait that describes a linear layout orientation.
 pub trait Orientation: Copy + Clone {
@@ -22,36 +26,77 @@ pub trait Orientation: Copy + Clone {
     type Secondary: SecondaryAlignment + Alignment;
 
     /// Adjust measured size based on element spacing
-    fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size;
+    fn adjust_size(self, size: Size, objects: usize) -> Size;
 
-    /// Adjust object position in layout, based on element spacing
-    fn adjust_placement(
+    ///
+    fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize);
+
+    ///
+    fn place_nth(
+        &self,
         view: &mut impl View,
-        spacing: &impl ElementSpacing,
-        n: usize,
         size: Size,
+        previous: &Rectangle,
+        n: usize,
         count: usize,
     );
 }
 
 /// Horizontal layout direction
 #[derive(Copy, Clone)]
-pub struct Horizontal<Secondary: SecondaryAlignment + VerticalAlignment> {
+pub struct Horizontal<Secondary, Spacing>
+where
+    Secondary: SecondaryAlignment + VerticalAlignment,
+    Spacing: ElementSpacing,
+{
     pub(crate) secondary: Secondary,
+    pub(crate) spacing: Spacing,
 }
 
-impl Default for Horizontal<vertical::Bottom> {
+impl<Secondary, Spacing> Horizontal<Secondary, Spacing>
+where
+    Secondary: SecondaryAlignment + VerticalAlignment,
+    Spacing: ElementSpacing,
+{
+    ///
     #[inline]
-    fn default() -> Self {
-        Self {
-            secondary: vertical::Bottom,
+    pub fn with_secondary_alignment<Sec: SecondaryAlignment + VerticalAlignment>(
+        self,
+        secondary: Sec,
+    ) -> Horizontal<Sec, Spacing> {
+        Horizontal {
+            secondary,
+            spacing: self.spacing,
+        }
+    }
+
+    ///
+    #[inline]
+    pub fn with_spacing<ElSpacing: ElementSpacing>(
+        self,
+        spacing: ElSpacing,
+    ) -> Horizontal<Secondary, ElSpacing> {
+        Horizontal {
+            secondary: self.secondary,
+            spacing,
         }
     }
 }
 
-impl<Secondary> Orientation for Horizontal<Secondary>
+impl Default for Horizontal<vertical::Bottom, Tight> {
+    #[inline]
+    fn default() -> Self {
+        Self {
+            secondary: vertical::Bottom,
+            spacing: Tight,
+        }
+    }
+}
+
+impl<Secondary, Spacing> Orientation for Horizontal<Secondary, Spacing>
 where
     Secondary: SecondaryAlignment + VerticalAlignment,
+    Spacing: ElementSpacing,
 {
     type FirstHorizontalAlignment = horizontal::Left;
     type HorizontalAlignment = horizontal::LeftToRight;
@@ -60,43 +105,103 @@ where
     type Secondary = Secondary;
 
     #[inline]
-    fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size {
-        Size::new(spacing.modify_measurement(size.width, objects), size.height)
+    fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
+        view.align_to_mut(
+            bounds,
+            Self::FirstHorizontalAlignment::default(),
+            Self::FirstVerticalAlignment::default(),
+        );
+        view.translate(Point::new(
+            self.spacing
+                .modify_placement(0, count, RectExt::size(bounds).width),
+            0,
+        ));
     }
 
     #[inline]
-    fn adjust_placement(
+    fn place_nth(
+        &self,
         view: &mut impl View,
-        spacing: &impl ElementSpacing,
-        n: usize,
         size: Size,
+        previous: &Rectangle,
+        n: usize,
         count: usize,
     ) {
+        view.align_to_mut(
+            previous,
+            Self::HorizontalAlignment::default(),
+            Self::VerticalAlignment::default(),
+        );
         view.translate(Point::new(
-            spacing.modify_placement(n, count, size.width),
+            self.spacing.modify_placement(n, count, size.width),
             0,
         ));
+    }
+
+    #[inline]
+    fn adjust_size(self, size: Size, objects: usize) -> Size {
+        Size::new(
+            self.spacing.modify_measurement(size.width, objects),
+            size.height,
+        )
     }
 }
 
 /// Vertical layout direction
 #[derive(Copy, Clone)]
-pub struct Vertical<Secondary: SecondaryAlignment + HorizontalAlignment> {
+pub struct Vertical<Secondary, Spacing>
+where
+    Secondary: SecondaryAlignment + HorizontalAlignment,
+    Spacing: ElementSpacing,
+{
     pub(crate) secondary: Secondary,
+    pub(crate) spacing: Spacing,
 }
 
-impl Default for Vertical<horizontal::Left> {
+impl Default for Vertical<horizontal::Left, Tight> {
     #[inline]
     fn default() -> Self {
         Self {
             secondary: horizontal::Left,
+            spacing: Tight,
         }
     }
 }
 
-impl<Secondary> Orientation for Vertical<Secondary>
+impl<Secondary, Spacing> Vertical<Secondary, Spacing>
 where
     Secondary: SecondaryAlignment + HorizontalAlignment,
+    Spacing: ElementSpacing,
+{
+    ///
+    #[inline]
+    pub fn with_secondary_alignment<Sec: SecondaryAlignment + HorizontalAlignment>(
+        self,
+        secondary: Sec,
+    ) -> Vertical<Sec, Spacing> {
+        Vertical {
+            secondary,
+            spacing: self.spacing,
+        }
+    }
+
+    ///
+    #[inline]
+    pub fn with_spacing<ElSpacing: ElementSpacing>(
+        self,
+        spacing: ElSpacing,
+    ) -> Vertical<Secondary, ElSpacing> {
+        Vertical {
+            secondary: self.secondary,
+            spacing,
+        }
+    }
+}
+
+impl<Secondary, Spacing> Orientation for Vertical<Secondary, Spacing>
+where
+    Secondary: SecondaryAlignment + HorizontalAlignment,
+    Spacing: ElementSpacing,
 {
     type FirstHorizontalAlignment = Secondary;
     type HorizontalAlignment = Secondary;
@@ -105,21 +210,44 @@ where
     type Secondary = Secondary;
 
     #[inline]
-    fn adjust_size(size: Size, objects: usize, spacing: &impl ElementSpacing) -> Size {
-        Size::new(size.width, spacing.modify_measurement(size.height, objects))
+    fn place_first(&self, view: &mut impl View, bounds: &Rectangle, count: usize) {
+        view.align_to_mut(
+            bounds,
+            Self::FirstHorizontalAlignment::default(),
+            Self::FirstVerticalAlignment::default(),
+        );
+        view.translate(Point::new(
+            self.spacing
+                .modify_placement(0, count, RectExt::size(bounds).width),
+            0,
+        ));
     }
 
     #[inline]
-    fn adjust_placement(
+    fn place_nth(
+        &self,
         view: &mut impl View,
-        spacing: &impl ElementSpacing,
-        n: usize,
         size: Size,
+        previous: &Rectangle,
+        n: usize,
         count: usize,
     ) {
+        view.align_to_mut(
+            previous,
+            Self::HorizontalAlignment::default(),
+            Self::VerticalAlignment::default(),
+        );
         view.translate(Point::new(
             0,
-            spacing.modify_placement(n, count, size.height),
+            self.spacing.modify_placement(n, count, size.height),
         ));
+    }
+
+    #[inline]
+    fn adjust_size(self, size: Size, objects: usize) -> Size {
+        Size::new(
+            size.width,
+            self.spacing.modify_measurement(size.height, objects),
+        )
     }
 }
