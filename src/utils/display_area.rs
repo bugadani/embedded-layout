@@ -8,7 +8,7 @@ where
 {
     /// Return the display area as a `Rectangle`
     ///
-    /// This method is provided mainly to make it simpler to align to edges of the display.
+    /// This method is provided mainly to make it simpler to align to the edges (or the center) of the display.
     fn display_area(&self) -> Rectangle;
 }
 

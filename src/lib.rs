@@ -1,13 +1,13 @@
 //! Enable simple layout operations in [`embedded-graphics`]
 //!
-//! This crate extends `embedded-graphics` objects that implement the `Transform` trait
-//! to be aligned to other objects that have `Dimensions`.
+//! This crate extends [`embedded-graphics`]' objects that implement the `Transform` trait
+//! to be aligned to other objects that implement `Dimensions`.
 //!
 //! # A note on imports
 //!
-//! `embedded-layout` reexports most of `embedded-graphics`'s `prelude` module. In most cases
+//! `embedded-layout` reexports most of `embedded-graphics`' `prelude` module. In most cases
 //! this means you don't have to `use embedded_graphics::prelude::*`. In case you need to,
-//! `Translate` and `Dimensions` may interfere with `embedded-layout`'s `View`, so if you are using
+//! `Translate` and `Dimensions` may interfere with `embedded-layout`'s [`View`], so if you are using
 //! functions of those traits, you may need to use the [fully qualified syntax] (formerly UFCS):
 //!
 //! ```compile_fail
@@ -34,9 +34,8 @@
 //! Here's the above example using [fully qualified syntax]:
 //!
 //! ```
+//! use embedded_graphics::{prelude::*, primitives::Rectangle};
 //! use embedded_layout::prelude::*;
-//! use embedded_graphics::prelude::*;
-//! use embedded_graphics::primitives::Rectangle;
 //!
 //! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
 //! let size = View::size(&rect); //< Note that we are explicitly picking which `size` to call
@@ -78,7 +77,7 @@
 //!     .unwrap();
 //! ```
 //!
-//! ### Use `LinearLayout` to arrange multiple objects
+//! ### Use [`LinearLayout`] to arrange multiple objects
 //!
 //! ```
 //! # use embedded_graphics::mock_display::MockDisplay;
@@ -112,6 +111,8 @@
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 //! [the `embedded-graphics` simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
 //! [fully qualified syntax]: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
+//! [`View`]: crate::View
+//! [`LinearLayout`]: crate::layout::linear::LinearLayout
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]

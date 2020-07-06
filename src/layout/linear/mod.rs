@@ -1,25 +1,27 @@
 //! Linear layout
 //!
-//! A linear layout is a list of `View`s that are placed one after the other along
+//! A linear layout is a list of [`View`]s that are placed one after the other along
 //! the horizontal or vertical axis.
 //!
-//! The main flow when working with a `LinearLayout` is the following:
+//! The main flow when working with a [`LinearLayout`] is the following:
 //!  - Create the layout: you need to choose which orientation you want your views arranged in
 //!  - Optionally, set [secondary alignment]
 //!  - Optionally, set [element spacing]
 //!  - Add views you want to arrange
-//!  - Call `arrange` to finalize view placement
-//!  - Align the returned `ViewGroup` to where you want it to be displayed
+//!  - Call [`LinearLayout::arrange`] to finalize view placement
+//!  - Align the returned [`ViewGroup`] to where you want it to be displayed
 //!  - Call `draw` to display the views
+//!
+//! *Note:* [`LinearLayout`] is implemented using object chaining so it's exact type depends on it's contents.
 //!
 //! # Orientation
 //!
-//! When constructing a `LinearLayout` object, you need to choose an orientation along which
+//! When constructing a [`LinearLayout`] object, you need to choose an orientation along which
 //! the views will be arranged. This can either be horizontal or vertical.
 //!
 //! ## Examples:
 //!
-//! Create a `LinearLayout` with two pieces of text, where one is below the other:
+//! Create a [`LinearLayout`] with two pieces of text, where one is below the other:
 //!
 //! ```rust
 //! # use embedded_layout::prelude::*;
@@ -46,21 +48,32 @@
 //!  - vertical alignment in horizontal linear layouts
 //!
 //! By default, the secondary alignments are the following:
-//!  - Horizontal orientation: `vertical::Bottom`
-//!  - Vertical orientation: `horizontal::Left`
+//!  - Horizontal orientation: [`vertical::Bottom`]
+//!  - Vertical orientation: [`horizontal::Left`]
+//!
+//! Except for using the cascading (`XtoY`) secondary alignments, the [`LinearLayout`] will take up
+//! as much space along the secondary alignment as the biggest element, i.e. vertical layouts
+//! will be as wide as the widest view inside them.
 //!
 //! # Element spacing
 //!
 //! It's possible to modify how views are placed relative to one another.
-//!  * The default is [`Tight`] which is equivalent to `FixedMargin(0)`
+//!  * The default is [`Tight`] which is equivalent to [`FixedMargin(0)`]
 //!  * [`FixedMargin(margin)`]: `margin` px distance between views, where `margin` can be negative to overlap views
 //!  * [`DistributeFill(size)`]: force the primary layout size to `size`, distribute views evenly
 //!
-//! [secondary alignment]:
-//! [element spacing]:
-//! [`Tight`]:
-//! [`FixedMargin(margin)`]:
-//! [`DistributeFill(size)`]:
+//! [`View`]: crate::View
+//! [`ViewGroup`]: crate::layout::ViewGroup
+//! [`LinearLayout`]: crate::layout::linear::LinearLayout
+//! [`LinearLayout::arrange`]: crate::layout::linear::LinearLayout::arrange
+//! [secondary alignment]: crate::layout::linear::LinearLayout::with_alignment
+//! [element spacing]: crate::layout::linear::LinearLayout::with_spacing
+//! [`Tight`]: crate::layout::linear::spacing::Tight
+//! [`FixedMargin(0)`]: crate::layout::linear::spacing::FixedMargin
+//! [`FixedMargin(margin)`]: crate::layout::linear::spacing::FixedMargin
+//! [`DistributeFill(size)`]: crate::layout::linear::spacing::DistributeFill
+//! [`vertical::Bottom`]: crate::align::vertical::Bottom
+//! [`horizontal::Left`]: crate::align::horizontal::Left
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
@@ -76,7 +89,6 @@ pub mod spacing;
 
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
-
 pub use spacing::{ElementSpacing, FixedMargin};
 
 use layout_element::LayoutElement;
@@ -84,19 +96,19 @@ use spacing::Tight;
 
 /// LinearLayout
 ///
-/// `LinearLayout` is used to arrange views along the horizontal or vertical axis.
-/// A `LinearLayout` object is not a `View`, it does not have a location, instead it is used to
+/// [`LinearLayout`] is used to arrange views along the horizontal or vertical axis.
+/// A [`LinearLayout`] object is not a `View`, it does not have a location, instead it is used to
 /// arrange a group of views into a `ViewGroup` object using the `arrange` method. It does have a
 /// `size` however.
 ///
-/// For more information and examples see the module level documentation.
+/// For more information and examples see the [module level documentation](crate::layout::linear).
 pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
     direction: LD,
     views: ViewGroup<VC>,
 }
 
 impl LinearLayout<Horizontal<vertical::Bottom, Tight>, Guard> {
-    /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    /// Create a new, empty [`LinearLayout`] that places views left to right
     #[inline]
     pub fn horizontal() -> Self {
         Self {
@@ -107,7 +119,7 @@ impl LinearLayout<Horizontal<vertical::Bottom, Tight>, Guard> {
 }
 
 impl LinearLayout<Vertical<horizontal::Left, Tight>, Guard> {
-    /// Create a new, empty `LinearLayout` that places views vertically next to each other
+    /// Create a new, empty [`LinearLayout`] that places views top to bottom
     #[inline]
     pub fn vertical() -> Self {
         Self {
@@ -123,7 +135,12 @@ where
     ELS: ElementSpacing,
     VCE: ViewChainElement,
 {
-    /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    /// Change the secondary alignment for this [`LinearLayout`] object.
+    ///
+    /// For layouts created using [`LinearLayout::horizontal`] the secondary alignment is [`vertical`].
+    ///
+    /// [`LinearLayout::horizontal`]: crate::layout::linear::LinearLayout::horizontal
+    /// [`vertical`]: crate::align::vertical
     #[inline]
     pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec, ELS>, VCE>
     where
@@ -158,7 +175,12 @@ where
     ELS: ElementSpacing,
     VCE: ViewChainElement,
 {
-    /// Create a new, empty `LinearLayout` that places views horizontally next to each other
+    /// Change the secondary alignment for this [`LinearLayout`] object.
+    ///
+    /// For layouts created using [`LinearLayout::vertical`] the secondary alignment is [`horizontal`].
+    ///
+    /// [`LinearLayout::vertical`]: crate::layout::linear::LinearLayout::vertical
+    /// [`horizontal`]: crate::align::horizontal
     #[inline]
     pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec, ELS>, VCE>
     where
@@ -171,6 +193,10 @@ where
     }
 
     /// Change the element spacing
+    ///
+    /// For available values and their properties, see [spacing]
+    ///
+    /// [spacing]: crate::layout::linear::spacing
     #[inline]
     pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Vertical<S, ES>, VCE>
     where
@@ -188,7 +214,7 @@ where
     LD: Orientation,
     LE: LayoutElement<LD>,
 {
-    /// Add a `View` to the layout
+    /// Add a [`View`] to the layout
     ///
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
@@ -200,11 +226,12 @@ where
         }
     }
 
-    /// Arrange the views according to the layout properties and return the views as a `ViewGroup`.
-    /// Notes:
-    ///  - the top right point is always (0, 0)
-    ///  - for horizontal layouts, the elements will be vertically bottom aligned
-    ///  - for vertical layouts, the elements will be horizontally left aligned
+    /// Arrange the views according to the layout properties and return the views as a [`ViewGroup`].
+    /// Note: The top right point is always `Point::zero()`. Change this by calling [`View::translate`] or
+    /// [`Align`] methods.
+    ///
+    /// [`View::translate`]: crate::View::translate
+    /// [`Align`]: crate::align::Align
     #[inline]
     pub fn arrange(mut self) -> ViewGroup<LE> {
         let bounds = Rectangle::with_size(Point::zero(), self.views.views.measure());

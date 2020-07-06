@@ -19,7 +19,7 @@ embedded-layout
 
 ## Example
 
-The examples are based on [the embedded-graphics simulator](https://github.com/jamwaffles/embedded-graphics/tree/master/simulator). The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
+The examples are based on [the embedded-graphics simulator]. The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
 
 ![embedded-layout example](assets/nested-layout-example.png)
 
@@ -94,4 +94,16 @@ fn main() -> Result<(), core::convert::Infallible> {
 }
 ```
 
+## Development setup
+
+### Minimum supported Rust version
+The minimum supported Rust version for embedded-layout is 1.40.0 or greater. However, the documentation uses the `intra-crate links` feature which requires nightly Rust. Ensure you have the latest stable version of Rust installed, preferably through https://rustup.rs.
+
+### Installation
+
+For setup in general, follow the installation instructions for [`embedded-graphics`].
+
+To install SDL2 on Windows, see https://github.com/Rust-SDL2/rust-sdl2#windows-msvc
+
 [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
+[the embedded-graphics simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
