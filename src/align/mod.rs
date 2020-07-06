@@ -57,7 +57,12 @@ where
 /// Common trait for alignment operations
 pub trait Alignment: Copy + Clone + Default {
     /// Align one coordinate of `View` to the given reference
-    fn align(&self, what: Rectangle, reference: Rectangle) -> i32;
+    fn align(&self, what: Rectangle, reference: Rectangle) -> i32 {
+        self.align_with_offset(what, reference, 0)
+    }
+
+    /// Align one coordinate of `View` to the given reference with some offset
+    fn align_with_offset(&self, what: Rectangle, reference: Rectangle, offset: i32) -> i32;
 }
 
 /// Implement this trait for horizontal alignment algorithms

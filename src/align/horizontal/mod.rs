@@ -11,7 +11,7 @@ pub struct NoAlignment;
 impl HorizontalAlignment for NoAlignment {}
 
 impl Alignment for NoAlignment {
-    fn align(&self, _object: Rectangle, _reference: Rectangle) -> i32 {
+    fn align_with_offset(&self, _object: Rectangle, _reference: Rectangle, _offset: i32) -> i32 {
         0
     }
 }
@@ -25,8 +25,8 @@ pub struct Center;
 impl HorizontalAlignment for Center {}
 
 impl Alignment for Center {
-    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
-        reference.center_x() - object.center_x()
+    fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
+        reference.center_x() - object.center_x() + offset
     }
 }
 
@@ -36,8 +36,8 @@ pub struct Left;
 impl HorizontalAlignment for Left {}
 
 impl Alignment for Left {
-    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
-        reference.top_left.x - object.top_left.x
+    fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
+        reference.top_left.x - object.top_left.x + offset
     }
 }
 
@@ -47,8 +47,8 @@ pub struct Right;
 impl HorizontalAlignment for Right {}
 
 impl Alignment for Right {
-    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
-        reference.bottom_right.x - object.bottom_right.x
+    fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
+        reference.bottom_right.x - object.bottom_right.x + offset
     }
 }
 
@@ -58,8 +58,8 @@ pub struct LeftToRight;
 impl HorizontalAlignment for LeftToRight {}
 
 impl Alignment for LeftToRight {
-    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
-        (reference.bottom_right.x + 1) - object.top_left.x
+    fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
+        (reference.bottom_right.x + 1) - object.top_left.x + offset
     }
 }
 
@@ -69,8 +69,8 @@ pub struct RightToLeft;
 impl HorizontalAlignment for RightToLeft {}
 
 impl Alignment for RightToLeft {
-    fn align(&self, object: Rectangle, reference: Rectangle) -> i32 {
-        (reference.top_left.x - 1) - object.bottom_right.x
+    fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
+        (reference.top_left.x - 1) - object.bottom_right.x + offset
     }
 }
 
