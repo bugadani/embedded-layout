@@ -7,7 +7,15 @@ embedded-layout
 
 `embedded-layout` consists of two main parts:
  - alignments that can be used to position two objects relative to one another
+   * `horizontal`
+     * `NoAlignment`, `Left`, `Right`, `Center`
+     * `LeftToRight`, `RightToLeft`
+   * `vertical`
+     * `NoAlignment`, `Top`, `Bottom`, `Center`
+     * `TopToBottom`, `BottomToTop`
  - layouts that can be used to arrange multiple views
+   * `ViewGroup`
+   * `LinearLayout`
 
 ## Example
 

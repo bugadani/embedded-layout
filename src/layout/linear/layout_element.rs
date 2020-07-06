@@ -1,14 +1,15 @@
 use crate::{
-    layout::{Guard, Link, ViewChainElement},
+    layout::{
+        linear::{orientation::Orientation, secondary_alignment::SecondaryAlignment},
+        Guard, Link, ViewChainElement,
+    },
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
 
-use super::{orientation::Orientation, secondary_alignment::SecondaryAlignment};
-
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
     fn measure(&self) -> Size;
-    fn arrange(&mut self, bounds: Rectangle) -> Rectangle;
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle;
 }
 
 impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
@@ -27,20 +28,17 @@ where
         }
     }
 
-    fn arrange(&mut self, bounds: Rectangle) -> Rectangle {
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle {
         if VCE::IS_TERMINATOR {
-            self.object.align_to_mut(
-                &bounds,
-                LD::FirstHorizontalAlignment::default(),
-                LD::FirstVerticalAlignment::default(),
-            );
+            orientation.place_first(&mut self.object, bounds, count);
         } else {
-            let previous = self.next.arrange(bounds);
-
-            self.object.align_to_mut(
-                &previous,
-                LD::HorizontalAlignment::default(),
-                LD::VerticalAlignment::default(),
+            let previous = self.next.arrange(bounds, orientation, count);
+            orientation.place_nth(
+                &mut self.object,
+                RectExt::size(&bounds),
+                previous,
+                VCE::count(),
+                count,
             );
         }
         self.object.bounds()
@@ -52,7 +50,7 @@ impl<LD: Orientation> LayoutElement<LD> for Guard {
         Size::new(0, 0)
     }
 
-    fn arrange(&mut self, _bounds: Rectangle) -> Rectangle {
+    fn arrange(&mut self, _bounds: Rectangle, _orientation: &LD, _count: usize) -> Rectangle {
         // Nothing to do
         Rectangle::new(Point::zero(), Point::zero())
     }

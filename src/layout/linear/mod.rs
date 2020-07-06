@@ -5,7 +5,8 @@
 //!
 //! The main flow when working with a `LinearLayout` is the following:
 //!  - Create the layout: you need to choose which orientation you want your views arranged in
-//!  - Optionally, set secondary alignment
+//!  - Optionally, set [secondary alignment]
+//!  - Optionally, set [element spacing]
 //!  - Add views you want to arrange
 //!  - Call `arrange` to finalize view placement
 //!  - Align the returned `ViewGroup` to where you want it to be displayed
@@ -48,6 +49,18 @@
 //!  - Horizontal orientation: `vertical::Bottom`
 //!  - Vertical orientation: `horizontal::Left`
 //!
+//! # Element spacing
+//!
+//! It's possible to modify how views are placed relative to one another.
+//!  * The default is [`Tight`] which is equivalent to `FixedMargin(0)`
+//!  * [`FixedMargin(margin)`]: `margin` px distance between views, where `margin` can be negative to overlap views
+//!  * [`DistributeFill(size)`]: force the primary layout size to `size`, distribute views evenly
+//!
+//! [secondary alignment]:
+//! [element spacing]:
+//! [`Tight`]:
+//! [`FixedMargin(margin)`]:
+//! [`DistributeFill(size)`]:
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
@@ -59,11 +72,15 @@ use embedded_graphics::primitives::Rectangle;
 mod layout_element;
 mod orientation;
 mod secondary_alignment;
+pub mod spacing;
 
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 
+pub use spacing::{ElementSpacing, FixedMargin};
+
 use layout_element::LayoutElement;
+use spacing::Tight;
 
 /// LinearLayout
 ///
@@ -78,7 +95,7 @@ pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
     views: ViewGroup<VC>,
 }
 
-impl LinearLayout<Horizontal<vertical::Bottom>, Guard> {
+impl LinearLayout<Horizontal<vertical::Bottom, Tight>, Guard> {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
     pub fn horizontal() -> Self {
@@ -89,7 +106,7 @@ impl LinearLayout<Horizontal<vertical::Bottom>, Guard> {
     }
 }
 
-impl LinearLayout<Vertical<horizontal::Left>, Guard> {
+impl LinearLayout<Vertical<horizontal::Left, Tight>, Guard> {
     /// Create a new, empty `LinearLayout` that places views vertically next to each other
     #[inline]
     pub fn vertical() -> Self {
@@ -100,41 +117,67 @@ impl LinearLayout<Vertical<horizontal::Left>, Guard> {
     }
 }
 
-impl<S, VCE> LinearLayout<Horizontal<S>, VCE>
+impl<S, ELS, VCE> LinearLayout<Horizontal<S, ELS>, VCE>
 where
     S: SecondaryAlignment + VerticalAlignment,
+    ELS: ElementSpacing,
     VCE: ViewChainElement,
 {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
-    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec>, VCE>
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec, ELS>, VCE>
     where
         Sec: SecondaryAlignment + VerticalAlignment,
     {
         LinearLayout {
-            direction: Horizontal {
-                secondary: alignment,
-            },
+            direction: self.direction.with_secondary_alignment(alignment),
+            views: self.views,
+        }
+    }
+
+    /// Change the element spacing
+    ///
+    /// For available values and their properties, see [spacing]
+    ///
+    /// [spacing]: crate::layout::linear::spacing
+    #[inline]
+    pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Horizontal<S, ES>, VCE>
+    where
+        ES: ElementSpacing,
+    {
+        LinearLayout {
+            direction: self.direction.with_spacing(spacing),
             views: self.views,
         }
     }
 }
 
-impl<S, VCE> LinearLayout<Vertical<S>, VCE>
+impl<S, ELS, VCE> LinearLayout<Vertical<S, ELS>, VCE>
 where
     S: SecondaryAlignment + HorizontalAlignment,
+    ELS: ElementSpacing,
     VCE: ViewChainElement,
 {
     /// Create a new, empty `LinearLayout` that places views horizontally next to each other
     #[inline]
-    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec>, VCE>
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec, ELS>, VCE>
     where
         Sec: SecondaryAlignment + HorizontalAlignment,
     {
         LinearLayout {
-            direction: Vertical {
-                secondary: alignment,
-            },
+            direction: self.direction.with_secondary_alignment(alignment),
+            views: self.views,
+        }
+    }
+
+    /// Change the element spacing
+    #[inline]
+    pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Vertical<S, ES>, VCE>
+    where
+        ES: ElementSpacing,
+    {
+        LinearLayout {
+            direction: self.direction.with_spacing(spacing),
             views: self.views,
         }
     }
@@ -164,21 +207,30 @@ where
     ///  - for vertical layouts, the elements will be horizontally left aligned
     #[inline]
     pub fn arrange(mut self) -> ViewGroup<LE> {
-        let bounds = Rectangle::with_size(Point::zero(), self.size());
-        self.views.views.arrange(bounds);
+        let bounds = Rectangle::with_size(Point::zero(), self.views.views.measure());
+        self.views
+            .views
+            .arrange(bounds, &self.direction, self.views.view_count());
         self.views
     }
 
     /// Returns the current size the layout will take up after `arrange`.
     #[inline]
     pub fn size(&self) -> Size {
-        self.views.views.measure()
+        self.direction
+            .adjust_size(self.views.views.measure(), self.views.view_count())
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{layout::linear::LinearLayout, prelude::*};
+    use crate::{
+        layout::linear::{
+            spacing::{DistributeFill, FixedMargin},
+            LinearLayout,
+        },
+        prelude::*,
+    };
     use embedded_graphics::{
         mock_display::MockDisplay,
         pixelcolor::BinaryColor,
@@ -359,6 +411,105 @@ mod test {
                 "           #   #",
                 "           #   #",
                 "           #####",
+            ])
+        );
+    }
+
+    #[test]
+    fn layout_spacing_size() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let size = LinearLayout::horizontal()
+            .with_spacing(FixedMargin(2))
+            .with_alignment(vertical::Top)
+            .add_view(rect)
+            .add_view(rect2)
+            .size();
+
+        assert_eq!(Size::new(17, 10), size);
+
+        let size = LinearLayout::vertical()
+            .with_spacing(FixedMargin(2))
+            .add_view(rect)
+            .add_view(rect2)
+            .size();
+
+        assert_eq!(Size::new(10, 17), size);
+    }
+
+    #[test]
+    fn layout_spacing() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let mut view_group = LinearLayout::horizontal()
+            .with_spacing(FixedMargin(2))
+            .with_alignment(vertical::Top)
+            .add_view(rect)
+            .add_view(rect2)
+            .arrange();
+
+        view_group.translate(Point::new(1, 2));
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "                  ",
+                "                  ",
+                " ##########  #####",
+                " #        #  #   #",
+                " #        #  #   #",
+                " #        #  #   #",
+                " ##########  #   #",
+                "             #   #",
+                "             #   #",
+                "             #   #",
+                "             #   #",
+                "             #####",
+            ])
+        );
+    }
+
+    #[test]
+    fn layout_spacing_distribute_fill() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::zero(), Size::new(2, 2)).into_styled(style);
+        let view_group = LinearLayout::vertical()
+            .with_spacing(DistributeFill(18))
+            .add_view(rect)
+            .add_view(rect)
+            .add_view(rect)
+            .add_view(rect)
+            .arrange();
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        view_group.draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "##            ",
+                "##            ",
+                "              ",
+                "              ",
+                "              ",
+                "              ",
+                "##            ",
+                "##            ",
+                "              ",
+                "              ",
+                "              ",
+                "##            ",
+                "##            ",
+                "              ",
+                "              ",
+                "              ",
+                "##            ",
+                "##            "
             ])
         );
     }
