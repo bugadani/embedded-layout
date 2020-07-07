@@ -94,7 +94,7 @@ pub use spacing::{ElementSpacing, FixedMargin};
 use layout_element::LayoutElement;
 use spacing::Tight;
 
-/// LinearLayout
+/// `LinearLayout`
 ///
 /// [`LinearLayout`] is used to arrange views along the horizontal or vertical axis.
 /// A [`LinearLayout`] object is not a `View`, it does not have a location, instead it is used to
@@ -110,6 +110,7 @@ pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
 impl LinearLayout<Horizontal<vertical::Bottom, Tight>, Guard> {
     /// Create a new, empty [`LinearLayout`] that places views left to right
     #[inline]
+    #[must_use]
     pub fn horizontal() -> Self {
         Self {
             direction: Horizontal::default(),
@@ -121,6 +122,7 @@ impl LinearLayout<Horizontal<vertical::Bottom, Tight>, Guard> {
 impl LinearLayout<Vertical<horizontal::Left, Tight>, Guard> {
     /// Create a new, empty [`LinearLayout`] that places views top to bottom
     #[inline]
+    #[must_use]
     pub fn vertical() -> Self {
         Self {
             direction: Vertical::default(),

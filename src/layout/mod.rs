@@ -10,7 +10,10 @@
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::layout::ViewGroup
 
-use crate::{prelude::*, utils::object_chain::*};
+use crate::{
+    prelude::*,
+    utils::object_chain::{ChainElement, Guard, Link},
+};
 use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
 pub mod linear;
@@ -43,10 +46,10 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
 
-        if !VC::IS_TERMINATOR {
-            bounds.enveloping(&self.next.bounds())
-        } else {
+        if VC::IS_TERMINATOR {
             bounds
+        } else {
+            bounds.enveloping(&self.next.bounds())
         }
     }
 
@@ -92,6 +95,7 @@ pub struct ViewGroup<C: ViewChainElement> {
 impl ViewGroup<Guard> {
     /// Create a new, empty [`ViewGroup`] object
     #[inline]
+    #[must_use]
     pub const fn new() -> Self {
         Self { views: Guard }
     }

@@ -11,6 +11,7 @@ pub struct NoAlignment;
 impl VerticalAlignment for NoAlignment {}
 
 impl Alignment for NoAlignment {
+    #[inline]
     fn align_with_offset(&self, _object: Rectangle, _reference: Rectangle, _offset: i32) -> i32 {
         0
     }
@@ -25,6 +26,7 @@ pub struct Center;
 impl VerticalAlignment for Center {}
 
 impl Alignment for Center {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         reference.center_y() - object.center_y() + offset
     }
@@ -36,6 +38,7 @@ pub struct Top;
 impl VerticalAlignment for Top {}
 
 impl Alignment for Top {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         reference.top_left.y - object.top_left.y + offset
     }
@@ -47,6 +50,7 @@ pub struct Bottom;
 impl VerticalAlignment for Bottom {}
 
 impl Alignment for Bottom {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         reference.bottom_right.y - object.bottom_right.y + offset
     }
@@ -58,6 +62,7 @@ pub struct TopToBottom;
 impl VerticalAlignment for TopToBottom {}
 
 impl Alignment for TopToBottom {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         (reference.bottom_right.y + 1) - object.top_left.y + offset
     }
@@ -69,6 +74,7 @@ pub struct BottomToTop;
 impl VerticalAlignment for BottomToTop {}
 
 impl Alignment for BottomToTop {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         (reference.top_left.y - 1) - object.bottom_right.y + offset
     }

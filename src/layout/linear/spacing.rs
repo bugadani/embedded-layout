@@ -83,7 +83,7 @@ impl ElementSpacing for FixedMargin {
         if objects == 0 {
             measured_size
         } else {
-            (measured_size as i32 + self.0 * (objects - 1) as i32) as u32
+            (measured_size as i32 + self.0 * (objects as i32 - 1)) as u32
         }
     }
 

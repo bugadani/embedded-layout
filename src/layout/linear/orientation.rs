@@ -13,7 +13,7 @@ pub trait Orientation: Copy + Clone {
     /// Secondary alignment that will be applied to all the views
     type Secondary: SecondaryAlignment + Alignment;
 
-    /// Destructure `Size` into (primary_size, secondary_size)
+    /// Destructure `Size` into `(primary_size, secondary_size)`
     fn destructure_size(size: Size) -> (u32, u32);
 
     /// Create a `Size` from primary and secondary size values

@@ -34,7 +34,7 @@ impl RectExt for Rectangle {
     fn with_size(top_left: Point, size: Size) -> Rectangle {
         Rectangle::new(
             top_left,
-            top_left + Point::new((size.width - 1) as i32, (size.height - 1) as i32),
+            top_left + Point::new(size.width as i32 - 1, size.height as i32 - 1),
         )
     }
 
@@ -75,7 +75,8 @@ pub trait RectSize {
     /// Return the `Size` of the `Rectangle`
     ///
     /// The `size` method provided by `embedded-graphics 0.6.2` returns an incorrect value.
-    /// *Note:* Implementation assumes top_left and bottom_right coordinates are specified properly
+    /// *Note:* Implementation assumes `top_left` and `bottom_right` coordinates are specified
+    ///         properly, i.e. `top_left.x < bottom_right.x`, etc.
     fn size(&self) -> Size;
 }
 
