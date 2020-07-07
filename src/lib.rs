@@ -1,7 +1,6 @@
 //! Enable simple layout operations in [`embedded-graphics`]
 //!
-//! This crate extends [`embedded-graphics`]' objects that implement the `Transform` trait
-//! to be aligned to other objects that implement `Dimensions`.
+//! This crate extends [`embedded-graphics`] with tools that ease positioning of drawable objects.
 //!
 //! # A note on imports
 //!
@@ -45,19 +44,17 @@
 //! ## Examples
 //!
 //! The examples are based on [the `embedded-graphics` simulator]. The simulator is built on top of
-//! `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"`
-//! environment variable so that running the examples produce a screenshot image instead of a window.
+//! `SDL2`. See the [simulator README] for more information.
 //!
 //! ### Draw some text to the center of the display
 //!
 //! ```
 //! # use embedded_graphics::mock_display::MockDisplay;
 //! # let mut display: MockDisplay<BinaryColor> = MockDisplay::new();
-//!
+//! #
 //! use embedded_graphics::{
 //!     fonts::{Font6x8, Text},
 //!     pixelcolor::BinaryColor,
-//!     prelude::*,
 //!     style::TextStyleBuilder,
 //! };
 //! use embedded_layout::prelude::*;
@@ -82,11 +79,10 @@
 //! ```
 //! # use embedded_graphics::mock_display::MockDisplay;
 //! # let mut display: MockDisplay<BinaryColor> = MockDisplay::new();
-//!
+//! #
 //! use embedded_graphics::{
 //!     fonts::{Font6x8, Text},
 //!     pixelcolor::BinaryColor,
-//!     prelude::*,
 //!     style::TextStyleBuilder,
 //! };
 //! use embedded_layout::{layout::linear::LinearLayout, prelude::*};
@@ -113,6 +109,7 @@
 //! [fully qualified syntax]: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
 //! [`View`]: crate::View
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
+//! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator#usage-without-sdl2
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]
@@ -126,7 +123,7 @@ mod utils;
 
 use utils::rect_helper::RectSize;
 
-/// The essentials
+/// The essentials. Also contains most of `embedded-graphics'` prelude.
 pub mod prelude {
     pub use crate::{
         align::{horizontal, vertical, Align},

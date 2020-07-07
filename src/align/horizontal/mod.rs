@@ -1,11 +1,13 @@
 //! Horizontal alignment options
+//!
+//! Horizontal alignment types must implement [`HorizontalAlignment`].
 use crate::{
     align::{Alignment, HorizontalAlignment},
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
 
-/// Keep the object's horizontal coordinate unchanged
+/// Keep the objects' horizontal alignment unchanged
 #[derive(Copy, Clone, Default)]
 pub struct NoAlignment;
 impl HorizontalAlignment for NoAlignment {}

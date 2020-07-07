@@ -3,8 +3,6 @@ embedded-layout
 
 `embedded-layout` extends [`embedded-graphics`] with basic layout functions.
 
-**Note:** This library is currently highly experimental. Expect API breakage with every update.
-
 `embedded-layout` consists of two main parts:
  - alignments that can be used to position two objects relative to one another
    * `horizontal`

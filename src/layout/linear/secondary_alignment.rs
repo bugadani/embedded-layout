@@ -2,9 +2,17 @@ use crate::{align::Alignment, prelude::*};
 
 /// Secondary alignment is used to align views perpendicular to the placement axis.
 ///
-/// For example, use `horizontal::Right` to align views to the right in a vertical linear layout.
+/// For example, use [`horizontal::Right`] to align views to the right in a vertical linear layout.
+///
+/// `SecondaryAlignment` should be implemented by custom `Alignment` types, otherwise they won't be
+/// compatible with [`LinearLayout`].
+///
+/// [`LinearLayout`]: crate::layout::linear::LinearLayout
 pub trait SecondaryAlignment: Alignment {
-    /// Return the combined `Size` of two `View`s, based on their alignment
+    /// Return the combined `Size` occupied by both `Views` after they are arranged.
+    ///
+    /// I.e. [`horizontal::Left`] returns the maximum width, while [`horizontal::LeftToRight`]
+    /// returns the sum of the two widths.
     fn measure(prev: Size, view_size: Size) -> Size;
 }
 

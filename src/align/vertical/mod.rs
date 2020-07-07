@@ -1,11 +1,13 @@
 //! Vertical alignment options
+//!
+//! Vertical alignment types must implement [`VerticalAlignment`].
 use crate::{
     align::{Alignment, VerticalAlignment},
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
 
-/// Keep the object's vertical coordinate unchanged
+/// Keep the objects' vertical alignment unchanged
 #[derive(Copy, Clone, Default)]
 pub struct NoAlignment;
 impl VerticalAlignment for NoAlignment {}
