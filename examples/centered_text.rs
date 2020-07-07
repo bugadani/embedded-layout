@@ -5,7 +5,6 @@ use embedded_graphics_simulator::{
 use embedded_graphics::{
     fonts::{Font6x8, Text},
     pixelcolor::BinaryColor,
-    prelude::*,
     style::TextStyleBuilder,
 };
 use embedded_layout::prelude::*;
