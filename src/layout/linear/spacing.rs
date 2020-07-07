@@ -14,7 +14,7 @@ use embedded_graphics::primitives::Rectangle;
 /// `ElementSpacing` base trait
 pub trait ElementSpacing: Copy + Clone {
     /// Calculate how much the total size of a layout changes by applying the current spacing
-    fn modify_measurement(&self, measured_size: u32, objects: usize) -> u32;
+    fn modify_measurement(&self, measured_size: u32, objects: u32) -> u32;
 
     /// Align `view` to `reference` using the element spacing rules
     fn align(
@@ -22,8 +22,8 @@ pub trait ElementSpacing: Copy + Clone {
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        n: usize,
-        objects: usize,
+        n: u32,
+        objects: u32,
         total_size: u32,
     ) -> i32;
 }
@@ -43,7 +43,7 @@ pub trait ElementSpacing: Copy + Clone {
 pub struct Tight;
 impl ElementSpacing for Tight {
     #[inline]
-    fn modify_measurement(&self, measured_size: u32, _objects: usize) -> u32 {
+    fn modify_measurement(&self, measured_size: u32, _objects: u32) -> u32 {
         measured_size
     }
 
@@ -53,8 +53,8 @@ impl ElementSpacing for Tight {
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        _n: usize,
-        _objects: usize,
+        _n: u32,
+        _objects: u32,
         _total_size: u32,
     ) -> i32 {
         alignment.align_with_offset(view, reference, 0)
@@ -79,7 +79,7 @@ impl ElementSpacing for Tight {
 pub struct FixedMargin(pub i32);
 impl ElementSpacing for FixedMargin {
     #[inline]
-    fn modify_measurement(&self, measured_size: u32, objects: usize) -> u32 {
+    fn modify_measurement(&self, measured_size: u32, objects: u32) -> u32 {
         if objects == 0 {
             measured_size
         } else {
@@ -93,8 +93,8 @@ impl ElementSpacing for FixedMargin {
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        n: usize,
-        _objects: usize,
+        n: u32,
+        _objects: u32,
         _total_size: u32,
     ) -> i32 {
         let offset = if n == 0 { 0 } else { self.0 };
@@ -120,7 +120,7 @@ impl ElementSpacing for FixedMargin {
 pub struct DistributeFill(pub u32);
 impl ElementSpacing for DistributeFill {
     #[inline]
-    fn modify_measurement(&self, _measured_size: u32, _objects: usize) -> u32 {
+    fn modify_measurement(&self, _measured_size: u32, _objects: u32) -> u32 {
         self.0
     }
 
@@ -130,17 +130,18 @@ impl ElementSpacing for DistributeFill {
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        n: usize,
-        objects: usize,
+        n: u32,
+        objects: u32,
         total_size: u32,
     ) -> i32 {
-        let empty_space = self.0 - total_size;
-        let base = empty_space as i32 / (objects as i32 - 1);
-        let remainder = empty_space as usize % (objects - 1);
+        // bit of a mess, but calculate using i32 in case the views don't fit the space
+        let empty_space = self.0 as i32 - total_size as i32;
+        let base = empty_space / (objects - 1) as i32;
+        let remainder = empty_space % (objects - 1) as i32;
 
         let offset = if n == 0 {
             0
-        } else if n <= remainder {
+        } else if n as i32 <= remainder {
             base + 1
         } else {
             base

@@ -124,7 +124,7 @@ impl<C: ViewChainElement> ViewGroup<C> {
 
     /// Returns the number of views in this [`ViewGroup`]
     #[inline]
-    pub fn view_count(&self) -> usize {
+    pub fn view_count(&self) -> u32 {
         C::count()
     }
 }
@@ -169,14 +169,14 @@ mod test {
 
     #[test]
     fn compile_check() {
+        fn check_vg<C: ViewChainElement>(vg: &ViewGroup<C>) {
+            assert_eq!(2, vg.view_count());
+        }
+
         // Check if multiple different views can be included in the view group
         let vg = ViewGroup::new()
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
             .add_view(Circle::new(Point::zero(), 5));
-
-        fn check_vg<C: ViewChainElement>(vg: &ViewGroup<C>) {
-            assert_eq!(2, vg.view_count());
-        }
 
         check_vg(&vg);
     }

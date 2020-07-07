@@ -32,7 +32,7 @@ pub trait RectExt {
 impl RectExt for Rectangle {
     #[inline]
     fn with_size(top_left: Point, size: Size) -> Rectangle {
-        Rectangle::new(
+        Self::new(
             top_left,
             top_left + Point::new(size.width as i32 - 1, size.height as i32 - 1),
         )
@@ -55,7 +55,7 @@ impl RectExt for Rectangle {
 
     #[inline]
     fn enveloping(&self, other: &Rectangle) -> Rectangle {
-        Rectangle::new(
+        Self::new(
             Point::new(
                 self.top_left.x.min(other.top_left.x),
                 self.top_left.y.min(other.top_left.y),
@@ -77,12 +77,12 @@ pub trait RectSize {
     /// The `size` method provided by `embedded-graphics 0.6.2` returns an incorrect value.
     /// *Note:* Implementation assumes `top_left` and `bottom_right` coordinates are specified
     ///         properly, i.e. `top_left.x < bottom_right.x`, etc.
-    fn size(&self) -> Size;
+    fn size(self) -> Size;
 }
 
 impl RectSize for Rectangle {
     #[inline]
-    fn size(&self) -> Size {
+    fn size(self) -> Size {
         // TODO: remove if fixed in embedded-graphics
         let width = (self.bottom_right.x - self.top_left.x) as u32 + 1;
         let height = (self.bottom_right.y - self.top_left.y) as u32 + 1;

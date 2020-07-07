@@ -11,7 +11,7 @@ pub trait ChainElement {
     const IS_TERMINATOR: bool;
 
     /// Return the number of objects linked to this chain element
-    fn count() -> usize;
+    fn count() -> u32;
 }
 
 /// This piece of the chain contains some object
@@ -24,7 +24,7 @@ impl<V, VC: ChainElement> ChainElement for Link<V, VC> {
     const IS_TERMINATOR: bool = false;
 
     #[inline]
-    fn count() -> usize {
+    fn count() -> u32 {
         1 + VC::count()
     }
 }
@@ -36,7 +36,7 @@ impl ChainElement for Guard {
     const IS_TERMINATOR: bool = true;
 
     #[inline]
-    fn count() -> usize {
+    fn count() -> u32 {
         0
     }
 }

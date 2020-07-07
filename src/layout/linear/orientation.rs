@@ -20,20 +20,13 @@ pub trait Orientation: Copy + Clone {
     fn create_size(primary: u32, secondary: u32) -> Size;
 
     /// Adjust measured size based on element spacing
-    fn adjust_size(self, size: Size, objects: usize) -> Size;
+    fn adjust_size(self, size: Size, objects: u32) -> Size;
 
     /// Place first view
-    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize);
+    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: u32);
 
     /// Place nth view
-    fn place_nth(
-        &self,
-        view: &mut impl View,
-        size: Size,
-        previous: Rectangle,
-        n: usize,
-        count: usize,
-    );
+    fn place_nth(&self, view: &mut impl View, size: Size, previous: Rectangle, n: u32, count: u32);
 }
 
 /// Horizontal layout direction
@@ -105,7 +98,7 @@ where
     }
 
     #[inline]
-    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize) {
+    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: u32) {
         let (primary_size, _) = Self::destructure_size(bounds.size());
         let view_bounds = view.bounds();
 
@@ -123,14 +116,7 @@ where
     }
 
     #[inline]
-    fn place_nth(
-        &self,
-        view: &mut impl View,
-        size: Size,
-        previous: Rectangle,
-        n: usize,
-        count: usize,
-    ) {
+    fn place_nth(&self, view: &mut impl View, size: Size, previous: Rectangle, n: u32, count: u32) {
         let (primary_size, _) = Self::destructure_size(size);
         let view_bounds = view.bounds();
 
@@ -148,7 +134,7 @@ where
     }
 
     #[inline]
-    fn adjust_size(self, size: Size, objects: usize) -> Size {
+    fn adjust_size(self, size: Size, objects: u32) -> Size {
         let (primary_size, secondary_size) = Self::destructure_size(size);
         Self::create_size(
             self.spacing.modify_measurement(primary_size, objects),
@@ -226,7 +212,7 @@ where
     }
 
     #[inline]
-    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: usize) {
+    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: u32) {
         let (primary_size, _) = Self::destructure_size(bounds.size());
         let view_bounds = view.bounds();
 
@@ -238,14 +224,7 @@ where
     }
 
     #[inline]
-    fn place_nth(
-        &self,
-        view: &mut impl View,
-        size: Size,
-        previous: Rectangle,
-        n: usize,
-        count: usize,
-    ) {
+    fn place_nth(&self, view: &mut impl View, size: Size, previous: Rectangle, n: u32, count: u32) {
         let (primary_size, _) = Self::destructure_size(size);
         let view_bounds = view.bounds();
 
@@ -263,7 +242,7 @@ where
     }
 
     #[inline]
-    fn adjust_size(self, size: Size, objects: usize) -> Size {
+    fn adjust_size(self, size: Size, objects: u32) -> Size {
         let (primary_size, secondary_size) = Self::destructure_size(size);
         Self::create_size(
             self.spacing.modify_measurement(primary_size, objects),

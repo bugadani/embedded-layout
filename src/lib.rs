@@ -114,6 +114,7 @@
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]
 #![deny(clippy::missing_inline_in_public_items)]
+#![warn(clippy::all)]
 
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
@@ -151,7 +152,7 @@ pub trait View {
     /// Get the size of a View.
     #[inline]
     fn size(&self) -> Size {
-        RectSize::size(&self.bounds())
+        RectSize::size(self.bounds())
     }
 
     /// Move the origin of an object by a given number of (x, y) pixels
