@@ -31,7 +31,7 @@ pub trait Orientation: Copy + Clone {
 
 /// Horizontal layout direction
 #[derive(Copy, Clone)]
-pub struct Horizontal<Secondary, Spacing>
+pub struct Horizontal<Secondary, Spacing = Tight>
 where
     Secondary: SecondaryAlignment + VerticalAlignment,
     Spacing: ElementSpacing,
@@ -145,7 +145,7 @@ where
 
 /// Vertical layout direction
 #[derive(Copy, Clone)]
-pub struct Vertical<Secondary, Spacing>
+pub struct Vertical<Secondary, Spacing = Tight>
 where
     Secondary: SecondaryAlignment + HorizontalAlignment,
     Spacing: ElementSpacing,

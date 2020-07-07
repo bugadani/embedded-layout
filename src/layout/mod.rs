@@ -88,7 +88,7 @@ impl View for Guard {
 /// The bounds and size of a [`ViewGroup`] envelops all the contained [`View`]s.
 ///
 /// Note: translating an empty [`ViewGroup`] has no effect
-pub struct ViewGroup<C: ViewChainElement> {
+pub struct ViewGroup<C: ViewChainElement = Guard> {
     pub(crate) views: C,
 }
 

@@ -15,7 +15,7 @@ pub trait ChainElement {
 }
 
 /// This piece of the chain contains some object
-pub struct Link<V, C: ChainElement> {
+pub struct Link<V, C: ChainElement = Guard> {
     pub(crate) object: V,
     pub(crate) next: C,
 }

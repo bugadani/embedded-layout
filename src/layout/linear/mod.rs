@@ -102,7 +102,7 @@ use spacing::Tight;
 /// `size` however.
 ///
 /// For more information and examples see the [module level documentation](crate::layout::linear).
-pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
+pub struct LinearLayout<LD: Orientation, VC: ViewChainElement = Guard> {
     direction: LD,
     views: ViewGroup<VC>,
 }
