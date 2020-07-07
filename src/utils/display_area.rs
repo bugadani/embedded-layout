@@ -1,6 +1,5 @@
-use embedded_graphics::{prelude::*, primitives::Rectangle};
-
-use crate::utils::rect_helper::RectExt;
+use crate::prelude::*;
+use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
 /// Helper trait to retrieve display area as a `Rectangle`.
 pub trait DisplayArea<C>
@@ -9,7 +8,7 @@ where
 {
     /// Return the display area as a `Rectangle`
     ///
-    /// This method is provided mainly to make it simpler to align to edges of the display.
+    /// This method is provided mainly to make it simpler to align to the edges (or the center) of the display.
     fn display_area(&self) -> Rectangle;
 }
 

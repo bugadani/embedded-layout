@@ -1,16 +1,19 @@
 //! Vertical alignment options
+//!
+//! Vertical alignment types must implement [`VerticalAlignment`].
 use crate::{
     align::{Alignment, VerticalAlignment},
     prelude::*,
 };
 use embedded_graphics::primitives::Rectangle;
 
-/// Keep the object's vertical coordinate unchanged
+/// Keep the objects' vertical alignment unchanged
 #[derive(Copy, Clone, Default)]
 pub struct NoAlignment;
 impl VerticalAlignment for NoAlignment {}
 
 impl Alignment for NoAlignment {
+    #[inline]
     fn align_with_offset(&self, _object: Rectangle, _reference: Rectangle, _offset: i32) -> i32 {
         0
     }
@@ -25,6 +28,7 @@ pub struct Center;
 impl VerticalAlignment for Center {}
 
 impl Alignment for Center {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         reference.center_y() - object.center_y() + offset
     }
@@ -36,6 +40,7 @@ pub struct Top;
 impl VerticalAlignment for Top {}
 
 impl Alignment for Top {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         reference.top_left.y - object.top_left.y + offset
     }
@@ -47,6 +52,7 @@ pub struct Bottom;
 impl VerticalAlignment for Bottom {}
 
 impl Alignment for Bottom {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         reference.bottom_right.y - object.bottom_right.y + offset
     }
@@ -58,6 +64,7 @@ pub struct TopToBottom;
 impl VerticalAlignment for TopToBottom {}
 
 impl Alignment for TopToBottom {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         (reference.bottom_right.y + 1) - object.top_left.y + offset
     }
@@ -69,6 +76,7 @@ pub struct BottomToTop;
 impl VerticalAlignment for BottomToTop {}
 
 impl Alignment for BottomToTop {
+    #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
         (reference.top_left.y - 1) - object.bottom_right.y + offset
     }
@@ -82,11 +90,11 @@ mod test {
     #[test]
     fn test_center() {
         fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
-            let center_of_reference = reference.top_left + RectExt::size(&reference) / 2;
-            let center_of_result = result.top_left + RectExt::size(&result) / 2;
+            let center_of_reference = reference.top_left + reference.size() / 2;
+            let center_of_result = result.top_left + result.size() / 2;
 
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Vertical coordinate matches reference
             assert_eq!(center_of_result.y, center_of_reference.y);
@@ -111,7 +119,7 @@ mod test {
     fn test_top() {
         fn check_top_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Vertical coordinate matches reference
             assert_eq!(result.top_left.y, reference.top_left.y);
@@ -135,7 +143,7 @@ mod test {
     fn test_bottom() {
         fn check_bottom_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Vertical coordinate matches reference
             assert_eq!(result.bottom_right.y, reference.bottom_right.y);
@@ -163,7 +171,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Top is at bottom + 1
             assert_eq!(result.top_left.y, reference.bottom_right.y + 1);
@@ -191,7 +199,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(RectExt::size(&result), RectExt::size(&source));
+            assert_eq!(result.size(), source.size());
 
             // Bottom is at top - 1
             assert_eq!(result.bottom_right.y, reference.top_left.y - 1);

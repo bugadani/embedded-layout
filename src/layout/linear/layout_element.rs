@@ -9,12 +9,12 @@ use embedded_graphics::primitives::Rectangle;
 
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
     fn measure(&self) -> Size;
-    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle;
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: u32) -> Rectangle;
 }
 
 impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
 where
-    V: View + Align,
+    V: View,
     VCE: LayoutElement<LD>,
     LD: Orientation,
 {
@@ -28,14 +28,14 @@ where
         }
     }
 
-    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: usize) -> Rectangle {
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: u32) -> Rectangle {
         if VCE::IS_TERMINATOR {
             orientation.place_first(&mut self.object, bounds, count);
         } else {
             let previous = self.next.arrange(bounds, orientation, count);
             orientation.place_nth(
                 &mut self.object,
-                RectExt::size(&bounds),
+                bounds.size(),
                 previous,
                 VCE::count(),
                 count,
@@ -50,7 +50,7 @@ impl<LD: Orientation> LayoutElement<LD> for Guard {
         Size::new(0, 0)
     }
 
-    fn arrange(&mut self, _bounds: Rectangle, _orientation: &LD, _count: usize) -> Rectangle {
+    fn arrange(&mut self, _bounds: Rectangle, _orientation: &LD, _count: u32) -> Rectangle {
         // Nothing to do
         Rectangle::new(Point::zero(), Point::zero())
     }

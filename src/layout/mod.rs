@@ -1,17 +1,25 @@
 //! Layout module
 //!
-//! This module implements layouts that can be used to work with multiple `View`s easily.
-//! Layouts are either `View` objects, or can be used to return `View` objects.
+//! This module implements layouts that can be used to work with multiple [`View`]s easily.
+//! Layouts are either [`View`] objects, or can be used to return [`View`] objects.
 //!
-//! The base of all layouts is the `ViewGroup` which binds multiple `View`s together.
+//! The base of all layouts is the [`ViewGroup`] which binds multiple [`View`]s together.
+//!
+//! *Note:* [`ViewGroup`] is implemented using object chaining so it's exact type depends on it's contents.
+//!
+//! [`View`]: crate::View
+//! [`ViewGroup`]: crate::layout::ViewGroup
 
-use crate::{prelude::*, utils::object_chain::*};
-use embedded_graphics::primitives::Rectangle;
+use crate::{
+    prelude::*,
+    utils::object_chain::{ChainElement, Guard, Link},
+};
+use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
 pub mod linear;
 
-/// Implementation detail necessary to store multiple different types of `Views`
-/// in a `ViewGroup`
+/// Implementation detail necessary to store multiple different types of [`View`]s
+/// in a [`ViewGroup`]
 pub trait ViewChainElement: ChainElement + View {}
 
 impl<'a, C, V, VC> Drawable<C> for &'a Link<V, VC>
@@ -38,10 +46,10 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
 
-        if !VC::IS_TERMINATOR {
-            bounds.enveloping(&self.next.bounds())
-        } else {
+        if VC::IS_TERMINATOR {
             bounds
+        } else {
+            bounds.enveloping(&self.next.bounds())
         }
     }
 
@@ -73,20 +81,21 @@ impl View for Guard {
     }
 }
 
-/// Group multiple `View`s together
+/// Group multiple [`View`]s together
 ///
-/// `ViewGroup` takes ownership over the views, so make sure you set them up before creating
+/// [`ViewGroup`] takes ownership over the views, so make sure you set them up before creating
 /// the group.
-/// The bounds and size of a `ViewGroup` envelops all the contained `View`s.
+/// The bounds and size of a [`ViewGroup`] envelops all the contained [`View`]s.
 ///
-/// Note: translating an empty `ViewGroup` has no effect
-pub struct ViewGroup<C: ViewChainElement> {
+/// Note: translating an empty [`ViewGroup`] has no effect
+pub struct ViewGroup<C: ViewChainElement = Guard> {
     pub(crate) views: C,
 }
 
 impl ViewGroup<Guard> {
-    /// Create a new, empty `ViewGroup` object
+    /// Create a new, empty [`ViewGroup`] object
     #[inline]
+    #[must_use]
     pub const fn new() -> Self {
         Self { views: Guard }
     }
@@ -100,9 +109,9 @@ impl Default for ViewGroup<Guard> {
 }
 
 impl<C: ViewChainElement> ViewGroup<C> {
-    /// Bind a `View` to this `ViewGroup`
+    /// Bind a [`View`] to this [`ViewGroup`]
     ///
-    /// The `View` remains at it's current location, until the `ViewGroup` is translated.
+    /// The [`View`] remains at it's current location, until the [`ViewGroup`] is translated.
     #[inline]
     pub fn add_view<V: View>(self, view: V) -> ViewGroup<Link<V, C>> {
         ViewGroup {
@@ -113,9 +122,9 @@ impl<C: ViewChainElement> ViewGroup<C> {
         }
     }
 
-    /// Returns the number of views in this `ViewGroup`
+    /// Returns the number of views in this [`ViewGroup`]
     #[inline]
-    pub fn view_count(&self) -> usize {
+    pub fn view_count(&self) -> u32 {
         C::count()
     }
 }
@@ -138,7 +147,7 @@ where
     VC: ViewChainElement,
     &'a VC: Drawable<C>,
 {
-    /// Draw the graphics object using the supplied DrawTarget.
+    /// Draw the graphics object using the supplied `DrawTarget`.
     #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
         self.views.draw(display)
@@ -160,14 +169,14 @@ mod test {
 
     #[test]
     fn compile_check() {
+        fn check_vg<C: ViewChainElement>(vg: &ViewGroup<C>) {
+            assert_eq!(2, vg.view_count());
+        }
+
         // Check if multiple different views can be included in the view group
         let vg = ViewGroup::new()
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
             .add_view(Circle::new(Point::zero(), 5));
-
-        fn check_vg<C: ViewChainElement>(vg: &ViewGroup<C>) {
-            assert_eq!(2, vg.view_count());
-        }
 
         check_vg(&vg);
     }
