@@ -144,10 +144,12 @@ pub mod prelude {
     };
 }
 
-/// A view is the base unit for most of the `embedded-layout` operations.
+/// A `View` is the base unit for most of the `embedded-layout` operations.
 ///
-/// Views must have a size and a position, so they need to implement the `Dimensions` and
+/// `View`s must have a size and a position, so they need to implement the `Dimensions` and
 /// `Transform` traits.
+///
+/// See the `custom_view` example for how you can define more complex views.
 pub trait View {
     /// Get the size of a View.
     #[inline]
