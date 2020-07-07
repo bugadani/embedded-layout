@@ -14,7 +14,7 @@ pub trait LayoutElement<LD: Orientation>: ViewChainElement {
 
 impl<V, VCE, LD> LayoutElement<LD> for Link<V, VCE>
 where
-    V: View + Align,
+    V: View,
     VCE: LayoutElement<LD>,
     LD: Orientation,
 {

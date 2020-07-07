@@ -2,44 +2,27 @@
 //!
 //! This crate extends [`embedded-graphics`] with tools that ease positioning of drawable objects.
 //!
-//! # A note on imports
+//! `embedded-layout` consists of two main parts:
+//! - [alignments] that can be used to position two objects relative to one another
+//!   * `horizontal`
+//!     * `NoAlignment`, `Left`, `Right`, `Center`
+//!     * `LeftToRight`, `RightToLeft`
+//!   * `vertical`
+//!     * `NoAlignment`, `Top`, `Bottom`, `Center`
+//!     * `TopToBottom`, `BottomToTop`
+//! - [layouts] that can be used to arrange multiple views
+//!   * `ViewGroup`
+//!   * `LinearLayout`
 //!
-//! `embedded-layout` reexports most of `embedded-graphics`' `prelude` module. In most cases
-//! this means you don't have to `use embedded_graphics::prelude::*`. In case you need to,
-//! `Translate` and `Dimensions` may interfere with `embedded-layout`'s [`View`], so if you are using
-//! functions of those traits, you may need to use the [fully qualified syntax] (formerly UFCS):
+//! # Views
 //!
-//! ```compile_fail
-//! use embedded_layout::prelude::*;
-//! use embedded_graphics::prelude::*; //< this imports `Dimensions` which has a `size` function
-//! use embedded_graphics::primitives::Rectangle;
+//! The term "view" refers to anything `embedded-layout` can work with. Basically, a view is an
+//! object that can be displayed. [`View`] is the most basic trait in `embedded-layout`. Views
+//! implement [`View`] to enable translation and alignment operations on them, and also to allow
+//! them to be used with layouts.
 //!
-//! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
-//! let size = rect.size(); //< this fails to compile
-//! ```
-//!
-//! The above example fails to compile with this message:
-//!
-//! ```text
-//! ---- src\lib.rs - (line 13) stdout ----
-//! error[E0034]: multiple applicable items in scope
-//! --> src\lib.rs:19:17
-//!     |
-//! 9   | let size = rect.size(); //< this fails to compile
-//!     |                 ^^^^ multiple `size` found
-//!     | [some other lines about where the candidates are]
-//! ```
-//!
-//! Here's the above example using [fully qualified syntax]:
-//!
-//! ```
-//! use embedded_graphics::{prelude::*, primitives::Rectangle};
-//! use embedded_layout::prelude::*;
-//!
-//! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
-//! let size = View::size(&rect); //< Note that we are explicitly picking which `size` to call
-//! let size = Dimensions::size(&rect);
-//! ```
+//! [`View`] is implemented for [`embedded-graphics`] display objects. There's also an example about
+//! how to implement custom [`View`] objects.
 //!
 //! ## Examples
 //!
@@ -104,12 +87,53 @@
 //!     .unwrap();
 //! ```
 //!
+//! # A note on imports
+//!
+//! `embedded-layout` reexports most of `embedded-graphics`' `prelude` module. In most cases
+//! this means you don't have to `use embedded_graphics::prelude::*`. In case you do, `Translate`
+//! and `Dimensions` may interfere with `embedded-layout`'s [`View`], so if you are using functions
+//! of those traits, you may need to use the [fully qualified syntax] (formerly UFCS):
+//!
+//! ```compile_fail
+//! use embedded_layout::prelude::*;
+//! use embedded_graphics::prelude::*; //< this imports `Dimensions` which has a `size` function
+//! use embedded_graphics::primitives::Rectangle;
+//!
+//! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
+//! let size = rect.size(); //< this fails to compile
+//! ```
+//!
+//! The above example fails to compile with this message:
+//!
+//! ```text
+//! ---- src\lib.rs - (line 13) stdout ----
+//! error[E0034]: multiple applicable items in scope
+//! --> src\lib.rs:19:17
+//!     |
+//! 9   | let size = rect.size(); //< this fails to compile
+//!     |                 ^^^^ multiple `size` found
+//!     | [some other lines about where the candidates are]
+//! ```
+//!
+//! Here's the above example using [fully qualified syntax]:
+//!
+//! ```
+//! use embedded_graphics::{prelude::*, primitives::Rectangle};
+//! use embedded_layout::prelude::*;
+//!
+//! let rect = Rectangle::with_size(Point::zero(), Size::new(10, 10));
+//! let size = View::size(&rect); //< Note that we are explicitly picking which `size` to call
+//! let size = Dimensions::size(&rect);
+//! ```
+//!
 //! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 //! [the `embedded-graphics` simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
 //! [fully qualified syntax]: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
 //! [`View`]: crate::View
+//! [layouts]: crate::layout
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
 //! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator#usage-without-sdl2
+//! [alignments]: crate::align
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]
