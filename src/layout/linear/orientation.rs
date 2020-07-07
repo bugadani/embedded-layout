@@ -118,7 +118,7 @@ where
                 count,
                 primary_size,
             ),
-            Secondary::default().align(view_bounds, bounds),
+            Secondary::First::default().align(view_bounds, bounds),
         ));
     }
 
@@ -231,7 +231,7 @@ where
         let view_bounds = view.bounds();
 
         view.translate(Point::new(
-            Secondary::default().align(view_bounds, bounds),
+            Secondary::First::default().align(view_bounds, bounds),
             self.spacing
                 .align(vertical::Top, view_bounds, bounds, 0, count, primary_size),
         ));

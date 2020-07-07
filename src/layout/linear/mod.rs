@@ -504,6 +504,44 @@ mod test {
     }
 
     #[test]
+    fn layout_spacing_distribute_overflow() {
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::with_size(Point::zero(), Size::new(5, 5)).into_styled(style);
+        let layout = LinearLayout::horizontal()
+            .with_spacing(DistributeFill(11))
+            .with_alignment(vertical::TopToBottom)
+            .add_view(rect)
+            .add_view(rect)
+            .add_view(rect);
+
+        assert_eq!(Size::new(11, 15), layout.size());
+
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        layout.arrange().draw(&mut disp).unwrap();
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "#####      ",
+                "#   #      ",
+                "#   #      ",
+                "#   #      ",
+                "#####      ",
+                "   #####   ",
+                "   #   #   ",
+                "   #   #   ",
+                "   #   #   ",
+                "   #####   ",
+                "      #####",
+                "      #   #",
+                "      #   #",
+                "      #   #",
+                "      #####",
+            ])
+        );
+    }
+
+    #[test]
     fn layout_spacing_distribute_fill() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::zero(), Size::new(2, 2)).into_styled(style);
