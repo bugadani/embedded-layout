@@ -6,6 +6,8 @@
 //! The base of all layouts is the [`ViewGroup`] which binds multiple [`View`]s together.
 //!
 //! *Note:* [`ViewGroup`] is implemented using object chaining so it's exact type depends on it's contents.
+//! This means that currently it's only possible to create **static** layouts, where the views must be
+//! known at compile time.
 //!
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::layout::ViewGroup
