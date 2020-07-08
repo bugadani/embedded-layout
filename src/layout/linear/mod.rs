@@ -91,6 +91,7 @@ pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 pub use spacing::{ElementSpacing, FixedMargin};
 
+use crate::utils::cached::Cached;
 use layout_element::LayoutElement;
 use spacing::Tight;
 
@@ -221,10 +222,10 @@ where
     /// Views will be laid out sequentially, keeping the order in which they were added to the
     /// layout.
     #[inline]
-    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, LE>> {
+    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<Cached<V>, LE>> {
         LinearLayout {
             direction: self.direction,
-            views: self.views.add_view(view),
+            views: self.views.add_view(Cached::new(view)),
         }
     }
 
