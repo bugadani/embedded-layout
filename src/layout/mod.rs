@@ -10,10 +10,8 @@
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::layout::ViewGroup
 
-use crate::{
-    prelude::*,
-    utils::object_chain::{ChainElement, Guard, Link},
-};
+pub use crate::utils::object_chain::{Guard, Link};
+use crate::{prelude::*, utils::object_chain::ChainElement};
 use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
 pub mod linear;
