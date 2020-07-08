@@ -17,7 +17,8 @@ embedded-layout
 
 ## Example
 
-The examples are based on [the embedded-graphics simulator]. The simulator is built on top of `SDL2`. If you don't have that installed, set the `EG_SIMULATOR_DUMP="screenshot.png"` environment variable so that running the examples produce a screenshot image instead of a window.
+The examples are based on [the embedded-graphics simulator]. The simulator is built on top of
+`SDL2`. See the [simulator README] for more information.
 
 ![embedded-layout example](assets/nested-layout-example.png)
 
@@ -105,3 +106,4 @@ To install SDL2 on Windows, see https://github.com/Rust-SDL2/rust-sdl2#windows-m
 
 [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
 [the embedded-graphics simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
+[simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator#usage-without-sdl2
