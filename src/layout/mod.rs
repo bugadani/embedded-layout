@@ -54,9 +54,16 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     }
 
     #[inline]
-    fn translate(&mut self, by: Point) {
-        self.object.translate(by);
-        self.next.translate(by);
+    fn translate(mut self, by: Point) -> Self {
+        self.translate_mut(by);
+        self
+    }
+
+    #[inline]
+    fn translate_mut(&mut self, by: Point) -> &mut Self {
+        self.object.translate_mut(by);
+        self.next.translate_mut(by);
+        self
     }
 }
 
@@ -76,8 +83,15 @@ impl View for Guard {
     }
 
     #[inline]
-    fn translate(&mut self, _by: Point) {
+    fn translate(self, _by: Point) -> Self {
         // nothing to do
+        self
+    }
+
+    #[inline]
+    fn translate_mut(&mut self, _by: Point) -> &mut Self {
+        // nothing to do
+        self
     }
 }
 
@@ -131,8 +145,15 @@ impl<C: ViewChainElement> ViewGroup<C> {
 
 impl<C: ViewChainElement> View for ViewGroup<C> {
     #[inline]
-    fn translate(&mut self, by: Point) {
-        self.views.translate(by);
+    fn translate(mut self, by: Point) -> Self {
+        self.translate_mut(by);
+        self
+    }
+
+    #[inline]
+    fn translate_mut(&mut self, by: Point) -> &mut Self {
+        self.views.translate_mut(by);
+        self
     }
 
     #[inline]
@@ -222,7 +243,7 @@ mod test {
     fn test() {
         // Check if multiple different views can be included in the view group
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        let mut vg = ViewGroup::new()
+        let vg = ViewGroup::new()
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
             .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
             .add_view(
@@ -235,7 +256,7 @@ mod test {
             vg.bounds()
         );
 
-        vg.translate(Point::new(2, 3));
+        let vg = vg.translate(Point::new(2, 3));
 
         assert_eq!(Size::new(10, 20), vg.size());
         assert_eq!(

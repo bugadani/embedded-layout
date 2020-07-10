@@ -179,8 +179,14 @@ pub trait View {
         RectSize::size(self.bounds())
     }
 
-    /// Move the origin of an object by a given number of (x, y) pixels
-    fn translate(&mut self, by: Point);
+    /// Move the origin of an object by a given number of (x, y) pixels,
+    /// by returning a new object
+    #[must_use]
+    fn translate(self, by: Point) -> Self;
+
+    /// Move the origin of an object by a given number of (x, y) pixels,
+    /// mutating the object in place
+    fn translate_mut(&mut self, by: Point) -> &mut Self;
 
     /// Returns the bounding box of the `View` as a `Rectangle`
     fn bounds(&self) -> Rectangle;
@@ -191,8 +197,15 @@ where
     T: Transform + Dimensions,
 {
     #[inline]
-    fn translate(&mut self, by: Point) {
-        self.translate_mut(by);
+    fn translate(mut self, by: Point) -> Self {
+        Self::translate_mut(&mut self, by);
+        self
+    }
+
+    #[inline]
+    fn translate_mut(&mut self, by: Point) -> &mut Self {
+        Transform::translate_mut(self, by);
+        self
     }
 
     #[inline]

@@ -1,8 +1,13 @@
 Unreleased
 ==================
 
+## Added:
+
+ * `View::translate_mut`
+
 ## Changed:
 
+ * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
  * Change `Link` and `Guard` to be public
 
 0.1.0 (2020-07-08)

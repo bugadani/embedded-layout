@@ -40,8 +40,15 @@ impl ProgressBar {
 /// `View` teaches `embedded-layout` where our object is, how big it is and how to move it.
 impl View for ProgressBar {
     #[inline]
-    fn translate(&mut self, by: Point) {
-        self.bounds.translate(by);
+    fn translate(mut self, by: Point) -> Self {
+        self.translate_mut(by);
+        self
+    }
+
+    #[inline]
+    fn translate_mut(&mut self, by: Point) -> &mut Self {
+        self.bounds.translate_mut(by);
+        self
     }
 
     #[inline]
@@ -61,7 +68,7 @@ impl Drawable<BinaryColor> for &ProgressBar {
         let border = self.bounds.into_styled(border_style);
 
         // Create a rectangle that will indicate progress
-        let mut progress = Rectangle::with_size(
+        let progress = Rectangle::with_size(
             Point::zero(),
             // sizes are calculated so that the rectangle will have a 1px margin
             Size::new(
@@ -72,8 +79,8 @@ impl Drawable<BinaryColor> for &ProgressBar {
         .into_styled(progress_style);
 
         // Align progress bar within border
-        progress
-            .align_to_mut(&border, horizontal::Left, vertical::Center)
+        let progress = progress
+            .align_to(&border, horizontal::Left, vertical::Center)
             .translate(Point::new(2, 0));
 
         // Draw views

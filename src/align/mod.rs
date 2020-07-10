@@ -78,8 +78,8 @@ where
 
         let h = horizontal.align(self_bounds, reference_bounds);
         let v = vertical.align(self_bounds, reference_bounds);
-        self.translate(Point::new(h, v));
-        self
+
+        self.translate_mut(Point::new(h, v))
     }
 }
 

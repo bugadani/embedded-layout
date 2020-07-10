@@ -298,19 +298,20 @@ mod test {
 
     #[test]
     fn layout_arrange_vertical() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
-        let mut view_group = LinearLayout::vertical()
+
+        LinearLayout::vertical()
             .add_view(rect)
             .add_view(rect2)
-            .arrange();
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
 
-        view_group.translate(Point::new(1, 2));
-
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        view_group.draw(&mut disp).unwrap();
         assert_eq!(
             disp,
             MockDisplay::from_pattern(&[
@@ -337,20 +338,21 @@ mod test {
 
     #[test]
     fn layout_arrange_vertical_secondary() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
-        let mut view_group = LinearLayout::vertical()
+
+        LinearLayout::vertical()
             .with_alignment(horizontal::Right)
             .add_view(rect)
             .add_view(rect2)
-            .arrange();
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
 
-        view_group.translate(Point::new(1, 2));
-
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        view_group.draw(&mut disp).unwrap();
         assert_eq!(
             disp,
             MockDisplay::from_pattern(&[
@@ -377,19 +379,20 @@ mod test {
 
     #[test]
     fn layout_arrange_horizontal() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
-        let mut view_group = LinearLayout::horizontal()
+
+        LinearLayout::horizontal()
             .add_view(rect)
             .add_view(rect2)
-            .arrange();
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
 
-        view_group.translate(Point::new(1, 2));
-
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        view_group.draw(&mut disp).unwrap();
         assert_eq!(
             disp,
             MockDisplay::from_pattern(&[
@@ -411,20 +414,21 @@ mod test {
 
     #[test]
     fn layout_arrange_horizontal_secondary() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
-        let mut view_group = LinearLayout::horizontal()
+
+        LinearLayout::horizontal()
             .with_alignment(vertical::Top)
             .add_view(rect)
             .add_view(rect2)
-            .arrange();
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
 
-        view_group.translate(Point::new(1, 2));
-
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        view_group.draw(&mut disp).unwrap();
         assert_eq!(
             disp,
             MockDisplay::from_pattern(&[
@@ -469,21 +473,22 @@ mod test {
 
     #[test]
     fn layout_spacing() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
-        let mut view_group = LinearLayout::horizontal()
+
+        LinearLayout::horizontal()
             .with_spacing(FixedMargin(2))
             .with_alignment(vertical::Top)
             .add_view(rect)
             .add_view(rect2)
-            .arrange();
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
 
-        view_group.translate(Point::new(1, 2));
-
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        view_group.draw(&mut disp).unwrap();
         assert_eq!(
             disp,
             MockDisplay::from_pattern(&[
@@ -583,14 +588,14 @@ mod test {
 
     #[test]
     fn layout_size_independent_of_view_location() {
-        let mut rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
+        let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let size1 = LinearLayout::horizontal()
             .add_view(rect)
             .add_view(rect2)
             .size();
 
-        rect.translate(Point::new(30, 50));
+        let rect = rect.translate(Point::new(30, 50));
         let size2 = LinearLayout::horizontal()
             .add_view(rect)
             .add_view(rect2)
