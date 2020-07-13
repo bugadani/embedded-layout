@@ -7,8 +7,12 @@ use crate::{
 };
 use embedded_graphics::primitives::Rectangle;
 
+/// This trait extends view chain elements with methods to build a [`LinearLayout`]
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
+    /// Return the size of the view chain
     fn measure(&self) -> Size;
+
+    /// Arrange views on the display
     fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: u32) -> Rectangle;
 }
 
@@ -18,6 +22,7 @@ where
     VCE: LayoutElement<LD>,
     LD: Orientation,
 {
+    #[inline]
     fn measure(&self) -> Size {
         let current_el_size = self.object.size();
         if VCE::IS_TERMINATOR {
@@ -28,6 +33,7 @@ where
         }
     }
 
+    #[inline]
     fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: u32) -> Rectangle {
         if VCE::IS_TERMINATOR {
             orientation.place_first(&mut self.object, bounds, count);
@@ -46,10 +52,12 @@ where
 }
 
 impl<LD: Orientation> LayoutElement<LD> for Guard {
+    #[inline]
     fn measure(&self) -> Size {
         Size::new(0, 0)
     }
 
+    #[inline]
     fn arrange(&mut self, _bounds: Rectangle, _orientation: &LD, _count: u32) -> Rectangle {
         // Nothing to do
         Rectangle::new(Point::zero(), Point::zero())
