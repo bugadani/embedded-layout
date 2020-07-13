@@ -87,11 +87,11 @@ mod orientation;
 mod secondary_alignment;
 pub mod spacing;
 
+pub use layout_element::LayoutElement;
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 pub use spacing::{ElementSpacing, FixedMargin};
 
-use layout_element::LayoutElement;
 use spacing::Tight;
 
 /// `LinearLayout`
