@@ -103,7 +103,8 @@ impl View for Guard {
 ///
 /// Note: translating an empty [`ViewGroup`] has no effect
 pub struct ViewGroup<C: ViewChainElement = Guard> {
-    pub(crate) views: C,
+    /// The view chain that contains the included views
+    pub views: C,
 }
 
 impl ViewGroup<Guard> {

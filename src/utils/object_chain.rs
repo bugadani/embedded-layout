@@ -16,8 +16,11 @@ pub trait ChainElement {
 
 /// This piece of the chain contains some object
 pub struct Link<V, C: ChainElement = Guard> {
-    pub(crate) object: V,
-    pub(crate) next: C,
+    /// The current object
+    pub object: V,
+
+    /// The rest of the object chain
+    pub next: C,
 }
 
 impl<V, VC: ChainElement> ChainElement for Link<V, VC> {
