@@ -53,12 +53,39 @@ impl ChainElement for Guard {
     }
 }
 
+/// Internal implementation of chain macro
+#[doc(hide)]
+#[macro_export(local_inner_macros)]
+macro_rules! chain_impl {
+    () => {
+        Guard
+    };
+    ($x:ty, $($rest:tt)*) => {
+        Link<$x, chain_impl! { $($rest)* }>
+    };
+}
+
+/// Reverse the argument list to generate object chain
+#[doc(hide)]
+#[macro_export(local_inner_macros)]
+macro_rules! reverse {
+    ([] $($reversed:tt)*) => {
+        chain_impl! { $($reversed)* }
+    };
+    ([$first:ty] $($reversed:tt)*) => {
+        reverse! { [ ] $first, $($reversed)* }
+    };
+    ([$first:ty, $($rest:ty),*] $($reversed:tt)*) => {
+        reverse! { [ $($rest),* ] $first, $($reversed)* }
+    };
+}
+
 /// Helper macro to make working with object chains easier
-#[macro_export]
+#[macro_export(local_inner_macros)]
 macro_rules! chain {
-    () => {Guard};
-    ($x:ty) => {Link<$x, Guard>};
-    ($x:ty, $($rest:ty),*) => {Link<$x, chain! { $($rest),* }>};
+    ( $($types:ty),* ) => {
+        reverse!{ [ $($types),* ] }
+    };
 }
 
 #[cfg(test)]
@@ -71,11 +98,11 @@ mod test {
         chain1: chain! {
             u8
         },
-        chain: chain! {
-            u8, u16, u32
-        },
         generic_in_chain: chain! {
             Generic<'static, u32>
+        },
+        chain: chain! {
+            u8, u16, u32
         },
     }
 
@@ -90,8 +117,8 @@ mod test {
         let test = CompileTest {
             empty_chain: Guard,
             chain1: Guard.append(0),
-            chain: Guard.append(0).append(1).append(2),
             generic_in_chain: Guard.append(Generic { field: PhantomData }),
+            chain: Guard.append(0u8).append(1u16).append(2u32),
         };
 
         f(&test.chain);
