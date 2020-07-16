@@ -130,10 +130,7 @@ impl<C: ViewChainElement> ViewGroup<C> {
     #[inline]
     pub fn add_view<V: View>(self, view: V) -> ViewGroup<Link<V, C>> {
         ViewGroup {
-            views: Link {
-                object: view,
-                next: self.views,
-            },
+            views: self.views.append(view),
         }
     }
 
