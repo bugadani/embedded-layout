@@ -57,13 +57,15 @@ impl ChainElement for Guard {
 #[macro_export]
 macro_rules! chain {
     () => {Guard};
-    ($x:tt) => {Link<$x, Guard>};
-    ($x:tt, $($rest:tt),*) => {Link<$x, chain! { $($rest),* }>};
+    ($x:ty) => {Link<$x, Guard>};
+    ($x:ty, $($rest:ty),*) => {Link<$x, chain! { $($rest),* }>};
 }
 
 #[cfg(test)]
 mod test {
     use super::*;
+    use core::marker::PhantomData;
+
     struct CompileTest {
         empty_chain: chain! {},
         chain1: chain! {
@@ -72,6 +74,13 @@ mod test {
         chain: chain! {
             u8, u16, u32
         },
+        generic_in_chain: chain! {
+            Generic<'static, u32>
+        },
+    }
+
+    struct Generic<'a, T> {
+        field: PhantomData<&'a T>,
     }
 
     #[test]
@@ -82,6 +91,7 @@ mod test {
             empty_chain: Guard,
             chain1: Guard.append(0),
             chain: Guard.append(0).append(1).append(2),
+            generic_in_chain: Guard.append(Generic { field: PhantomData }),
         };
 
         f(&test.chain);
