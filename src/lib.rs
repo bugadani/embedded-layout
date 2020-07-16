@@ -152,7 +152,12 @@ use utils::rect_helper::RectSize;
 pub mod prelude {
     pub use crate::{
         align::{horizontal, vertical, Align},
-        utils::{display_area::DisplayArea, rect_helper::RectExt},
+        chain,
+        utils::{
+            display_area::DisplayArea,
+            object_chain::{ChainElement, Guard, Link},
+            rect_helper::RectExt,
+        },
         View,
     };
 

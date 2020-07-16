@@ -81,6 +81,29 @@ macro_rules! reverse {
 }
 
 /// Helper macro to make working with object chains easier
+///
+/// Using this macro reduces the boilerplate required to describe the type of an object chain
+///
+/// # Example:
+///
+/// Instead of writing this...
+///
+/// ```
+/// use embedded_layout::prelude::*;
+/// use embedded_graphics::primitives::{Circle, Rectangle, Triangle};
+/// type Chain = Link<Rectangle, Link<Circle, Link<Triangle, Guard>>>;
+/// ```
+///
+/// ... the `chain!` macro allows you to write this:
+///
+/// ```
+/// use embedded_layout::prelude::*;
+/// use embedded_graphics::primitives::{Circle, Rectangle, Triangle};
+/// type Chain = chain! { Triangle, Circle, Rectangle };
+/// ```
+///
+/// Note also how the order of types follows the type of objects in the chain instead of being
+/// reversed.
 #[macro_export(local_inner_macros)]
 macro_rules! chain {
     ( $($types:ty),* ) => {
@@ -90,6 +113,7 @@ macro_rules! chain {
 
 #[cfg(test)]
 mod test {
+    #![allow(dead_code)]
     use super::*;
     use core::marker::PhantomData;
 
