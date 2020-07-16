@@ -144,7 +144,7 @@ use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 pub mod align;
 pub mod layout;
-mod utils;
+pub mod utils;
 
 use utils::rect_helper::RectSize;
 

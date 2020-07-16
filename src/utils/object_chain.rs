@@ -14,7 +14,7 @@ pub trait ChainElement: Sized {
     fn count() -> u32;
 
     /// Append an object to the chain
-
+    #[inline]
     fn append<T>(self, item: T) -> Link<T, Self> {
         Link {
             object: item,
