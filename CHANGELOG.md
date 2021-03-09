@@ -32,7 +32,7 @@ Unreleased
  * Secondary alignment implementations now require specifying the alignment of the first view
  * Changed what is re-exported from the `embedded-graphics` prelude. This reduces function name collisions
  * **breaking:** Renamed `layout_direction::LayoutDirection` to `orientation::Orientation`
- * **breaking:** Renamed `layout_operation::LayoutOpeartion` to `layout_element::LayoutElement`
+ * **breaking:** Renamed `layout_operation::LayoutOperation` to `layout_element::LayoutElement`
  * **breaking:** `ViewLink` has been renamed to `Link` and `ChainTerminator` to `Guard`
 
 ## Fixed:
