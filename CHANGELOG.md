@@ -1,6 +1,10 @@
 Unreleased
 ==================
 
+## Removed:
+
+ * Removed `View::translate`. Use `View::translate_mut` instead.
+ 
 ## Added:
 
  * Add `chain!` macro to simplify working with object chains

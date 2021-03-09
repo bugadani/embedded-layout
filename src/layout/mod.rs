@@ -54,12 +54,6 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     }
 
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        self.translate_mut(by);
-        self
-    }
-
-    #[inline]
     fn translate_mut(&mut self, by: Point) -> &mut Self {
         self.object.translate_mut(by);
         self.next.translate_mut(by);
@@ -80,12 +74,6 @@ impl View for Guard {
     #[inline]
     fn bounds(&self) -> Rectangle {
         Rectangle::new(Point::zero(), Point::zero())
-    }
-
-    #[inline]
-    fn translate(self, _by: Point) -> Self {
-        // nothing to do
-        self
     }
 
     #[inline]
@@ -142,12 +130,6 @@ impl<C: ViewChainElement> ViewGroup<C> {
 }
 
 impl<C: ViewChainElement> View for ViewGroup<C> {
-    #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        self.translate_mut(by);
-        self
-    }
-
     #[inline]
     fn translate_mut(&mut self, by: Point) -> &mut Self {
         self.views.translate_mut(by);
@@ -241,7 +223,7 @@ mod test {
     fn test() {
         // Check if multiple different views can be included in the view group
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        let vg = ViewGroup::new()
+        let mut vg = ViewGroup::new()
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
             .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
             .add_view(
@@ -254,7 +236,7 @@ mod test {
             vg.bounds()
         );
 
-        let vg = vg.translate(Point::new(2, 3));
+        let vg = vg.translate_mut(Point::new(2, 3));
 
         assert_eq!(Size::new(10, 20), vg.size());
         assert_eq!(
