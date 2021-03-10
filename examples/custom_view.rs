@@ -40,15 +40,8 @@ impl ProgressBar {
 /// `View` teaches `embedded-layout` where our object is, how big it is and how to move it.
 impl View for ProgressBar {
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        self.translate_mut(by);
-        self
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        self.bounds.translate_mut(by);
-        self
+    fn translate_impl(&mut self, by: Point) {
+        self.bounds.translate(by);
     }
 
     #[inline]
@@ -109,15 +102,17 @@ fn main() -> Result<(), core::convert::Infallible> {
     let progress4 = ProgressBar::new(Point::zero(), Size::new(32, 6)).with_progress(100);
 
     // Arrange on display and draw
-    LinearLayout::vertical(progress1)
-        .with_spacing(FixedMargin(4))
-        .add_view(progress2)
-        .add_view(progress3)
-        .add_view(progress4)
-        .arrange()
-        .align_to(&display_area, horizontal::Center, vertical::Center)
-        .draw(&mut display)
-        .unwrap();
+    LinearLayout::vertical(
+        Tail::new(progress1)
+            .append(progress2)
+            .append(progress3)
+            .append(progress4),
+    )
+    .with_spacing(FixedMargin(4))
+    .arrange()
+    .align_to(&display_area, horizontal::Center, vertical::Center)
+    .draw(&mut display)
+    .unwrap();
 
     Window::new("Custom View example", &output_settings).show_static(&display);
     Ok(())

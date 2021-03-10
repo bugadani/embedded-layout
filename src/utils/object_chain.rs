@@ -15,7 +15,7 @@ mod private {
 /// A generic chain element
 pub trait ChainElement: Sized + private::Sealed {
     /// Return the number of objects linked to this chain element
-    fn count() -> u32;
+    fn count(&self) -> usize;
 
     /// Append an object to the chain
     #[inline]
@@ -41,8 +41,8 @@ where
     VC: ChainElement,
 {
     #[inline]
-    fn count() -> u32 {
-        1 + VC::count()
+    fn count(&self) -> usize {
+        self.next.count() + 1
     }
 }
 
@@ -59,7 +59,7 @@ impl<V> Tail<V> {
 
 impl<V> ChainElement for Tail<V> {
     #[inline]
-    fn count() -> u32 {
+    fn count(&self) -> usize {
         1
     }
 }
@@ -158,5 +158,11 @@ mod test {
         };
 
         f(&test.chain);
+    }
+
+    #[test]
+    pub fn test_count() {
+        assert_eq!(1, Tail::new(0).count());
+        assert_eq!(3, Tail::new(0u8).append(1u16).append(2u32).count());
     }
 }

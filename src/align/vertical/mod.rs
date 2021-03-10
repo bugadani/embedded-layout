@@ -165,7 +165,7 @@ mod test {
 
     #[test]
     fn test_top_to_bottom() {
-        fn check_to_to_bottom_alignment(
+        fn check_top_to_bottom_alignment(
             source: Rectangle,
             reference: Rectangle,
             result: Rectangle,
@@ -184,16 +184,16 @@ mod test {
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::TopToBottom);
-        check_to_to_bottom_alignment(rect1, rect2, result);
+        check_top_to_bottom_alignment(rect1, rect2, result);
 
         // Test the other direction
         let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::TopToBottom);
-        check_to_to_bottom_alignment(rect2, rect1, result);
+        check_top_to_bottom_alignment(rect2, rect1, result);
     }
 
     #[test]
     fn test_bottom_to_top() {
-        fn check_to_to_bottom_alignment(
+        fn check_bottom_to_top_alignment(
             source: Rectangle,
             reference: Rectangle,
             result: Rectangle,
@@ -212,10 +212,10 @@ mod test {
         let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::BottomToTop);
-        check_to_to_bottom_alignment(rect1, rect2, result);
+        check_bottom_to_top_alignment(rect1, rect2, result);
 
         // Test the other direction
         let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::BottomToTop);
-        check_to_to_bottom_alignment(rect2, rect1, result);
+        check_bottom_to_top_alignment(rect2, rect1, result);
     }
 }

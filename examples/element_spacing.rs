@@ -46,14 +46,14 @@ fn main() -> Result<(), core::convert::Infallible> {
 
     // Lay out and draw the views
     LinearLayout::vertical(
-        LinearLayout::horizontal(triangle)
-            .with_spacing(DistributeFill(text.size().width))
-            .add_view(rectangle)
-            .add_view(circle)
-            .arrange(),
+        Tail::new(
+            LinearLayout::horizontal(Tail::new(triangle).append(rectangle).append(circle))
+                .with_spacing(DistributeFill(text.size().width))
+                .arrange(),
+        )
+        .append(text),
     )
     .with_spacing(FixedMargin(10))
-    .add_view(text)
     .arrange()
     .align_to(&display_area, horizontal::Center, vertical::Center)
     .draw(&mut display)

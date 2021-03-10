@@ -21,14 +21,16 @@ fn main() -> Result<(), core::convert::Infallible> {
         .text_color(BinaryColor::On)
         .build();
 
-    LinearLayout::vertical(Text::new("Vertical", Point::zero()).into_styled(text_style))
-        .with_alignment(horizontal::Center)
-        .add_view(Text::new("Linear", Point::zero()).into_styled(text_style))
-        .add_view(Text::new("Layout", Point::zero()).into_styled(text_style))
-        .arrange()
-        .align_to(&display_area, horizontal::Center, vertical::Center)
-        .draw(&mut display)
-        .unwrap();
+    LinearLayout::vertical(
+        Tail::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
+            .append(Text::new("Linear", Point::zero()).into_styled(text_style))
+            .append(Text::new("Layout", Point::zero()).into_styled(text_style)),
+    )
+    .with_alignment(horizontal::Center)
+    .arrange()
+    .align_to(&display_area, horizontal::Center, vertical::Center)
+    .draw(&mut display)
+    .unwrap();
 
     Window::new("LinearLayout exmaple", &output_settings).show_static(&display);
     Ok(())
