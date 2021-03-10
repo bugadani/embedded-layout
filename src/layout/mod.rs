@@ -12,9 +12,13 @@
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::layout::ViewGroup
 
-pub use crate::utils::object_chain::{Guard, Link};
-use crate::{prelude::*, utils::object_chain::ChainElement};
-use embedded_graphics::{primitives::Rectangle, DrawTarget};
+pub use crate::utils::object_chain::{Link, Tail};
+use crate::{
+    prelude::*,
+    utils::{object_chain::ChainElement, rect_helper::RectExt},
+    ViewGroup,
+};
+use embedded_graphics::{draw_target::DrawTarget, prelude::Point, primitives::Rectangle, Drawable};
 
 pub mod linear;
 
@@ -22,16 +26,15 @@ pub mod linear;
 /// in a [`ViewGroup`]
 pub trait ViewChainElement: ChainElement + View {}
 
-impl<'a, C, V, VC> Drawable<C> for &'a Link<V, VC>
+impl<'a, V, VC> Drawable for Link<V, VC>
 where
-    C: PixelColor,
-    V: View,
-    &'a V: Drawable<C>,
-    VC: ViewChainElement,
-    &'a VC: Drawable<C>,
+    V: View + Drawable,
+    VC: ViewChainElement + Drawable<Color = <V as Drawable>::Color>,
 {
+    type Color = <V as Drawable>::Color;
+
     #[inline]
-    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+    fn draw<D: DrawTarget<Color = Self::Color>>(&self, display: &mut D) -> Result<(), D::Error> {
         self.object.draw(display)?;
         self.next.draw(display)?;
 
@@ -46,222 +49,145 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
 
-        if VC::IS_TERMINATOR {
-            bounds
-        } else {
-            bounds.enveloping(&self.next.bounds())
-        }
+        bounds.enveloping(&self.next.bounds())
     }
 
     #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        self.object.translate_mut(by);
-        self.next.translate_mut(by);
-        self
+    fn translate(&mut self, by: Point) {
+        self.object.translate(by);
+        self.next.translate(by);
     }
 }
 
-impl ViewChainElement for Guard {}
+impl<V: View> ViewChainElement for Tail<V> {}
 
-impl<C: PixelColor> Drawable<C> for &Guard {
-    #[inline]
-    fn draw<D: DrawTarget<C>>(self, _display: &mut D) -> Result<(), D::Error> {
-        Ok(())
-    }
-}
-
-impl View for Guard {
-    #[inline]
-    fn bounds(&self) -> Rectangle {
-        Rectangle::new(Point::zero(), Point::zero())
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, _by: Point) -> &mut Self {
-        // nothing to do
-        self
-    }
-}
-
-/// Group multiple [`View`]s together
-///
-/// [`ViewGroup`] takes ownership over the views, so make sure you set them up before creating
-/// the group.
-/// The bounds and size of a [`ViewGroup`] envelops all the contained [`View`]s.
-///
-/// Note: translating an empty [`ViewGroup`] has no effect
-pub struct ViewGroup<C: ViewChainElement = Guard> {
-    /// The view chain that contains the included views
-    pub views: C,
-}
-
-impl ViewGroup<Guard> {
-    /// Create a new, empty [`ViewGroup`] object
-    #[inline]
-    #[must_use]
-    pub const fn new() -> Self {
-        Self { views: Guard }
-    }
-}
-
-impl Default for ViewGroup<Guard> {
-    #[inline]
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl<C: ViewChainElement> ViewGroup<C> {
-    /// Bind a [`View`] to this [`ViewGroup`]
-    ///
-    /// The [`View`] remains at it's current location, until the [`ViewGroup`] is translated.
-    #[inline]
-    pub fn add_view<V: View>(self, view: V) -> ViewGroup<Link<V, C>> {
-        ViewGroup {
-            views: self.views.append(view),
-        }
-    }
-
-    /// Returns the number of views in this [`ViewGroup`]
-    #[inline]
-    pub fn view_count(&self) -> u32 {
-        C::count()
-    }
-}
-
-impl<C: ViewChainElement> View for ViewGroup<C> {
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        self.views.translate_mut(by);
-        self
-    }
-
-    #[inline]
-    fn bounds(&self) -> Rectangle {
-        self.views.bounds()
-    }
-}
-
-impl<'a, C, VC> Drawable<C> for &'a ViewGroup<VC>
+impl<V> View for Tail<V>
 where
-    C: PixelColor,
-    VC: ViewChainElement,
-    &'a VC: Drawable<C>,
+    V: View,
 {
-    /// Draw the graphics object using the supplied `DrawTarget`.
     #[inline]
-    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
-        self.views.draw(display)
+    fn bounds(&self) -> Rectangle {
+        self.object.bounds()
+    }
+
+    #[inline]
+    fn translate(&mut self, by: Point) {
+        self.object.translate(by);
+    }
+}
+
+impl<V> Drawable for Tail<V>
+where
+    V: View + Drawable,
+{
+    type Color = <V as Drawable>::Color;
+
+    #[inline]
+    fn draw<D: DrawTarget<Color = Self::Color>>(&self, display: &mut D) -> Result<(), D::Error> {
+        self.object.draw(display)
+    }
+}
+
+impl<V, VC> ViewGroup for Link<V, VC>
+where
+    V: 'static + View,
+    VC: 'static + ViewGroup + ViewChainElement,
+{
+    fn len() -> usize {
+        Self::count() as usize
+    }
+}
+
+impl<V, VC> core::ops::Index<usize> for Link<V, VC>
+where
+    V: 'static + View,
+    VC: 'static + ViewGroup + ViewChainElement,
+{
+    type Output = dyn View;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        if index == Self::len() - 1 {
+            return &self.object;
+        }
+
+        return self.next.index(index - 1);
+    }
+}
+
+impl<V, VC> core::ops::IndexMut<usize> for Link<V, VC>
+where
+    V: 'static + View,
+    VC: 'static + ViewGroup + ViewChainElement,
+{
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        if index == Self::len() - 1 {
+            return &mut self.object;
+        }
+
+        return self.next.index_mut(index - 1);
+    }
+}
+
+impl<V> ViewGroup for Tail<V>
+where
+    V: 'static + View,
+{
+    fn len() -> usize {
+        Self::count() as usize
+    }
+}
+
+impl<V> core::ops::Index<usize> for Tail<V>
+where
+    V: 'static + View,
+{
+    type Output = dyn View;
+
+    fn index(&self, index: usize) -> &Self::Output {
+        assert!(index == 0);
+
+        return &self.object;
+    }
+}
+
+impl<V> core::ops::IndexMut<usize> for Tail<V>
+where
+    V: 'static + View,
+{
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        assert!(index == 0);
+
+        return &mut self.object;
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::{
-        layout::{ViewChainElement, ViewGroup},
-        prelude::*,
-    };
     use embedded_graphics::{
-        mock_display::MockDisplay,
         pixelcolor::BinaryColor,
-        primitives::{Circle, Rectangle},
-        style::PrimitiveStyle,
+        prelude::{Primitive, Size},
+        primitives::{Circle, PrimitiveStyleBuilder},
     };
 
-    #[test]
-    fn compile_check() {
-        fn check_vg<C: ViewChainElement>(vg: &ViewGroup<C>) {
-            assert_eq!(2, vg.view_count());
-        }
+    use super::*;
 
-        // Check if multiple different views can be included in the view group
-        let vg = ViewGroup::new()
-            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
-            .add_view(Circle::new(Point::zero(), 5));
+    fn compiles() {
+        fn is_viewgroup(_v: &impl ViewGroup) {}
+        fn is_drawable(_v: &impl Drawable<Color = BinaryColor>) {}
 
-        check_vg(&vg);
-    }
+        let style = PrimitiveStyleBuilder::new()
+            .stroke_color(BinaryColor::On)
+            .build();
 
-    #[test]
-    fn compile_check_empty() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+        let rect = Rectangle::new(Point::zero(), Size::new(5, 10));
+        let circle = Circle::new(Point::zero(), 12);
 
-        ViewGroup::new().draw(&mut disp).unwrap();
-    }
+        let styled_rect = rect.into_styled(style);
+        let styled_circle = circle.into_styled(style);
 
-    #[test]
-    fn compile_check_empty_nested() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+        let chain = Tail::new(styled_rect).append(styled_circle);
 
-        ViewGroup::new()
-            .add_view(ViewGroup::new())
-            .draw(&mut disp)
-            .unwrap();
-    }
-
-    #[test]
-    fn compile_check_complex_nested() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        ViewGroup::new()
-            .add_view(Rectangle::new(Point::zero(), Point::new(10, 5)).into_styled(style))
-            .add_view(
-                ViewGroup::new()
-                    .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
-                    .add_view(Circle::new(Point::zero(), 5).into_styled(style)),
-            )
-            .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
-            .draw(&mut disp)
-            .unwrap();
-    }
-
-    #[test]
-    fn test() {
-        // Check if multiple different views can be included in the view group
-        let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        let mut vg = ViewGroup::new()
-            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
-            .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
-            .add_view(
-                Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style),
-            );
-
-        assert_eq!(Size::new(10, 20), vg.size());
-        assert_eq!(
-            Rectangle::new(Point::new(-2, -5), Point::new(7, 14)),
-            vg.bounds()
-        );
-
-        let vg = vg.translate_mut(Point::new(2, 3));
-
-        assert_eq!(Size::new(10, 20), vg.size());
-        assert_eq!(
-            Rectangle::new(Point::new(0, -2), Point::new(9, 17)),
-            vg.bounds()
-        );
-
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        vg.draw(&mut disp).unwrap();
-    }
-
-    #[test]
-    fn test_align() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        let rect3 = Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style);
-        ViewGroup::new()
-            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
-            .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
-            .align_to(&rect3, horizontal::LeftToRight, vertical::TopToBottom)
-            .draw(&mut disp)
-            .unwrap();
+        is_viewgroup(&chain);
+        is_drawable(&chain);
     }
 }

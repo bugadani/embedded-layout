@@ -4,6 +4,7 @@ Unreleased
 ## Removed:
 
  * Removed `View::translate`. Use `View::translate_mut` instead.
+ * Removed embedded-graphics' types from `prelude`.
  
 ## Added:
 
@@ -13,10 +14,13 @@ Unreleased
 
 ## Changed:
 
+ * **breaking** Require embedded-graphics 0.7
  * Change fields of `Link` and `ViewGroup` to be public
  * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
  * Change `Link` and `Guard` to be public
  * Change `LayoutElement` to be public
+ * `ViewGroup` is now a trait.
+ * `LinearLayout` is no longer a `ViewGroup` but takes a `ViewGroup` in `arrange()`.
 
 0.1.0 (2020-07-08)
 ==================

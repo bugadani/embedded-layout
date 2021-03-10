@@ -23,8 +23,10 @@
 //! [`align_*`]: crate::align::Align
 //! [`align_to`]: crate::align::Align::align_to
 //! [`align_to_mut`]: crate::align::Align::align_to_mut
-use crate::prelude::*;
-use embedded_graphics::primitives::Rectangle;
+
+use embedded_graphics::{prelude::Point, primitives::Rectangle};
+
+use crate::View;
 
 pub mod horizontal;
 pub mod vertical;
@@ -35,19 +37,8 @@ pub mod vertical;
 ///
 /// For more information, see the [module level documentation](crate::align)
 pub trait Align {
-    /// Return the object aligned to an other one using the alignment parameters as rules
-    fn align_to<H, V>(self, reference: &impl View, horizontal: H, vertical: V) -> Self
-    where
-        H: HorizontalAlignment,
-        V: VerticalAlignment;
-
     /// Align the object to an other one using the alignment parameters as rules
-    fn align_to_mut<H, V>(
-        &mut self,
-        reference: &impl View,
-        horizontal: H,
-        vertical: V,
-    ) -> &mut Self
+    fn align_to<H, V>(&mut self, reference: &impl View, horizontal: H, vertical: V)
     where
         H: HorizontalAlignment,
         V: VerticalAlignment;
@@ -58,17 +49,7 @@ where
     T: View,
 {
     #[inline]
-    fn align_to<H, V>(mut self, reference: &impl View, horizontal: H, vertical: V) -> Self
-    where
-        H: HorizontalAlignment,
-        V: VerticalAlignment,
-    {
-        self.align_to_mut(reference, horizontal, vertical);
-        self
-    }
-
-    #[inline]
-    fn align_to_mut<H, V>(&mut self, reference: &impl View, horizontal: H, vertical: V) -> &mut Self
+    fn align_to<H, V>(&mut self, reference: &impl View, horizontal: H, vertical: V)
     where
         H: HorizontalAlignment,
         V: VerticalAlignment,
@@ -79,7 +60,7 @@ where
         let h = horizontal.align(self_bounds, reference_bounds);
         let v = vertical.align(self_bounds, reference_bounds);
 
-        self.translate_mut(Point::new(h, v))
+        self.translate(Point::new(h, v))
     }
 }
 
@@ -105,7 +86,7 @@ pub trait Alignment: Copy + Clone + Default {
 /// Implement this trait for horizontal alignment operations
 ///
 /// This trait does not provide any functionality other than that of [`Alignment`], but marks
-/// implementors to be used as horizontal alignmenent operations.
+/// implementors to be used as horizontal alignment operations.
 ///
 /// For a list of available horizontal alignments, see the [`horizontal`] module.
 ///
@@ -117,7 +98,7 @@ pub trait HorizontalAlignment: Alignment {}
 /// Vertical alignment assumes lower coordinate values are higher up on the display.
 ///
 /// This trait does not provide any functionality other than that of [`Alignment`], but marks
-/// implementors to be used as vertical alignmenent operations.
+/// implementors to be used as vertical alignment operations.
 ///
 /// For a list of available vertical alignments, see the [`vertical`] module.
 ///

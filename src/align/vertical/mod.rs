@@ -3,7 +3,7 @@
 //! Vertical alignment types must implement [`VerticalAlignment`].
 use crate::{
     align::{Alignment, VerticalAlignment},
-    prelude::*,
+    utils::rect_helper::RectExt,
 };
 use embedded_graphics::primitives::Rectangle;
 
@@ -22,7 +22,7 @@ impl Alignment for NoAlignment {
 /// Center the objects vertically
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
-///         the integer cordinates used.
+///         the integer coordinates used.
 #[derive(Copy, Clone, Default)]
 pub struct Center;
 impl VerticalAlignment for Center {}
@@ -85,16 +85,16 @@ impl Alignment for BottomToTop {
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use embedded_graphics::{geometry::Point, primitives::Rectangle};
+    use embedded_graphics::{geometry::Point, prelude::Size, primitives::Rectangle};
 
     #[test]
     fn test_center() {
         fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
-            let center_of_reference = reference.top_left + reference.size() / 2;
-            let center_of_result = result.top_left + result.size() / 2;
+            let center_of_reference = reference.top_left + reference.bounds().size / 2;
+            let center_of_result = result.top_left + result.bounds().size / 2;
 
             // The size hasn't changed
-            assert_eq!(result.size(), source.size());
+            assert_eq!(result.bounds().size, source.bounds().size);
 
             // Vertical coordinate matches reference
             assert_eq!(center_of_result.y, center_of_reference.y);
@@ -103,8 +103,8 @@ mod test {
             assert_eq!(result.top_left.x, source.top_left.x);
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Size::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::Center);
         check_center_alignment(rect1, rect2, result);
@@ -119,7 +119,7 @@ mod test {
     fn test_top() {
         fn check_top_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(result.size(), source.size());
+            assert_eq!(result.bounds().size, source.bounds().size);
 
             // Vertical coordinate matches reference
             assert_eq!(result.top_left.y, reference.top_left.y);
@@ -143,7 +143,7 @@ mod test {
     fn test_bottom() {
         fn check_bottom_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
             // The size hasn't changed
-            assert_eq!(result.size(), source.size());
+            assert_eq!(result.bounds().size, source.bounds().size);
 
             // Vertical coordinate matches reference
             assert_eq!(result.bottom_right.y, reference.bottom_right.y);
@@ -171,7 +171,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(result.size(), source.size());
+            assert_eq!(result.bounds().size, source.bounds().size);
 
             // Top is at bottom + 1
             assert_eq!(result.top_left.y, reference.bottom_right.y + 1);
@@ -199,7 +199,7 @@ mod test {
             result: Rectangle,
         ) {
             // The size hasn't changed
-            assert_eq!(result.size(), source.size());
+            assert_eq!(result.bounds().size, source.bounds().size);
 
             // Bottom is at top - 1
             assert_eq!(result.bottom_right.y, reference.top_left.y - 1);

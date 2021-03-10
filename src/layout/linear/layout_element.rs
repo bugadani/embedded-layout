@@ -1,11 +1,11 @@
 use crate::{
     layout::{
         linear::{orientation::Orientation, secondary_alignment::SecondaryAlignment},
-        Guard, Link, ViewChainElement,
+        Link, Tail, ViewChainElement,
     },
     prelude::*,
 };
-use embedded_graphics::primitives::Rectangle;
+use embedded_graphics::{prelude::Size, primitives::Rectangle};
 
 /// This trait extends view chain elements with methods to build a [`LinearLayout`]
 pub trait LayoutElement<LD: Orientation>: ViewChainElement {
@@ -24,42 +24,34 @@ where
 {
     #[inline]
     fn measure(&self) -> Size {
-        let current_el_size = self.object.size();
-        if VCE::IS_TERMINATOR {
-            current_el_size
-        } else {
-            let prev_size = self.next.measure();
-            LD::Secondary::measure(prev_size, current_el_size)
-        }
+        let current_el_size = self.object.bounds().size;
+        let prev_size = self.next.measure();
+        LD::Secondary::measure(prev_size, current_el_size)
     }
 
     #[inline]
     fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: u32) -> Rectangle {
-        if VCE::IS_TERMINATOR {
-            orientation.place_first(&mut self.object, bounds, count);
-        } else {
-            let previous = self.next.arrange(bounds, orientation, count);
-            orientation.place_nth(
-                &mut self.object,
-                bounds.size(),
-                previous,
-                VCE::count(),
-                count,
-            );
-        }
+        let previous = self.next.arrange(bounds, orientation, count);
+        orientation.place_nth(&mut self.object, bounds.size, previous, VCE::count(), count);
+
         self.object.bounds()
     }
 }
 
-impl<LD: Orientation> LayoutElement<LD> for Guard {
+impl<V, LD: Orientation> LayoutElement<LD> for Tail<V>
+where
+    V: View,
+{
     #[inline]
     fn measure(&self) -> Size {
-        Size::new(0, 0)
+        self.object.bounds().size
     }
 
     #[inline]
-    fn arrange(&mut self, _bounds: Rectangle, _orientation: &LD, _count: u32) -> Rectangle {
+    fn arrange(&mut self, bounds: Rectangle, orientation: &LD, count: u32) -> Rectangle {
         // Nothing to do
-        Rectangle::new(Point::zero(), Point::zero())
+        orientation.place_first(&mut self.object, bounds, count);
+
+        self.object.bounds()
     }
 }

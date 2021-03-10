@@ -5,11 +5,15 @@
 //! to query the number of elements, but you can implement a more useful trait for both `Link` and
 //! `Guard` to make this structure more useful.
 
-/// A generic chain element
-pub trait ChainElement: Sized {
-    /// `true` if this chain element marks the end of a chain
-    const IS_TERMINATOR: bool;
+mod private {
+    pub trait Sealed {}
 
+    impl<V> Sealed for super::Tail<V> {}
+    impl<V, C: super::ChainElement> Sealed for super::Link<V, C> {}
+}
+
+/// A generic chain element
+pub trait ChainElement: Sized + private::Sealed {
     /// Return the number of objects linked to this chain element
     fn count() -> u32;
 
@@ -24,7 +28,7 @@ pub trait ChainElement: Sized {
 }
 
 /// This piece of the chain contains some object
-pub struct Link<V, C: ChainElement = Guard> {
+pub struct Link<V, C: ChainElement> {
     /// The current object
     pub object: V,
 
@@ -32,9 +36,10 @@ pub struct Link<V, C: ChainElement = Guard> {
     pub next: C,
 }
 
-impl<V, VC: ChainElement> ChainElement for Link<V, VC> {
-    const IS_TERMINATOR: bool = false;
-
+impl<V, VC> ChainElement for Link<V, VC>
+where
+    VC: ChainElement,
+{
     #[inline]
     fn count() -> u32 {
         1 + VC::count()
@@ -42,14 +47,20 @@ impl<V, VC: ChainElement> ChainElement for Link<V, VC> {
 }
 
 /// This piece marks the end of a chain
-pub struct Guard;
+pub struct Tail<V> {
+    pub object: V,
+}
 
-impl ChainElement for Guard {
-    const IS_TERMINATOR: bool = true;
+impl<V> Tail<V> {
+    pub fn new(object: V) -> Self {
+        Self { object }
+    }
+}
 
+impl<V> ChainElement for Tail<V> {
     #[inline]
     fn count() -> u32 {
-        0
+        1
     }
 }
 
@@ -57,11 +68,14 @@ impl ChainElement for Guard {
 #[doc(hide)]
 #[macro_export(local_inner_macros)]
 macro_rules! chain_impl {
-    () => {
-        Guard
+    ($x:ty) => {
+        Tail<$x>
     };
-    ($x:ty, $($rest:tt)*) => {
-        Link<$x, chain_impl! { $($rest)* }>
+    ($x:ty,) => {
+        Tail<$x>
+    };
+    ($x:ty, $($rest:tt)+) => {
+        Link<$x, chain_impl! { $($rest)+ }>
     };
 }
 
@@ -69,8 +83,8 @@ macro_rules! chain_impl {
 #[doc(hide)]
 #[macro_export(local_inner_macros)]
 macro_rules! reverse {
-    ([] $($reversed:tt)*) => {
-        chain_impl! { $($reversed)* }
+    ([] $($reversed:tt)+) => {
+        chain_impl! { $($reversed)+ }
     };
     ([$first:ty] $($reversed:tt)*) => {
         reverse! { [ ] $first, $($reversed)* }
@@ -106,8 +120,8 @@ macro_rules! reverse {
 /// reversed.
 #[macro_export(local_inner_macros)]
 macro_rules! chain {
-    ( $($types:ty),* ) => {
-        reverse!{ [ $($types),* ] }
+    ( $($types:ty),+ ) => {
+        reverse!{ [ $($types),+ ] }
     };
 }
 
@@ -118,7 +132,6 @@ mod test {
     use core::marker::PhantomData;
 
     struct CompileTest {
-        empty_chain: chain! {},
         chain1: chain! {
             u8
         },
@@ -139,10 +152,9 @@ mod test {
         fn f(_obj_chain: &chain! {u8, u16, u32}) {}
 
         let test = CompileTest {
-            empty_chain: Guard,
-            chain1: Guard.append(0),
-            generic_in_chain: Guard.append(Generic { field: PhantomData }),
-            chain: Guard.append(0u8).append(1u16).append(2u32),
+            chain1: Tail::new(0),
+            generic_in_chain: Tail::new(Generic { field: PhantomData }),
+            chain: Tail::new(0u8).append(1u16).append(2u32),
         };
 
         f(&test.chain);

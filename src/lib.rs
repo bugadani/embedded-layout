@@ -136,9 +136,11 @@
 //! [alignments]: crate::align
 
 #![cfg_attr(not(test), no_std)]
-#![deny(missing_docs)]
+//#![deny(missing_docs)]
 #![deny(clippy::missing_inline_in_public_items)]
 #![warn(clippy::all)]
+
+use core::ops::{Index, IndexMut};
 
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
@@ -146,28 +148,13 @@ pub mod align;
 pub mod layout;
 pub mod utils;
 
-use utils::rect_helper::RectSize;
-
 /// The essentials. Also contains most of `embedded-graphics'` prelude.
 pub mod prelude {
     pub use crate::{
         align::{horizontal, vertical, Align},
         chain,
-        utils::{
-            display_area::DisplayArea,
-            object_chain::{ChainElement, Guard, Link},
-            rect_helper::RectExt,
-        },
+        utils::object_chain::{ChainElement, Link, Tail},
         View,
-    };
-
-    pub use embedded_graphics::{
-        drawable::{Drawable, Pixel},
-        fonts::Font,
-        geometry::{Point, Size},
-        image::{ImageDimensions, IntoPixelIter},
-        pixelcolor::{raw::RawData, GrayColor, IntoStorage, PixelColor, RgbColor},
-        primitives::Primitive,
     };
 }
 
@@ -178,15 +165,9 @@ pub mod prelude {
 ///
 /// See the `custom_view` example for how you can define more complex views.
 pub trait View {
-    /// Get the size of a View.
-    #[inline]
-    fn size(&self) -> Size {
-        RectSize::size(self.bounds())
-    }
-
     /// Move the origin of an object by a given number of (x, y) pixels,
     /// mutating the object in place
-    fn translate_mut(&mut self, by: Point) -> &mut Self;
+    fn translate(&mut self, by: Point);
 
     /// Returns the bounding box of the `View` as a `Rectangle`
     fn bounds(&self) -> Rectangle;
@@ -197,26 +178,74 @@ where
     T: Transform + Dimensions,
 {
     #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
+    fn translate(&mut self, by: Point) {
         Transform::translate_mut(self, by);
-        self
     }
 
     #[inline]
     fn bounds(&self) -> Rectangle {
-        Rectangle::new(self.top_left(), self.bottom_right())
+        Dimensions::bounding_box(self)
     }
+}
+
+pub trait ViewGroup: Index<usize, Output = dyn View> + IndexMut<usize> {
+    fn len() -> usize;
 }
 
 #[cfg(test)]
 mod test {
-    use crate::prelude::*;
-    use embedded_graphics::primitives::Rectangle;
+    use embedded_graphics::{
+        pixelcolor::BinaryColor,
+        primitives::{Line, PrimitiveStyle},
+        Styled,
+    };
 
-    #[test]
-    fn test_size() {
-        let rect = Rectangle::new(Point::zero(), Point::new(1, 2));
+    use super::*;
 
-        assert_eq!(rect.size(), Size::new(2, 3));
+    struct S {
+        a: Styled<Line, PrimitiveStyle<BinaryColor>>,
+        b: Styled<Rectangle, PrimitiveStyle<BinaryColor>>,
+    }
+
+    impl Index<usize> for S {
+        type Output = dyn View;
+
+        fn index(&self, index: usize) -> &Self::Output {
+            match index {
+                0 => &self.a,
+                1 => &self.b,
+                _ => panic!(),
+            }
+        }
+    }
+
+    impl IndexMut<usize> for S {
+        fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+            match index {
+                0 => &mut self.a,
+                1 => &mut self.b,
+                _ => panic!(),
+            }
+        }
+    }
+
+    impl ViewGroup for S {
+        fn len() -> usize {
+            2
+        }
+    }
+
+    impl Drawable for S {
+        type Color = BinaryColor;
+
+        fn draw<D>(&self, display: &mut D) -> Result<(), D::Error>
+        where
+            D: DrawTarget<Color = Self::Color>,
+        {
+            self.a.draw(display)?;
+            self.b.draw(display)?;
+
+            Ok(())
+        }
     }
 }
