@@ -102,7 +102,7 @@ where
         let (primary_size, _) = Self::destructure_size(bounds.size());
         let view_bounds = view.bounds();
 
-        view.translate_mut(Point::new(
+        view.translate(Point::new(
             self.spacing.align(
                 horizontal::Left,
                 view_bounds,
@@ -120,7 +120,7 @@ where
         let (primary_size, _) = Self::destructure_size(size);
         let view_bounds = view.bounds();
 
-        view.translate_mut(Point::new(
+        view.translate(Point::new(
             self.spacing.align(
                 horizontal::LeftToRight,
                 view_bounds,
@@ -216,7 +216,7 @@ where
         let (primary_size, _) = Self::destructure_size(bounds.size());
         let view_bounds = view.bounds();
 
-        view.translate_mut(Point::new(
+        view.translate(Point::new(
             Secondary::First::default().align(view_bounds, bounds),
             self.spacing
                 .align(vertical::Top, view_bounds, bounds, 0, count, primary_size),
@@ -228,7 +228,7 @@ where
         let (primary_size, _) = Self::destructure_size(size);
         let view_bounds = view.bounds();
 
-        view.translate_mut(Point::new(
+        view.translate(Point::new(
             Secondary::default().align(view_bounds, previous),
             self.spacing.align(
                 vertical::TopToBottom,

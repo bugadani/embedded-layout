@@ -184,14 +184,19 @@ pub trait View {
         RectSize::size(self.bounds())
     }
 
-    /// Move the origin of an object by a given number of (x, y) pixels,
-    /// by returning a new object
-    #[must_use]
-    fn translate(self, by: Point) -> Self;
+    /// Object-safe version of `translate()`.
+    fn translate_impl(&mut self, by: Point);
 
     /// Move the origin of an object by a given number of (x, y) pixels,
-    /// mutating the object in place
-    fn translate_mut(&mut self, by: Point) -> &mut Self;
+    /// mutating the object in place.
+    /// If you a looking for a method to implement, you might want `translate_impl()` instead.
+    fn translate(&mut self, by: Point) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.translate_impl(by);
+        self
+    }
 
     /// Returns the bounding box of the `View` as a `Rectangle`
     fn bounds(&self) -> Rectangle;
@@ -202,15 +207,8 @@ where
     T: Transform + Dimensions,
 {
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        Self::translate_mut(&mut self, by);
-        self
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        Transform::translate_mut(self, by);
-        self
+    fn translate_impl(&mut self, by: Point) {
+        Transform::translate(self, by);
     }
 
     #[inline]
@@ -223,6 +221,8 @@ where
 mod test {
     use crate::prelude::*;
     use embedded_graphics::primitives::Rectangle;
+
+    fn view_is_object_safe(v: &dyn View) {}
 
     #[test]
     fn test_size() {
