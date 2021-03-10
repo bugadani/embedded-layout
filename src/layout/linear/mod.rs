@@ -77,17 +77,15 @@
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
-    layout::{Link, Tail, ViewChainElement, ViewGroup},
+    layout::ViewGroup,
     prelude::*,
 };
-use embedded_graphics::primitives::Rectangle;
 
-mod layout_element;
 mod orientation;
 mod secondary_alignment;
 pub mod spacing;
 
-pub use layout_element::LayoutElement;
+use embedded_graphics::{primitives::Rectangle, DrawTarget};
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 pub use spacing::{ElementSpacing, FixedMargin};
@@ -102,40 +100,43 @@ use spacing::Tight;
 /// `size` however.
 ///
 /// For more information and examples see the [module level documentation](crate::layout::linear).
-pub struct LinearLayout<LD: Orientation, VC: ViewChainElement> {
+pub struct LinearLayout<LD, VG> {
     direction: LD,
-    views: ViewGroup<VC>,
+    views: VG,
 }
 
-impl<V: View> LinearLayout<Horizontal<vertical::Bottom, Tight>, Tail<V>> {
+impl<VG> LinearLayout<Horizontal<vertical::Bottom, Tight>, VG>
+where
+    VG: ViewGroup,
+{
     /// Create a new, empty [`LinearLayout`] that places views left to right
     #[inline]
     #[must_use]
-    pub fn horizontal(view: V) -> Self {
+    pub fn horizontal(views: VG) -> Self {
         Self {
             direction: Horizontal::default(),
-            views: ViewGroup::new(view),
+            views,
         }
     }
 }
 
-impl<V: View> LinearLayout<Vertical<horizontal::Left, Tight>, Tail<V>> {
+impl<VG: ViewGroup> LinearLayout<Vertical<horizontal::Left, Tight>, VG> {
     /// Create a new, empty [`LinearLayout`] that places views top to bottom
     #[inline]
     #[must_use]
-    pub fn vertical(view: V) -> Self {
+    pub fn vertical(views: VG) -> Self {
         Self {
             direction: Vertical::default(),
-            views: ViewGroup::new(view),
+            views,
         }
     }
 }
 
-impl<S, ELS, VCE> LinearLayout<Horizontal<S, ELS>, VCE>
+impl<S, ELS, VG> LinearLayout<Horizontal<S, ELS>, VG>
 where
     S: SecondaryAlignment + VerticalAlignment,
     ELS: ElementSpacing,
-    VCE: ViewChainElement,
+    VG: ViewGroup,
 {
     /// Change the secondary alignment for this [`LinearLayout`] object.
     ///
@@ -144,7 +145,7 @@ where
     /// [`LinearLayout::horizontal`]: crate::layout::linear::LinearLayout::horizontal
     /// [`vertical`]: crate::align::vertical
     #[inline]
-    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec, ELS>, VCE>
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Horizontal<Sec, ELS>, VG>
     where
         Sec: SecondaryAlignment + VerticalAlignment,
     {
@@ -160,7 +161,7 @@ where
     ///
     /// [spacing]: crate::layout::linear::spacing
     #[inline]
-    pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Horizontal<S, ES>, VCE>
+    pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Horizontal<S, ES>, VG>
     where
         ES: ElementSpacing,
     {
@@ -171,11 +172,11 @@ where
     }
 }
 
-impl<S, ELS, VCE> LinearLayout<Vertical<S, ELS>, VCE>
+impl<S, ELS, VG> LinearLayout<Vertical<S, ELS>, VG>
 where
     S: SecondaryAlignment + HorizontalAlignment,
     ELS: ElementSpacing,
-    VCE: ViewChainElement,
+    VG: ViewGroup,
 {
     /// Change the secondary alignment for this [`LinearLayout`] object.
     ///
@@ -184,7 +185,7 @@ where
     /// [`LinearLayout::vertical`]: crate::layout::linear::LinearLayout::vertical
     /// [`horizontal`]: crate::align::horizontal
     #[inline]
-    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec, ELS>, VCE>
+    pub fn with_alignment<Sec>(self, alignment: Sec) -> LinearLayout<Vertical<Sec, ELS>, VG>
     where
         Sec: SecondaryAlignment + HorizontalAlignment,
     {
@@ -200,7 +201,7 @@ where
     ///
     /// [spacing]: crate::layout::linear::spacing
     #[inline]
-    pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Vertical<S, ES>, VCE>
+    pub fn with_spacing<ES>(self, spacing: ES) -> LinearLayout<Vertical<S, ES>, VG>
     where
         ES: ElementSpacing,
     {
@@ -211,23 +212,11 @@ where
     }
 }
 
-impl<LD, LE> LinearLayout<LD, LE>
+impl<LD, VG> LinearLayout<LD, VG>
 where
     LD: Orientation,
-    LE: LayoutElement<LD>,
+    VG: ViewGroup,
 {
-    /// Add a [`View`] to the layout
-    ///
-    /// Views will be laid out sequentially, keeping the order in which they were added to the
-    /// layout.
-    #[inline]
-    pub fn add_view<V: View>(self, view: V) -> LinearLayout<LD, Link<V, LE>> {
-        LinearLayout {
-            direction: self.direction,
-            views: self.views.add_view(view),
-        }
-    }
-
     /// Arrange the views according to the layout properties and return the views as a [`ViewGroup`].
     /// Note: The top right point is always `Point::zero()`. Change this by calling [`View::translate`] or
     /// [`Align`] methods.
@@ -235,19 +224,54 @@ where
     /// [`View::translate`]: crate::View::translate
     /// [`Align`]: crate::align::Align
     #[inline]
-    pub fn arrange(mut self) -> ViewGroup<LE> {
-        let bounds = Rectangle::with_size(Point::zero(), self.views.views.measure());
-        self.views
-            .views
-            .arrange(bounds, &self.direction, self.views.view_count());
-        self.views
+    pub fn arrange(mut self) -> Self {
+        let view_count = self.views.len();
+
+        // measure
+        let mut size = self.views[0].size();
+        for i in 1..view_count {
+            let current_el_size = self.views[i].size();
+            size = LD::Secondary::measure(size, current_el_size);
+        }
+
+        // arrange
+        let mut bounds = Rectangle::with_size(Point::zero(), size);
+        for i in 0..view_count {
+            self.direction
+                .place(&mut self.views[i], size, bounds, i, view_count);
+            bounds = self.views[i].bounds();
+        }
+
+        self
+    }
+}
+
+impl<LD, VG> View for LinearLayout<LD, VG>
+where
+    LD: Orientation,
+    VG: ViewGroup,
+{
+    fn translate_impl(&mut self, by: Point) {
+        View::translate_impl(&mut self.views, by);
     }
 
-    /// Returns the current size the layout will take up after `arrange`.
-    #[inline]
-    pub fn size(&self) -> Size {
-        self.direction
-            .adjust_size(self.views.views.measure(), self.views.view_count())
+    fn bounds(&self) -> Rectangle {
+        View::bounds(&self.views)
+    }
+}
+
+impl<'a, C, LD, VG> Drawable<C> for &'a LinearLayout<LD, VG>
+where
+    C: PixelColor,
+    LD: Orientation,
+    VG: ViewGroup,
+    &'a VG: Drawable<C>,
+{
+    fn draw<D>(self, display: &mut D) -> Result<(), <D as DrawTarget<C>>::Error>
+    where
+        D: DrawTarget<C>,
+    {
+        self.views.draw(display)
     }
 }
 
@@ -267,25 +291,29 @@ mod test {
         style::PrimitiveStyle,
     };
 
-    #[test]
+    #[allow(dead_code)]
     fn compile_check() {
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20)).into_styled(style);
         let circ = Circle::new(Point::zero(), 10).into_styled(style);
-        let _ = LinearLayout::horizontal(rect).add_view(circ);
+        let _ = LinearLayout::horizontal(Tail::new(rect).append(circ));
     }
 
     #[test]
     fn layout_size() {
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let size = LinearLayout::horizontal(rect).add_view(rect2).size();
+        let size = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+            .arrange()
+            .size();
 
         assert_eq!(Size::new(20, 20), size);
 
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let size = LinearLayout::vertical(rect).add_view(rect2).size();
+        let size = LinearLayout::vertical(Tail::new(rect).append(rect2))
+            .arrange()
+            .size();
 
         assert_eq!(Size::new(10, 40), size);
     }
@@ -298,8 +326,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::vertical(rect)
-            .add_view(rect2)
+        LinearLayout::vertical(Tail::new(rect).append(rect2))
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -337,9 +364,8 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::vertical(rect)
+        LinearLayout::vertical(Tail::new(rect).append(rect2))
             .with_alignment(horizontal::Right)
-            .add_view(rect2)
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -377,8 +403,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::horizontal(rect)
-            .add_view(rect2)
+        LinearLayout::horizontal(Tail::new(rect).append(rect2))
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -411,9 +436,8 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::horizontal(rect)
+        LinearLayout::horizontal(Tail::new(rect).append(rect2))
             .with_alignment(vertical::Top)
-            .add_view(rect2)
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -441,19 +465,21 @@ mod test {
     #[test]
     fn layout_spacing_size() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
-        let size = LinearLayout::horizontal(rect)
+
+        let size = LinearLayout::horizontal(Tail::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
             .with_alignment(vertical::Top)
-            .add_view(rect2)
+            .arrange()
             .size();
 
         assert_eq!(Size::new(17, 10), size);
 
-        let size = LinearLayout::vertical(rect)
+        let size = LinearLayout::vertical(Tail::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
-            .add_view(rect2)
+            .arrange()
             .size();
 
         assert_eq!(Size::new(10, 17), size);
@@ -464,13 +490,13 @@ mod test {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::horizontal(rect)
+        LinearLayout::horizontal(Tail::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
             .with_alignment(vertical::Top)
-            .add_view(rect2)
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -498,12 +524,13 @@ mod test {
     #[test]
     fn layout_spacing_distribute_overflow() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+
         let rect = Rectangle::with_size(Point::zero(), Size::new(5, 5)).into_styled(style);
-        let layout = LinearLayout::horizontal(rect)
+
+        let layout = LinearLayout::horizontal(Tail::new(rect).append(rect).append(rect))
             .with_spacing(DistributeFill(11))
             .with_alignment(vertical::TopToBottom)
-            .add_view(rect)
-            .add_view(rect);
+            .arrange();
 
         assert_eq!(Size::new(11, 15), layout.size());
 
@@ -535,13 +562,13 @@ mod test {
     #[test]
     fn layout_spacing_distribute_fill() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+
         let rect = Rectangle::with_size(Point::zero(), Size::new(2, 2)).into_styled(style);
-        let view_group = LinearLayout::vertical(rect)
-            .with_spacing(DistributeFill(18))
-            .add_view(rect)
-            .add_view(rect)
-            .add_view(rect)
-            .arrange();
+
+        let view_group =
+            LinearLayout::vertical(Tail::new(rect).append(rect).append(rect).append(rect))
+                .with_spacing(DistributeFill(18))
+                .arrange();
 
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
@@ -575,10 +602,18 @@ mod test {
     fn layout_size_independent_of_view_location() {
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let size1 = LinearLayout::horizontal(rect).add_view(rect2).size();
+
+        let size1 = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+            .arrange()
+            .bounds()
+            .size();
 
         let rect = rect.translate(Point::new(30, 50));
-        let size2 = LinearLayout::horizontal(rect).add_view(rect2).size();
+
+        let size2 = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+            .arrange()
+            .bounds()
+            .size();
 
         assert_eq!(size1, size2);
     }

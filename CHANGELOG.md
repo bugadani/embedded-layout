@@ -14,11 +14,7 @@ Unreleased
  * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
  * Changed `Link` to be public. Replaced private `Guard` with public `Tail`. Empty chains are no longer possible.
  * Changed `LayoutElement` to be public.
- * `View::translate` now takes `&mut self` and returns `&mut Self`.
-
-## Removed:
-
- * Removed `View::translate_mut`.
+ * Changed `ViewGroup` to a trait. Layouts now operate on objects that implement `ViewGroup`.
 
 0.1.0 (2020-07-08)
 ==================

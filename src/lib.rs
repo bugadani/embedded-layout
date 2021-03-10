@@ -190,7 +190,18 @@ pub trait View {
     /// Move the origin of an object by a given number of (x, y) pixels,
     /// mutating the object in place.
     /// If you a looking for a method to implement, you might want `translate_impl()` instead.
-    fn translate(&mut self, by: Point) -> &mut Self
+    fn translate_mut(&mut self, by: Point) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.translate_impl(by);
+        self
+    }
+
+    /// Move the origin of an object by a given number of (x, y) pixels,
+    /// returning a new object
+    /// If you a looking for a method to implement, you might want `translate_impl()` instead.
+    fn translate(mut self, by: Point) -> Self
     where
         Self: Sized,
     {
@@ -208,7 +219,7 @@ where
 {
     #[inline]
     fn translate_impl(&mut self, by: Point) {
-        Transform::translate(self, by);
+        Transform::translate_mut(self, by);
     }
 
     #[inline]
@@ -222,7 +233,8 @@ mod test {
     use crate::prelude::*;
     use embedded_graphics::primitives::Rectangle;
 
-    fn view_is_object_safe(v: &dyn View) {}
+    #[allow(dead_code)]
+    fn view_is_object_safe(_: &dyn View) {}
 
     #[test]
     fn test_size() {
