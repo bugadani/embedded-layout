@@ -15,6 +15,7 @@ Unreleased
 ## Changed:
 
  * **breaking** Require embedded-graphics 0.7
+ * **breaking** Alignments operations work on the object they are invoked on.
  * Change fields of `Link` and `ViewGroup` to be public
  * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
  * Change `Link` and `Guard` to be public

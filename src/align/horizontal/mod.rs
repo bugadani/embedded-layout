@@ -89,132 +89,136 @@ mod test {
 
     #[test]
     fn test_center() {
-        fn check_center_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
+        fn check_center_alignment(source: Rectangle, reference: Rectangle) {
             let center_of_reference = reference.top_left + reference.bounds().size / 2;
-            let center_of_result = result.top_left + result.bounds().size / 2;
+            let center_of_source = source.top_left + source.bounds().size / 2;
 
             // The size hasn't changed
-            assert_eq!(result.bounds().size, source.bounds().size);
+            assert_eq!(source.bounds().size, reference.bounds().size);
 
             // Horizontal coordinate matches reference
-            assert_eq!(center_of_result.x, center_of_reference.x);
+            assert_eq!(center_of_source.x, center_of_reference.x);
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.top_left.y, source.top_left.y);
+            assert_eq!(source.top_left.y, reference.top_left.y);
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Size::new(40, 50));
 
-        let result = rect1.align_to(&rect2, horizontal::Center, vertical::NoAlignment);
-        check_center_alignment(rect1, rect2, result);
+        rect1.align_to(&rect2, horizontal::Center, vertical::NoAlignment);
+        check_center_alignment(rect1, rect2);
 
         // Test the other direction
-        let result = rect2.align_to(&rect1, horizontal::Center, vertical::NoAlignment);
-        check_center_alignment(rect2, rect1, result);
+        rect2.align_to(&rect1, horizontal::Center, vertical::NoAlignment);
+        check_center_alignment(rect2, rect1);
     }
 
     #[test]
     fn test_left() {
-        fn check_left_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
+        fn check_left_alignment(source: Rectangle, reference: Rectangle) {
             // The size hasn't changed
-            assert_eq!(result.bounds().size, source.bounds().size);
+            assert_eq!(source.bounds().size, reference.bounds().size);
 
             // Horizontal coordinate matches reference
-            assert_eq!(result.top_left.x, reference.top_left.x);
+            assert_eq!(source.top_left.x, reference.top_left.x);
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.top_left.y, source.top_left.y);
+            assert_eq!(source.top_left.y, reference.top_left.y);
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::new(10, 10));
+        let rect2 = Rectangle::new(Point::new(30, 20), Size::new(40, 50));
 
-        let result = rect1.align_to(&rect2, horizontal::Left, vertical::NoAlignment);
-        check_left_alignment(rect1, rect2, result);
+        rect1.align_to(&rect2, horizontal::Left, vertical::NoAlignment);
+        check_left_alignment(rect1, rect2);
 
         // Test the other direction
-        let result = rect2.align_to(&rect1, horizontal::Left, vertical::NoAlignment);
-        check_left_alignment(rect2, rect1, result);
+        rect2.align_to(&rect1, horizontal::Left, vertical::NoAlignment);
+        check_left_alignment(rect2, rect1);
     }
 
     #[test]
     fn test_right() {
-        fn check_right_alignment(source: Rectangle, reference: Rectangle, result: Rectangle) {
+        fn check_right_alignment(source: Rectangle, reference: Rectangle) {
             // The size hasn't changed
-            assert_eq!(result.bounds().size, source.bounds().size);
+            assert_eq!(source.bounds().size, reference.bounds().size);
 
             // Horizontal coordinate matches reference
-            assert_eq!(result.bottom_right.x, reference.bottom_right.x);
+            assert_eq!(
+                source.bottom_right().unwrap().x,
+                reference.bottom_right().unwrap().x
+            );
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+            assert_eq!(
+                source.bottom_right().unwrap().y,
+                reference.bottom_right().unwrap().y
+            );
         }
 
         let rect1 = Rectangle::new(Point::new(0, 0), Size::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Size::new(40, 50));
 
-        let result = rect1.align_to(&rect2, horizontal::Right, vertical::NoAlignment);
-        check_right_alignment(rect1, rect2, result);
+        rect1.align_to(&rect2, horizontal::Right, vertical::NoAlignment);
+        check_right_alignment(rect1, rect2);
 
         // Test the other direction
-        let result = rect2.align_to(&rect1, horizontal::Right, vertical::NoAlignment);
-        check_right_alignment(rect2, rect1, result);
+        rect2.align_to(&rect1, horizontal::Right, vertical::NoAlignment);
+        check_right_alignment(rect2, rect1);
     }
 
     #[test]
     fn test_left_to_right() {
-        fn check_left_to_right_alignment(
-            source: Rectangle,
-            reference: Rectangle,
-            result: Rectangle,
-        ) {
+        fn check_left_to_right_alignment(source: Rectangle, reference: Rectangle) {
             // The size hasn't changed
-            assert_eq!(result.bounds().size, source.bounds().size);
+            assert_eq!(source.bounds().size, reference.bounds().size);
 
             // Left is at right + 1
-            assert_eq!(result.top_left.x, reference.bottom_right.x + 1);
+            assert_eq!(source.top_left.x, reference.bottom_right().unwrap().x + 1);
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+            assert_eq!(
+                source.bottom_right().unwrap().y,
+                reference.bottom_right().unwrap().y
+            );
         }
 
         let rect1 = Rectangle::new(Point::new(0, 0), Size::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Size::new(40, 50));
 
-        let result = rect1.align_to(&rect2, horizontal::LeftToRight, vertical::NoAlignment);
-        check_left_to_right_alignment(rect1, rect2, result);
+        rect1.align_to(&rect2, horizontal::LeftToRight, vertical::NoAlignment);
+        check_left_to_right_alignment(rect1, rect2);
 
         // Test the other direction
-        let result = rect2.align_to(&rect1, horizontal::LeftToRight, vertical::NoAlignment);
-        check_left_to_right_alignment(rect2, rect1, result);
+        rect2.align_to(&rect1, horizontal::LeftToRight, vertical::NoAlignment);
+        check_left_to_right_alignment(rect2, rect1);
     }
 
     #[test]
     fn test_right_to_left() {
-        fn check_right_to_left_alignment(
-            source: Rectangle,
-            reference: Rectangle,
-            result: Rectangle,
-        ) {
+        fn check_right_to_left_alignment(source: Rectangle, reference: Rectangle) {
             // The size hasn't changed
-            assert_eq!(result.bounds().size, source.bounds().size);
+            assert_eq!(source.bounds().size, reference.bounds().size);
 
             // Left is at right + 1
-            assert_eq!(result.bottom_right.x, reference.top_left.x - 1);
+            assert_eq!(source.bottom_right().unwrap().x, reference.top_left.x - 1);
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+            assert_eq!(
+                source.bottom_right().unwrap().y,
+                reference.bottom_right().unwrap().y
+            );
         }
 
         let rect1 = Rectangle::new(Point::new(0, 0), Size::new(10, 10));
         let rect2 = Rectangle::new(Point::new(30, 20), Size::new(40, 50));
 
-        let result = rect1.align_to(&rect2, horizontal::RightToLeft, vertical::NoAlignment);
-        check_right_to_left_alignment(rect1, rect2, result);
+        rect1.align_to(&rect2, horizontal::RightToLeft, vertical::NoAlignment);
+        check_right_to_left_alignment(rect1, rect2);
 
         // Test the other direction
-        let result = rect2.align_to(&rect1, horizontal::RightToLeft, vertical::NoAlignment);
-        check_right_to_left_alignment(rect2, rect1, result);
+        rect2.align_to(&rect1, horizontal::RightToLeft, vertical::NoAlignment);
+        check_right_to_left_alignment(rect2, rect1);
     }
 }
