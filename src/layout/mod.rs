@@ -50,16 +50,9 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     }
 
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        self.translate_mut(by);
-        self
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        self.object.translate_mut(by);
-        self.next.translate_mut(by);
-        self
+    fn translate_impl(&mut self, by: Point) {
+        self.object.translate(by);
+        self.next.translate(by);
     }
 }
 
@@ -84,15 +77,8 @@ impl<V: View> View for Tail<V> {
     }
 
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        self.translate_mut(by);
-        self
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        self.object.translate_mut(by);
-        self
+    fn translate_impl(&mut self, by: Point) {
+        self.object.translate(by);
     }
 }
 
@@ -139,15 +125,8 @@ impl<C: ViewChainElement> ViewGroup<C> {
 
 impl<C: ViewChainElement> View for ViewGroup<C> {
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        self.translate_mut(by);
-        self
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
-        self.views.translate_mut(by);
-        self
+    fn translate_impl(&mut self, by: Point) {
+        self.views.translate(by);
     }
 
     #[inline]
