@@ -21,9 +21,8 @@ fn main() -> Result<(), core::convert::Infallible> {
         .text_color(BinaryColor::On)
         .build();
 
-    LinearLayout::vertical()
+    LinearLayout::vertical(Text::new("Vertical", Point::zero()).into_styled(text_style))
         .with_alignment(horizontal::Center)
-        .add_view(Text::new("Vertical", Point::zero()).into_styled(text_style))
         .add_view(Text::new("Linear", Point::zero()).into_styled(text_style))
         .add_view(Text::new("Layout", Point::zero()).into_styled(text_style))
         .arrange()

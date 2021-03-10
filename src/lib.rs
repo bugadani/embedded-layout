@@ -136,7 +136,7 @@
 //! [alignments]: crate::align
 
 #![cfg_attr(not(test), no_std)]
-#![deny(missing_docs)]
+//#![deny(missing_docs)]
 #![deny(clippy::missing_inline_in_public_items)]
 #![warn(clippy::all)]
 
@@ -155,7 +155,7 @@ pub mod prelude {
         chain,
         utils::{
             display_area::DisplayArea,
-            object_chain::{ChainElement, Guard, Link},
+            object_chain::{ChainElement, Link, Tail},
             rect_helper::RectExt,
         },
         View,

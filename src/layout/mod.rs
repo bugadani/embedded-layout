@@ -12,7 +12,7 @@
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::layout::ViewGroup
 
-pub use crate::utils::object_chain::{Guard, Link};
+pub use crate::utils::object_chain::{Link, Tail};
 use crate::{prelude::*, utils::object_chain::ChainElement};
 use embedded_graphics::{primitives::Rectangle, DrawTarget};
 
@@ -46,11 +46,7 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
 
-        if VC::IS_TERMINATOR {
-            bounds
-        } else {
-            bounds.enveloping(&self.next.bounds())
-        }
+        bounds.enveloping(&self.next.bounds())
     }
 
     #[inline]
@@ -67,30 +63,35 @@ impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
     }
 }
 
-impl ViewChainElement for Guard {}
-
-impl<C: PixelColor> Drawable<C> for &Guard {
+impl<'a, C, V> Drawable<C> for &'a Tail<V>
+where
+    C: PixelColor,
+    V: View,
+    &'a V: Drawable<C>,
+{
     #[inline]
-    fn draw<D: DrawTarget<C>>(self, _display: &mut D) -> Result<(), D::Error> {
-        Ok(())
+    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+        self.object.draw(display)
     }
 }
 
-impl View for Guard {
+impl<V: View> ViewChainElement for Tail<V> {}
+
+impl<V: View> View for Tail<V> {
     #[inline]
     fn bounds(&self) -> Rectangle {
-        Rectangle::new(Point::zero(), Point::zero())
+        self.object.bounds()
     }
 
     #[inline]
-    fn translate(self, _by: Point) -> Self {
-        // nothing to do
+    fn translate(mut self, by: Point) -> Self {
+        self.translate_mut(by);
         self
     }
 
     #[inline]
-    fn translate_mut(&mut self, _by: Point) -> &mut Self {
-        // nothing to do
+    fn translate_mut(&mut self, by: Point) -> &mut Self {
+        self.object.translate_mut(by);
         self
     }
 }
@@ -102,24 +103,19 @@ impl View for Guard {
 /// The bounds and size of a [`ViewGroup`] envelops all the contained [`View`]s.
 ///
 /// Note: translating an empty [`ViewGroup`] has no effect
-pub struct ViewGroup<C: ViewChainElement = Guard> {
+pub struct ViewGroup<C: ViewChainElement> {
     /// The view chain that contains the included views
     pub views: C,
 }
 
-impl ViewGroup<Guard> {
+impl<V: View> ViewGroup<Tail<V>> {
     /// Create a new, empty [`ViewGroup`] object
     #[inline]
     #[must_use]
-    pub const fn new() -> Self {
-        Self { views: Guard }
-    }
-}
-
-impl Default for ViewGroup<Guard> {
-    #[inline]
-    fn default() -> Self {
-        Self::new()
+    pub fn new(view: V) -> Self {
+        Self {
+            views: Tail::new(view),
+        }
     }
 }
 
@@ -193,30 +189,10 @@ mod test {
         }
 
         // Check if multiple different views can be included in the view group
-        let vg = ViewGroup::new()
-            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
+        let vg = ViewGroup::new(Rectangle::with_size(Point::zero(), Size::new(5, 10)))
             .add_view(Circle::new(Point::zero(), 5));
 
         check_vg(&vg);
-    }
-
-    #[test]
-    fn compile_check_empty() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        ViewGroup::new().draw(&mut disp).unwrap();
-    }
-
-    #[test]
-    fn compile_check_empty_nested() {
-        // This tests that the view group implements Drawable as expected
-        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
-
-        ViewGroup::new()
-            .add_view(ViewGroup::new())
-            .draw(&mut disp)
-            .unwrap();
     }
 
     #[test]
@@ -225,10 +201,10 @@ mod test {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        ViewGroup::new()
+        ViewGroup::new(Circle::new(Point::zero(), 6).into_styled(style))
             .add_view(Rectangle::new(Point::zero(), Point::new(10, 5)).into_styled(style))
             .add_view(
-                ViewGroup::new()
+                ViewGroup::new(Rectangle::new(Point::zero(), Point::new(1, 1)).into_styled(style))
                     .add_view(Rectangle::new(Point::zero(), Point::zero()).into_styled(style))
                     .add_view(Circle::new(Point::zero(), 5).into_styled(style)),
             )
@@ -241,12 +217,11 @@ mod test {
     fn test() {
         // Check if multiple different views can be included in the view group
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        let vg = ViewGroup::new()
-            .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
-            .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
-            .add_view(
-                Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style),
-            );
+        let vg = ViewGroup::new(
+            Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style),
+        )
+        .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
+        .add_view(Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style));
 
         assert_eq!(Size::new(10, 20), vg.size());
         assert_eq!(
@@ -275,7 +250,7 @@ mod test {
 
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
         let rect3 = Rectangle::with_size(Point::new(-2, -5), Size::new(5, 10)).into_styled(style);
-        ViewGroup::new()
+        ViewGroup::new(Circle::new(Point::zero(), 6).into_styled(style))
             .add_view(Rectangle::with_size(Point::zero(), Size::new(5, 10)).into_styled(style))
             .add_view(Rectangle::with_size(Point::new(3, 5), Size::new(5, 10)).into_styled(style))
             .align_to(&rect3, horizontal::LeftToRight, vertical::TopToBottom)

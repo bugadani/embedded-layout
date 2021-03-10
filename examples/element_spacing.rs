@@ -45,21 +45,19 @@ fn main() -> Result<(), core::convert::Infallible> {
         .unwrap();
 
     // Lay out and draw the views
-    LinearLayout::vertical()
-        .with_spacing(FixedMargin(10))
-        .add_view(
-            LinearLayout::horizontal()
-                .with_spacing(DistributeFill(text.size().width))
-                .add_view(triangle)
-                .add_view(rectangle)
-                .add_view(circle)
-                .arrange(),
-        )
-        .add_view(text)
-        .arrange()
-        .align_to(&display_area, horizontal::Center, vertical::Center)
-        .draw(&mut display)
-        .unwrap();
+    LinearLayout::vertical(
+        LinearLayout::horizontal(triangle)
+            .with_spacing(DistributeFill(text.size().width))
+            .add_view(rectangle)
+            .add_view(circle)
+            .arrange(),
+    )
+    .with_spacing(FixedMargin(10))
+    .add_view(text)
+    .arrange()
+    .align_to(&display_area, horizontal::Center, vertical::Center)
+    .draw(&mut display)
+    .unwrap();
 
     Window::new("Hello, element spacing!", &output_settings).show_static(&display);
     Ok(())
