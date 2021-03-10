@@ -109,9 +109,8 @@ fn main() -> Result<(), core::convert::Infallible> {
     let progress4 = ProgressBar::new(Point::zero(), Size::new(32, 6)).with_progress(100);
 
     // Arrange on display and draw
-    LinearLayout::vertical()
+    LinearLayout::vertical(progress1)
         .with_spacing(FixedMargin(4))
-        .add_view(progress1)
         .add_view(progress2)
         .add_view(progress3)
         .add_view(progress4)

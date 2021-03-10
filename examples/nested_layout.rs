@@ -44,18 +44,15 @@ fn main() -> Result<(), core::convert::Infallible> {
     let text = Text::new("embedded-layout", Point::zero()).into_styled(text_style);
 
     // The layout
-    LinearLayout::vertical()
+    LinearLayout::vertical(text)
         .with_alignment(horizontal::Center)
-        .add_view(text)
         .add_view(
-            LinearLayout::horizontal()
-                .add_view(triangle)
+            LinearLayout::horizontal(triangle)
                 .add_view(circle)
                 .arrange(),
         )
         .add_view(
-            ViewGroup::new()
-                .add_view(triangle2.align_to(&circle2, horizontal::Center, vertical::Top))
+            ViewGroup::new(triangle2.align_to(&circle2, horizontal::Center, vertical::Top))
                 .add_view(circle2),
         )
         .arrange()

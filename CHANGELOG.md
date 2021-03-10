@@ -9,10 +9,11 @@ Unreleased
 
 ## Changed:
 
- * Change fields of `Link` and `ViewGroup` to be public
+ * **breaking** (not final) LinearLayout and ViewGroup now require a view in their constructors.
+ * Changed fields of `Link` and `ViewGroup` to be public
  * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
- * Change `Link` and `Guard` to be public
- * Change `LayoutElement` to be public
+ * Changed `Link` to be public. Replaced private `Guard` with public `Tail`. Empty chains are no longer possible.
+ * Changed `LayoutElement` to be public.
 
 0.1.0 (2020-07-08)
 ==================
@@ -28,7 +29,7 @@ Unreleased
  * Secondary alignment implementations now require specifying the alignment of the first view
  * Changed what is re-exported from the `embedded-graphics` prelude. This reduces function name collisions
  * **breaking:** Renamed `layout_direction::LayoutDirection` to `orientation::Orientation`
- * **breaking:** Renamed `layout_operation::LayoutOpeartion` to `layout_element::LayoutElement`
+ * **breaking:** Renamed `layout_operation::LayoutOperation` to `layout_element::LayoutElement`
  * **breaking:** `ViewLink` has been renamed to `Link` and `ChainTerminator` to `Guard`
 
 ## Fixed:
