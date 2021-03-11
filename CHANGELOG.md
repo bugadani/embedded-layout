@@ -7,6 +7,7 @@ Unreleased
  * Include object chain types in `prelude`
  * `View::translate_mut`
  * `derive(ViewGroup)`
+ * `view_group::Views`
 
 ## Changed:
 

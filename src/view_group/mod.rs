@@ -5,6 +5,9 @@ use embedded_graphics::{prelude::Point, primitives::Rectangle};
 use crate::{prelude::RectExt, View};
 
 mod object_chain;
+mod views;
+
+pub use views::Views;
 
 pub trait ViewGroup: View {
     fn len(&self) -> usize;
