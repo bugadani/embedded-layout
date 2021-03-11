@@ -77,8 +77,8 @@
 
 use crate::{
     align::{HorizontalAlignment, VerticalAlignment},
-    layout::ViewGroup,
     prelude::*,
+    view_group::ViewGroup,
 };
 
 mod orientation;
