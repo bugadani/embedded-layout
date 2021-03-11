@@ -11,19 +11,12 @@ use crate::{
     View,
 };
 
-/// Implementation detail necessary to store multiple different types of [`View`]s
-/// in a [`ViewGroup`]
-pub trait ViewChainElement: ChainElement + View {}
-
-impl<V: View, VC: ViewChainElement> ViewChainElement for Link<V, VC> {}
-impl<V: View> ViewChainElement for Tail<V> {}
-
 impl<'a, C, V, VC> Drawable<C> for &'a Link<V, VC>
 where
     C: PixelColor,
     V: View,
     &'a V: Drawable<C>,
-    VC: ViewChainElement,
+    VC: View + ChainElement,
     &'a VC: Drawable<C>,
 {
     #[inline]
@@ -35,7 +28,7 @@ where
     }
 }
 
-impl<V: View, VC: ViewChainElement> View for Link<V, VC> {
+impl<V: View, VC: View + ChainElement> View for Link<V, VC> {
     #[inline]
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
@@ -77,7 +70,7 @@ impl<V: View> View for Tail<V> {
 impl<V, VC> ViewGroup for Link<V, VC>
 where
     V: 'static + View,
-    VC: 'static + ViewGroup + ViewChainElement,
+    VC: 'static + ViewGroup + View + ChainElement,
 {
     fn len(&self) -> usize {
         Link::count(self) as usize
@@ -87,7 +80,7 @@ where
 impl<V, VC> core::ops::Index<usize> for Link<V, VC>
 where
     V: 'static + View,
-    VC: 'static + ViewGroup + ViewChainElement,
+    VC: 'static + ViewGroup + View + ChainElement,
 {
     type Output = dyn View;
 
@@ -103,7 +96,7 @@ where
 impl<V, VC> core::ops::IndexMut<usize> for Link<V, VC>
 where
     V: 'static + View,
-    VC: 'static + ViewGroup + ViewChainElement,
+    VC: 'static + ViewGroup + View + ChainElement,
 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         if index == self.len() - 1 {
