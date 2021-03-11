@@ -28,7 +28,11 @@ where
     }
 }
 
-impl<V: View, VC: View + ChainElement> View for Link<V, VC> {
+impl<V, VC> View for Link<V, VC>
+where
+    V: View,
+    VC: View + ChainElement,
+{
     #[inline]
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
@@ -55,7 +59,10 @@ where
     }
 }
 
-impl<V: View> View for Tail<V> {
+impl<V> View for Tail<V>
+where
+    V: View,
+{
     #[inline]
     fn bounds(&self) -> Rectangle {
         self.object.bounds()

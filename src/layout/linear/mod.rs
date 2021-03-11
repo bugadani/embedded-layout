@@ -120,7 +120,10 @@ where
     }
 }
 
-impl<VG: ViewGroup> LinearLayout<Vertical<horizontal::Left, Tight>, VG> {
+impl<VG> LinearLayout<Vertical<horizontal::Left, Tight>, VG>
+where
+    VG: ViewGroup,
+{
     /// Create a new, empty [`LinearLayout`] that places views top to bottom
     #[inline]
     #[must_use]
