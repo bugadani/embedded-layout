@@ -231,9 +231,9 @@ where
         let view_count = self.views.len();
 
         // measure
-        let mut size = self.views[0].size();
+        let mut size = self.views.at(0).size();
         for i in 1..view_count {
-            let current_el_size = self.views[i].size();
+            let current_el_size = self.views.at(i).size();
             size = LD::Secondary::measure(size, current_el_size);
         }
 
@@ -241,8 +241,8 @@ where
         let mut bounds = Rectangle::with_size(Point::zero(), size);
         for i in 0..view_count {
             self.direction
-                .place(&mut self.views[i], size, bounds, i, view_count);
-            bounds = self.views[i].bounds();
+                .place(self.views.at_mut(i), size, bounds, i, view_count);
+            bounds = self.views.at(i).bounds();
         }
 
         self

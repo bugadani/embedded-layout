@@ -82,35 +82,21 @@ where
     fn len(&self) -> usize {
         Link::count(self) as usize
     }
-}
 
-impl<V, VC> core::ops::Index<usize> for Link<V, VC>
-where
-    V: 'static + View,
-    VC: 'static + ViewGroup + View + ChainElement,
-{
-    type Output = dyn View;
-
-    fn index(&self, index: usize) -> &Self::Output {
+    fn at(&self, index: usize) -> &dyn View {
         if index == self.len() - 1 {
             return &self.object;
         }
 
-        return self.next.index(index);
+        return self.next.at(index);
     }
-}
 
-impl<V, VC> core::ops::IndexMut<usize> for Link<V, VC>
-where
-    V: 'static + View,
-    VC: 'static + ViewGroup + View + ChainElement,
-{
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+    fn at_mut(&mut self, index: usize) -> &mut dyn View {
         if index == self.len() - 1 {
             return &mut self.object;
         }
 
-        return self.next.index_mut(index);
+        return self.next.at_mut(index);
     }
 }
 
@@ -121,26 +107,14 @@ where
     fn len(&self) -> usize {
         Tail::count(self) as usize
     }
-}
 
-impl<V> core::ops::Index<usize> for Tail<V>
-where
-    V: 'static + View,
-{
-    type Output = dyn View;
-
-    fn index(&self, index: usize) -> &Self::Output {
+    fn at(&self, index: usize) -> &dyn View {
         assert!(index == 0);
 
         return &self.object;
     }
-}
 
-impl<V> core::ops::IndexMut<usize> for Tail<V>
-where
-    V: 'static + View,
-{
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+    fn at_mut(&mut self, index: usize) -> &mut dyn View {
         assert!(index == 0);
 
         return &mut self.object;
