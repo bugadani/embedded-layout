@@ -6,6 +6,7 @@ Unreleased
  * Add `chain!` macro to simplify working with object chains
  * Include object chain types in `prelude`
  * `View::translate_mut`
+ * `derive(ViewGroup)`
 
 ## Changed:
 
