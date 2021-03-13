@@ -1,6 +1,8 @@
 use core::ops::{Deref, DerefMut};
 
-use embedded_graphics::{prelude::Point, primitives::Rectangle};
+use embedded_graphics::{
+    drawable::Drawable, pixelcolor::PixelColor, prelude::Point, primitives::Rectangle, DrawTarget,
+};
 
 use crate::{
     view_group::{ViewGroup, ViewGroupHelper},
@@ -73,6 +75,22 @@ where
 {
     fn deref_mut(&mut self) -> &mut [T] {
         &mut self.views
+    }
+}
+
+impl<'a, C, T> Drawable<C> for &'a Views<'_, T>
+where
+    C: PixelColor,
+    T: View,
+    &'a T: Drawable<C>,
+{
+    #[inline]
+    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+        for view in self.views.iter() {
+            view.draw(display)?;
+        }
+
+        Ok(())
     }
 }
 

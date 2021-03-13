@@ -4,15 +4,14 @@
 //! the horizontal or vertical axis.
 //!
 //! The main flow when working with a [`LinearLayout`] is the following:
-//!  - Create the layout: you need to choose which orientation you want your views arranged in
+//!  - Create the layout
+//!    * you need to choose which orientation you want your views arranged in
+//!    * pass in your views wrapped in a [`ViewGroup`].
 //!  - Optionally, set [secondary alignment]
 //!  - Optionally, set [element spacing]
-//!  - Add views you want to arrange
 //!  - Call [`LinearLayout::arrange`] to finalize view placement
-//!  - Align the returned [`ViewGroup`] to where you want it to be displayed
+//!  - Align the layout object to where you want it to be displayed
 //!  - Call `draw` to display the views
-//!
-//! *Note:* [`LinearLayout`] is implemented using object chaining so it's exact type depends on it's contents.
 //!
 //! # Orientation
 //!
@@ -27,7 +26,7 @@
 //! # use embedded_layout::prelude::*;
 //! # use embedded_layout::layout::linear::LinearLayout;
 //! # use embedded_graphics::{
-//! #    fonts::{Font6x8, Text},
+//! #     fonts::{Font6x8, Text},
 //! #     pixelcolor::BinaryColor,
 //! #     style::TextStyleBuilder,
 //! # };
@@ -64,7 +63,7 @@
 //!  * [`DistributeFill(size)`]: force the primary layout size to `size`, distribute views evenly
 //!
 //! [`View`]: crate::View
-//! [`ViewGroup`]: crate::layout::ViewGroup
+//! [`ViewGroup`]: crate::view_group::ViewGroup
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
 //! [`LinearLayout::arrange`]: crate::layout::linear::LinearLayout::arrange
 //! [secondary alignment]: crate::layout::linear::LinearLayout::with_alignment
@@ -96,12 +95,10 @@ use spacing::Tight;
 /// `LinearLayout`
 ///
 /// [`LinearLayout`] is used to arrange views along the horizontal or vertical axis.
-/// A [`LinearLayout`] object is not a `View`, it does not have a location, instead it is used to
-/// arrange a group of views into a `ViewGroup` object using the `arrange` method. It does have a
-/// `size` however.
 ///
 /// For more information and examples see the [module level documentation](crate::layout::linear).
 pub struct LinearLayout<LD, VG> {
+    position: Point,
     direction: LD,
     views: VG,
 }
@@ -110,11 +107,12 @@ impl<VG> LinearLayout<Horizontal<vertical::Bottom, Tight>, VG>
 where
     VG: ViewGroup,
 {
-    /// Create a new, empty [`LinearLayout`] that places views left to right
+    /// Create a new [`LinearLayout`] that places views left to right
     #[inline]
     #[must_use]
     pub fn horizontal(views: VG) -> Self {
         Self {
+            position: Point::new(0, 0),
             direction: Horizontal::default(),
             views,
         }
@@ -125,11 +123,12 @@ impl<VG> LinearLayout<Vertical<horizontal::Left, Tight>, VG>
 where
     VG: ViewGroup,
 {
-    /// Create a new, empty [`LinearLayout`] that places views top to bottom
+    /// Create a new [`LinearLayout`] that places views top to bottom
     #[inline]
     #[must_use]
     pub fn vertical(views: VG) -> Self {
         Self {
+            position: Point::new(0, 0),
             direction: Vertical::default(),
             views,
         }
@@ -154,6 +153,7 @@ where
         Sec: SecondaryAlignment + VerticalAlignment,
     {
         LinearLayout {
+            position: self.position,
             direction: self.direction.with_secondary_alignment(alignment),
             views: self.views,
         }
@@ -170,6 +170,7 @@ where
         ES: ElementSpacing,
     {
         LinearLayout {
+            position: self.position,
             direction: self.direction.with_spacing(spacing),
             views: self.views,
         }
@@ -194,6 +195,7 @@ where
         Sec: SecondaryAlignment + HorizontalAlignment,
     {
         LinearLayout {
+            position: self.position,
             direction: self.direction.with_secondary_alignment(alignment),
             views: self.views,
         }
@@ -210,6 +212,7 @@ where
         ES: ElementSpacing,
     {
         LinearLayout {
+            position: self.position,
             direction: self.direction.with_spacing(spacing),
             views: self.views,
         }
@@ -221,9 +224,56 @@ where
     LD: Orientation,
     VG: ViewGroup,
 {
+    /// Consume the layout object and return the wrapped [`ViewGroup`].
+    ///
+    /// After calling `arrange()` it is no longer necessary to hold the views in a `LinearLayout`.
+    /// Use this method to extract the original view group object if you need to work with the
+    /// arranged views.
+    ///
+    /// # Example
+    ///
+    /// Arrange an array of `StyledText` objects, then check the second object's position.
+    ///
+    /// ```rust
+    /// # use embedded_layout::prelude::*;
+    /// # use embedded_layout::layout::linear::LinearLayout;
+    /// # use embedded_graphics::{
+    /// #     fonts::{Font6x8, Text},
+    /// #     pixelcolor::BinaryColor,
+    /// #     style::TextStyleBuilder,
+    /// #     geometry::Dimensions,
+    /// #     mock_display::MockDisplay,
+    /// # };
+    /// # let mut display: MockDisplay<BinaryColor> = MockDisplay::new();
+    /// #
+    /// let text_style = TextStyleBuilder::new(Font6x8)
+    ///     .text_color(BinaryColor::On)
+    ///     .build();
+    ///
+    /// // First, wrap out views in a `ViewGroup`.
+    /// let mut texts = [
+    ///     Text::new("Hello,", Point::zero()).into_styled(text_style),
+    ///     Text::new("World!", Point::zero()).into_styled(text_style)
+    /// ];
+    /// let mut views = Views::new(&mut texts);
+    ///
+    /// // Arrange our views and extract our original view group.
+    /// let views = LinearLayout::vertical(views).arrange().into_inner();
+    ///
+    /// // We can access our `StyledText` objects now. Note that `Views` works like a slice!
+    /// assert_eq!(Point::new(0, 9), views[1].top_left());
+    ///
+    /// // `Views` is also a drawable `ViewGroup`, so let's display our arranged text!
+    /// views.draw(&mut display).unwrap();
+    /// ```
+    #[inline]
+    #[must_use]
+    pub fn into_inner(self) -> VG {
+        self.views
+    }
+
     /// Arrange the views according to the layout properties and return the views as a [`ViewGroup`].
-    /// Note: The top right point is always `Point::zero()`. Change this by calling [`View::translate`] or
-    /// [`Align`] methods.
+    /// Note: The top left point is always `Point::zero()`.
     ///
     /// [`View::translate`]: crate::View::translate
     /// [`Align`]: crate::align::Align
@@ -239,7 +289,7 @@ where
         }
 
         // arrange
-        let mut bounds = Rectangle::with_size(Point::zero(), size);
+        let mut bounds = Rectangle::with_size(self.position, size);
         for i in 0..view_count {
             self.direction
                 .place(self.views.at_mut(i), size, bounds, i, view_count);
@@ -256,11 +306,16 @@ where
     VG: ViewGroup,
 {
     fn translate_impl(&mut self, by: Point) {
+        self.position += by;
         View::translate_impl(&mut self.views, by);
     }
 
     fn bounds(&self) -> Rectangle {
-        View::bounds(&self.views)
+        let bounds = View::bounds(&self.views);
+        let top_left = bounds.top_left;
+        let correction = self.position - top_left;
+
+        bounds.translate(correction)
     }
 }
 

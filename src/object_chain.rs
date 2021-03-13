@@ -24,7 +24,7 @@ pub struct Link<V, C: ChainElement> {
     pub object: V,
 
     /// The rest of the object chain
-    pub next: C,
+    pub parent: C,
 }
 
 impl<V, C: ChainElement> Link<V, C> {
@@ -33,7 +33,7 @@ impl<V, C: ChainElement> Link<V, C> {
     pub fn append<T>(self, item: T) -> Link<T, Self> {
         Link {
             object: item,
-            next: self,
+            parent: self,
         }
     }
 }
@@ -44,12 +44,13 @@ where
 {
     #[inline]
     fn count(&self) -> usize {
-        self.next.count() + 1
+        self.parent.count() + 1
     }
 }
 
 /// This piece marks the end of a chain
 pub struct Chain<V> {
+    /// The wrapped object.
     pub object: V,
 }
 
@@ -59,12 +60,13 @@ impl<V> Chain<V> {
     pub fn append<T>(self, item: T) -> Link<T, Self> {
         Link {
             object: item,
-            next: self,
+            parent: self,
         }
     }
 }
 
 impl<V> Chain<V> {
+    /// Create a new [`Chain`] by wrapping the given object.
     pub const fn new(object: V) -> Self {
         Self { object }
     }

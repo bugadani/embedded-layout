@@ -22,7 +22,7 @@ where
     #[inline]
     fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
         self.object.draw(display)?;
-        self.next.draw(display)?;
+        self.parent.draw(display)?;
 
         Ok(())
     }
@@ -37,13 +37,13 @@ where
     fn bounds(&self) -> Rectangle {
         let bounds = self.object.bounds();
 
-        bounds.enveloping(&self.next.bounds())
+        bounds.enveloping(&self.parent.bounds())
     }
 
     #[inline]
     fn translate_impl(&mut self, by: Point) {
         self.object.translate_mut(by);
-        self.next.translate_mut(by);
+        self.parent.translate_mut(by);
     }
 }
 
@@ -88,7 +88,7 @@ where
             return &self.object;
         }
 
-        return self.next.at(index);
+        return self.parent.at(index);
     }
 
     fn at_mut(&mut self, index: usize) -> &mut dyn View {
@@ -96,7 +96,7 @@ where
             return &mut self.object;
         }
 
-        return self.next.at_mut(index);
+        return self.parent.at_mut(index);
     }
 }
 
@@ -118,5 +118,36 @@ where
         assert!(index == 0);
 
         return &mut self.object;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{prelude::*, view_group::ViewGroup};
+    use embedded_graphics::{
+        pixelcolor::BinaryColor,
+        primitives::{Circle, Rectangle},
+        style::PrimitiveStyleBuilder,
+    };
+
+    #[allow(dead_code)]
+    fn compile_check() {
+        fn is_viewgroup(_v: &impl ViewGroup) {}
+        fn is_drawable(_v: impl Drawable<BinaryColor>) {}
+
+        let style = PrimitiveStyleBuilder::new()
+            .stroke_color(BinaryColor::On)
+            .build();
+
+        let rect = Rectangle::with_size(Point::zero(), Size::new(5, 10));
+        let circle = Circle::new(Point::zero(), 12);
+
+        let styled_rect = rect.into_styled(style);
+        let styled_circle = circle.into_styled(style);
+
+        let chain = Chain::new(styled_rect).append(styled_circle);
+
+        is_viewgroup(&chain);
+        is_drawable(&chain);
     }
 }

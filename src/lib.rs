@@ -2,7 +2,7 @@
 //!
 //! This crate extends [`embedded-graphics`] with tools that ease positioning of drawable objects.
 //!
-//! `embedded-layout` consists of two main parts:
+//! `embedded-layout` consists of three main parts:
 //! - [alignments] that can be used to position two objects relative to one another
 //!   * `horizontal`
 //!     * `NoAlignment`, `Left`, `Right`, `Center`
@@ -12,16 +12,20 @@
 //!     * `TopToBottom`, `BottomToTop`
 //! - [layouts] that can be used to arrange multiple views
 //!   * `LinearLayout`
+//! - [view groups] which are collections of view objects
+//!   * `Chain` to create ad-hoc collections (can hold views of different types)
+//!   * `Views` to create view groups from arrays and slices (can only hold views of a single type)
+//!   * `derive(ViewGroup)` to turn any plain old Rust struct into a view group
 //!
 //! # Views
 //!
 //! The term "view" refers to anything `embedded-layout` can work with. Basically, a view is an
 //! object that can be displayed. [`View`] is the most basic trait in `embedded-layout`. Views
-//! implement [`View`] to enable translation and alignment operations on them, and also to allow
-//! them to be used with layouts.
+//! implement the [`View`] trait to enable translation and alignment operations on them, and also to
+//! allow them to be used with layouts.
 //!
 //! [`View`] is implemented for [`embedded-graphics`] display objects. There's also an example about
-//! how to implement custom [`View`] objects.
+//! how you can implement custom [`View`] objects.
 //!
 //! ## Examples
 //!
@@ -50,7 +54,7 @@
 //!
 //! Text::new("Hello, World!", Point::zero())
 //!     .into_styled(text_style)
-//!     // align text to the display
+//!     // align text to the center of the display
 //!     .align_to(&display_area, horizontal::Center, vertical::Center)
 //!     .draw(&mut display)
 //!     .unwrap();
@@ -126,17 +130,17 @@
 //! let size = Dimensions::size(&rect);
 //! ```
 //!
-//! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
-//! [the `embedded-graphics` simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
+//! [`embedded-graphics`]: https://crates.io/crates/embedded-graphics/0.6.2
+//! [the `embedded-graphics` simulator]: https://crates.io/crates/embedded-graphics-simulator/0.2.1
 //! [fully qualified syntax]: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
 //! [`View`]: crate::View
 //! [layouts]: crate::layout
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
-//! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator#usage-without-sdl2
+//! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/v0.6/simulator#usage-without-sdl2
 //! [alignments]: crate::align
 
 #![cfg_attr(not(test), no_std)]
-//#![deny(missing_docs)]
+#![warn(missing_docs)]
 #![deny(clippy::missing_inline_in_public_items)]
 #![warn(clippy::all)]
 
@@ -173,8 +177,7 @@ pub mod prelude {
 
 /// A `View` is the base unit for most of the `embedded-layout` operations.
 ///
-/// `View`s must have a size and a position, so they need to implement the `Dimensions` and
-/// `Transform` traits.
+/// `View`s must have a size and a position.
 ///
 /// See the `custom_view` example for how you can define more complex views.
 pub trait View {

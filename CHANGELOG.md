@@ -8,6 +8,8 @@ Unreleased
  * `View::translate_mut`
  * `derive(ViewGroup)` to easily implmenet ViewGroup on a structure with named fields.
  * `view_group::Views` which can wrap a slice of View objects into a ViewGroup.
+ * `LinearLayout::into_inner()`
+ * `LinearLayout` now has a position.
 
 ## Changed:
 
@@ -16,7 +18,6 @@ Unreleased
  * **breaking** Changed `View::translate` to take ownership and return ownership instead of working with references
  * Changed `Link` to be public. Replaced private `Guard` with public `Chain` which now wraps an object.
  * **breaking** Empty object chains are no longer possible.
- * Changed `LayoutElement` to be public.
 
 ## Removed:
 
