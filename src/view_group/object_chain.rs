@@ -76,8 +76,8 @@ where
 
 impl<V, VC> ViewGroup for Link<V, VC>
 where
-    V: 'static + View,
-    VC: 'static + ViewGroup + View + ChainElement,
+    V: View,
+    VC: ViewGroup + View + ChainElement,
 {
     fn len(&self) -> usize {
         ChainElement::len(self) as usize
@@ -102,7 +102,7 @@ where
 
 impl<V> ViewGroup for Chain<V>
 where
-    V: 'static + View,
+    V: View,
 {
     fn len(&self) -> usize {
         ChainElement::len(self) as usize
