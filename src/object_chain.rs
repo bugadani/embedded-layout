@@ -109,9 +109,9 @@ macro_rules! reverse {
     };
 }
 
-/// Helper macro to make working with object chains easier
+/// Creates an object chain from the argument types.
 ///
-/// Using this macro reduces the boilerplate required to describe the type of an object chain
+/// This macro reduces the boilerplate required to describe the type of an object chain.
 ///
 /// # Example:
 ///
