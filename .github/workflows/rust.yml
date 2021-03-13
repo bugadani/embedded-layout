@@ -4,6 +4,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ master ]
 
 env:
@@ -12,6 +13,7 @@ env:
 jobs:
   ci:
     runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
 
     strategy:
       matrix:
