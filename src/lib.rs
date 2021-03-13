@@ -188,7 +188,9 @@ pub trait View {
         RectSize::size(self.bounds())
     }
 
-    /// Object-safe version of `translate()`.
+    /// Object-safe version of `translate_mut()`.
+    ///
+    /// The default implementations of `translate` and `translate_mut` both call this functions.
     fn translate_impl(&mut self, by: Point);
 
     /// Move the origin of an object by a given number of (x, y) pixels,
