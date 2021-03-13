@@ -80,11 +80,11 @@ where
     VC: 'static + ViewGroup + View + ChainElement,
 {
     fn len(&self) -> usize {
-        Link::count(self) as usize
+        ChainElement::len(self) as usize
     }
 
     fn at(&self, index: usize) -> &dyn View {
-        if index == self.len() - 1 {
+        if index == ViewGroup::len(self) - 1 {
             return &self.object;
         }
 
@@ -92,7 +92,7 @@ where
     }
 
     fn at_mut(&mut self, index: usize) -> &mut dyn View {
-        if index == self.len() - 1 {
+        if index == ViewGroup::len(self) - 1 {
             return &mut self.object;
         }
 
@@ -105,7 +105,7 @@ where
     V: 'static + View,
 {
     fn len(&self) -> usize {
-        Chain::count(self) as usize
+        ChainElement::len(self) as usize
     }
 
     fn at(&self, index: usize) -> &dyn View {

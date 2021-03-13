@@ -18,6 +18,7 @@ Unreleased
  * **breaking** Changed `View::translate` to take ownership and return ownership instead of working with references
  * Changed `Link` to be public. Replaced private `Guard` with public `Chain` which now wraps an object.
  * **breaking** Empty object chains are no longer possible.
+ * **breaking** Renamed `ChainElement::count()` to `ChainElement::len()` for consistency.
 
 ## Removed:
 
