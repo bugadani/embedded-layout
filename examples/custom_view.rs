@@ -41,7 +41,8 @@ impl ProgressBar {
 impl View for ProgressBar {
     #[inline]
     fn translate_impl(&mut self, by: Point) {
-        self.bounds.translate(by);
+        // make sure you don't accidentally call `translate`!
+        self.bounds.translate_mut(by);
     }
 
     #[inline]
