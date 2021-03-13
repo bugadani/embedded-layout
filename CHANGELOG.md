@@ -6,17 +6,17 @@ Unreleased
  * Add `chain!` macro to simplify working with object chains
  * Include object chain types in `prelude`
  * `View::translate_mut`
- * `derive(ViewGroup)`
- * `view_group::Views`
+ * `derive(ViewGroup)` to easily implmenet ViewGroup on a structure with named fields.
+ * `view_group::Views` which can wrap a slice of View objects into a ViewGroup.
 
 ## Changed:
 
- * **breaking** (not final) LinearLayout and ViewGroup now require a view in their constructors.
- * Changed fields of `Link` and `ViewGroup` to be public
- * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
- * Changed `Link` to be public. Replaced private `Guard` with public `Chain`. Empty chains are no longer possible. Instead of `Chain`, the prelude exports the `Chain` type alias.
+ * **breaking** Changed `ViewGroup` to a trait. Layouts now operate on objects that implement `ViewGroup`.
+ * **breaking** LinearLayout now requires a view in their constructors.
+ * **breaking** Changed `View::translate` to take ownership and return ownership instead of working with references
+ * Changed `Link` to be public. Replaced private `Guard` with public `Chain` which now wraps an object.
+ * **breaking** Empty object chains are no longer possible.
  * Changed `LayoutElement` to be public.
- * Changed `ViewGroup` to a trait. Layouts now operate on objects that implement `ViewGroup`.
 
 ## Removed:
 
