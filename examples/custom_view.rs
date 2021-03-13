@@ -103,7 +103,7 @@ fn main() -> Result<(), core::convert::Infallible> {
 
     // Arrange on display and draw
     LinearLayout::vertical(
-        Tail::new(progress1)
+        Chain::new(progress1)
             .append(progress2)
             .append(progress3)
             .append(progress4),

@@ -12,8 +12,6 @@
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::layout::ViewGroup
 
-pub use crate::utils::object_chain::{Link, Tail};
-
 pub mod linear;
 
 #[cfg(test)]
@@ -40,7 +38,7 @@ mod test {
         let styled_rect = rect.into_styled(style);
         let styled_circle = circle.into_styled(style);
 
-        let chain = Tail::new(styled_rect).append(styled_circle);
+        let chain = Chain::new(styled_rect).append(styled_circle);
 
         is_viewgroup(&chain);
         is_drawable(&chain);

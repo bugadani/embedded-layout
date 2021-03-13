@@ -22,7 +22,7 @@ fn main() -> Result<(), core::convert::Infallible> {
         .build();
 
     LinearLayout::vertical(
-        Tail::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
+        Chain::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
             .append(Text::new("Linear", Point::zero()).into_styled(text_style))
             .append(Text::new("Layout", Point::zero()).into_styled(text_style)),
     )

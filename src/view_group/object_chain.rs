@@ -5,8 +5,8 @@ use embedded_graphics::{
 };
 
 use crate::{
-    layout::{Link, Tail},
-    prelude::{ChainElement, RectExt},
+    object_chain::{Chain, ChainElement, Link},
+    prelude::RectExt,
     view_group::ViewGroup,
     View,
 };
@@ -47,7 +47,7 @@ where
     }
 }
 
-impl<'a, C, V> Drawable<C> for &'a Tail<V>
+impl<'a, C, V> Drawable<C> for &'a Chain<V>
 where
     C: PixelColor,
     V: View,
@@ -59,7 +59,7 @@ where
     }
 }
 
-impl<V> View for Tail<V>
+impl<V> View for Chain<V>
 where
     V: View,
 {
@@ -100,12 +100,12 @@ where
     }
 }
 
-impl<V> ViewGroup for Tail<V>
+impl<V> ViewGroup for Chain<V>
 where
     V: 'static + View,
 {
     fn len(&self) -> usize {
-        Tail::count(self) as usize
+        Chain::count(self) as usize
     }
 
     fn at(&self, index: usize) -> &dyn View {

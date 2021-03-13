@@ -42,10 +42,10 @@ fn main() -> Result<(), core::convert::Infallible> {
 
     // The layout
     LinearLayout::vertical(
-        Tail::new(text)
-            .append(LinearLayout::horizontal(Tail::new(triangle).append(circle)).arrange())
+        Chain::new(text)
+            .append(LinearLayout::horizontal(Chain::new(triangle).append(circle)).arrange())
             .append(
-                Tail::new(triangle2.align_to(&circle2, horizontal::Center, vertical::Top))
+                Chain::new(triangle2.align_to(&circle2, horizontal::Center, vertical::Top))
                     .append(circle2),
             ),
     )

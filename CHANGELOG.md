@@ -14,9 +14,13 @@ Unreleased
  * **breaking** (not final) LinearLayout and ViewGroup now require a view in their constructors.
  * Changed fields of `Link` and `ViewGroup` to be public
  * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
- * Changed `Link` to be public. Replaced private `Guard` with public `Tail`. Empty chains are no longer possible.
+ * Changed `Link` to be public. Replaced private `Guard` with public `Chain`. Empty chains are no longer possible. Instead of `Chain`, the prelude exports the `Chain` type alias.
  * Changed `LayoutElement` to be public.
  * Changed `ViewGroup` to a trait. Layouts now operate on objects that implement `ViewGroup`.
+
+## Removed:
+
+ * Removed the `ChainElement` trait from `prelude`.
 
 0.1.0 (2020-07-08)
 ==================

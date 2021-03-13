@@ -1,14 +1,14 @@
-//! Utilities to create chains of objects with different types
+//! Create static chains of objects with different types.
 //!
-//! In general, the chain starts (or ends, depending on your view) with a `Guard` element
-//! and is built up from `Link`s that contain objects. This basic structure only allows you
+//! In general, the chain starts (or ends, depending on your view) with a `Chain` element
+//! and is built up from any number of `Link`s. This basic structure only allows you
 //! to query the number of elements, but you can implement a more useful trait for both `Link` and
-//! `Guard` to make this structure more useful.
+//! `Chain` to make this structure more useful.
 
 mod private {
     pub trait Sealed {}
 
-    impl<V> Sealed for super::Tail<V> {}
+    impl<V> Sealed for super::Chain<V> {}
     impl<V, C: super::ChainElement> Sealed for super::Link<V, C> {}
 }
 
@@ -16,15 +16,6 @@ mod private {
 pub trait ChainElement: Sized + private::Sealed {
     /// Return the number of objects linked to this chain element
     fn count(&self) -> usize;
-
-    /// Append an object to the chain
-    #[inline]
-    fn append<T>(self, item: T) -> Link<T, Self> {
-        Link {
-            object: item,
-            next: self,
-        }
-    }
 }
 
 /// This piece of the chain contains some object
@@ -34,6 +25,17 @@ pub struct Link<V, C: ChainElement> {
 
     /// The rest of the object chain
     pub next: C,
+}
+
+impl<V, C: ChainElement> Link<V, C> {
+    /// Append an object to the chain
+    #[inline]
+    pub fn append<T>(self, item: T) -> Link<T, Self> {
+        Link {
+            object: item,
+            next: self,
+        }
+    }
 }
 
 impl<V, VC> ChainElement for Link<V, VC>
@@ -47,17 +49,28 @@ where
 }
 
 /// This piece marks the end of a chain
-pub struct Tail<V> {
+pub struct Chain<V> {
     pub object: V,
 }
 
-impl<V> Tail<V> {
+impl<V> Chain<V> {
+    /// Append an object to the chain
+    #[inline]
+    pub fn append<T>(self, item: T) -> Link<T, Self> {
+        Link {
+            object: item,
+            next: self,
+        }
+    }
+}
+
+impl<V> Chain<V> {
     pub const fn new(object: V) -> Self {
         Self { object }
     }
 }
 
-impl<V> ChainElement for Tail<V> {
+impl<V> ChainElement for Chain<V> {
     #[inline]
     fn count(&self) -> usize {
         1
@@ -69,10 +82,10 @@ impl<V> ChainElement for Tail<V> {
 #[macro_export(local_inner_macros)]
 macro_rules! chain_impl {
     ($x:ty) => {
-        Tail<$x>
+        Chain<$x>
     };
     ($x:ty,) => {
-        Tail<$x>
+        Chain<$x>
     };
     ($x:ty, $($rest:tt)+) => {
         Link<$x, chain_impl! { $($rest)+ }>
@@ -102,7 +115,7 @@ macro_rules! reverse {
 ///
 /// Instead of writing this...
 ///
-/// ```
+/// ```rust
 /// use embedded_layout::prelude::*;
 /// use embedded_graphics::primitives::{Circle, Rectangle, Triangle};
 /// type Chain = Link<Rectangle, Link<Circle, Link<Triangle, Guard>>>;
@@ -110,7 +123,7 @@ macro_rules! reverse {
 ///
 /// ... the `chain!` macro allows you to write this:
 ///
-/// ```
+/// ```rust
 /// use embedded_layout::prelude::*;
 /// use embedded_graphics::primitives::{Circle, Rectangle, Triangle};
 /// type Chain = chain! { Triangle, Circle, Rectangle };
@@ -152,9 +165,9 @@ mod test {
         fn f(_obj_chain: &chain! {u8, u16, u32}) {}
 
         let test = CompileTest {
-            chain1: Tail::new(0),
-            generic_in_chain: Tail::new(Generic { field: PhantomData }),
-            chain: Tail::new(0u8).append(1u16).append(2u32),
+            chain1: Chain::new(0),
+            generic_in_chain: Chain::new(Generic { field: PhantomData }),
+            chain: Chain::new(0u8).append(1u16).append(2u32),
         };
 
         f(&test.chain);
@@ -162,7 +175,21 @@ mod test {
 
     #[test]
     pub fn test_count() {
-        assert_eq!(1, Tail::new(0).count());
-        assert_eq!(3, Tail::new(0u8).append(1u16).append(2u32).count());
+        assert_eq!(1, Chain::new(0).count());
+        assert_eq!(3, Chain::new(0u8).append(1u16).append(2u32).count());
     }
+}
+
+#[cfg(test)]
+#[allow(dead_code)]
+mod test_macro {
+    use embedded_graphics::primitives::{Rectangle, Triangle};
+
+    use crate::prelude::*;
+
+    type Views = chain! {
+        Rectangle,
+        Rectangle,
+        Triangle
+    };
 }

@@ -144,6 +144,7 @@ use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 pub mod align;
 pub mod layout;
+pub mod object_chain;
 pub mod utils;
 pub mod view_group;
 
@@ -154,11 +155,8 @@ pub mod prelude {
     pub use crate::{
         align::{horizontal, vertical, Align},
         chain,
-        utils::{
-            display_area::DisplayArea,
-            object_chain::{ChainElement, Link, Tail},
-            rect_helper::RectExt,
-        },
+        object_chain::{Chain, Link},
+        utils::{display_area::DisplayArea, rect_helper::RectExt},
         View,
     };
 

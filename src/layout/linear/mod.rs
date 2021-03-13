@@ -299,14 +299,14 @@ mod test {
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20)).into_styled(style);
         let circ = Circle::new(Point::zero(), 10).into_styled(style);
-        let _ = LinearLayout::horizontal(Tail::new(rect).append(circ));
+        let _ = LinearLayout::horizontal(Chain::new(rect).append(circ));
     }
 
     #[test]
     fn layout_size() {
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let size = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        let size = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
             .size();
 
@@ -314,7 +314,7 @@ mod test {
 
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let size = LinearLayout::vertical(Tail::new(rect).append(rect2))
+        let size = LinearLayout::vertical(Chain::new(rect).append(rect2))
             .arrange()
             .size();
 
@@ -329,7 +329,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::vertical(Tail::new(rect).append(rect2))
+        LinearLayout::vertical(Chain::new(rect).append(rect2))
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -367,7 +367,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::vertical(Tail::new(rect).append(rect2))
+        LinearLayout::vertical(Chain::new(rect).append(rect2))
             .with_alignment(horizontal::Right)
             .arrange()
             .translate(Point::new(1, 2))
@@ -406,7 +406,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)
@@ -439,7 +439,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .with_alignment(vertical::Top)
             .arrange()
             .translate(Point::new(1, 2))
@@ -472,7 +472,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        let size = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        let size = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
             .with_alignment(vertical::Top)
             .arrange()
@@ -480,7 +480,7 @@ mod test {
 
         assert_eq!(Size::new(17, 10), size);
 
-        let size = LinearLayout::vertical(Tail::new(rect).append(rect2))
+        let size = LinearLayout::vertical(Chain::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
             .arrange()
             .size();
@@ -497,7 +497,7 @@ mod test {
         let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
         let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
-        LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
             .with_alignment(vertical::Top)
             .arrange()
@@ -530,7 +530,7 @@ mod test {
 
         let rect = Rectangle::with_size(Point::zero(), Size::new(5, 5)).into_styled(style);
 
-        let layout = LinearLayout::horizontal(Tail::new(rect).append(rect).append(rect))
+        let layout = LinearLayout::horizontal(Chain::new(rect).append(rect).append(rect))
             .with_spacing(DistributeFill(11))
             .with_alignment(vertical::TopToBottom)
             .arrange();
@@ -569,7 +569,7 @@ mod test {
         let rect = Rectangle::with_size(Point::zero(), Size::new(2, 2)).into_styled(style);
 
         let view_group =
-            LinearLayout::vertical(Tail::new(rect).append(rect).append(rect).append(rect))
+            LinearLayout::vertical(Chain::new(rect).append(rect).append(rect).append(rect))
                 .with_spacing(DistributeFill(18))
                 .arrange();
 
@@ -606,14 +606,14 @@ mod test {
         let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
         let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
 
-        let size1 = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        let size1 = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
             .bounds()
             .size();
 
         let rect = rect.translate(Point::new(30, 50));
 
-        let size2 = LinearLayout::horizontal(Tail::new(rect).append(rect2))
+        let size2 = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
             .bounds()
             .size();

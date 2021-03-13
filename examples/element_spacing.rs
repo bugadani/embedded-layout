@@ -46,8 +46,8 @@ fn main() -> Result<(), core::convert::Infallible> {
 
     // Lay out and draw the views
     LinearLayout::vertical(
-        Tail::new(
-            LinearLayout::horizontal(Tail::new(triangle).append(rectangle).append(circle))
+        Chain::new(
+            LinearLayout::horizontal(Chain::new(triangle).append(rectangle).append(circle))
                 .with_spacing(DistributeFill(text.size().width))
                 .arrange(),
         )
