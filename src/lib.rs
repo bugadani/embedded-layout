@@ -138,6 +138,7 @@
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
 //! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/v0.6/simulator#usage-without-sdl2
 //! [alignments]: crate::align
+//! [view groups]: crate::view_group
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]

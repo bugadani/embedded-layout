@@ -80,7 +80,7 @@ impl<V> ChainElement for Chain<V> {
 }
 
 /// Internal implementation of chain macro
-#[doc(hide)]
+#[doc(hidden)]
 #[macro_export(local_inner_macros)]
 macro_rules! chain_impl {
     ($x:ty) => {
@@ -95,7 +95,7 @@ macro_rules! chain_impl {
 }
 
 /// Reverse the argument list to generate object chain
-#[doc(hide)]
+#[doc(hidden)]
 #[macro_export(local_inner_macros)]
 macro_rules! reverse {
     ([] $($reversed:tt)+) => {
