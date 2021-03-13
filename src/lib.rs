@@ -140,7 +140,7 @@
 //! [alignments]: crate::align
 
 #![cfg_attr(not(test), no_std)]
-#![warn(missing_docs)]
+#![deny(missing_docs)]
 #![deny(clippy::missing_inline_in_public_items)]
 #![warn(clippy::all)]
 
