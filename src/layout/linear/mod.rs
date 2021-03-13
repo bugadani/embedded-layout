@@ -35,10 +35,10 @@
 //!     .build();
 //!
 //! let _ = LinearLayout::vertical(
-//!         Chain::new(Text::new("Hello,", Point::zero()).into_styled(text_style))
-//!             .append(Text::new("World!", Point::zero()).into_styled(text_style))
-//!     )
-//!     .arrange();
+//!     Chain::new(Text::new("Hello,", Point::zero()).into_styled(text_style))
+//!         .append(Text::new("World!", Point::zero()).into_styled(text_style)),
+//! )
+//! .arrange();
 //! ```
 //!
 //! # Secondary alignment

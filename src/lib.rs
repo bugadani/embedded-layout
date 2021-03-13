@@ -80,15 +80,15 @@
 //!     .build();
 //!
 //! LinearLayout::vertical(
-//!         Chain::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
-//!             .append(Text::new("Linear", Point::zero()).into_styled(text_style))
-//!             .append(Text::new("Layout", Point::zero()).into_styled(text_style))
-//!     )
-//!     .with_alignment(horizontal::Center)
-//!     .arrange()
-//!     .align_to(&display_area, horizontal::Center, vertical::Center)
-//!     .draw(&mut display)
-//!     .unwrap();
+//!     Chain::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
+//!         .append(Text::new("Linear", Point::zero()).into_styled(text_style))
+//!         .append(Text::new("Layout", Point::zero()).into_styled(text_style))
+//! )
+//! .with_alignment(horizontal::Center)
+//! .arrange()
+//! .align_to(&display_area, horizontal::Center, vertical::Center)
+//! .draw(&mut display)
+//! .unwrap();
 //! ```
 //!
 //! # A note on imports
