@@ -35,9 +35,10 @@
 //!     .text_color(BinaryColor::On)
 //!     .build();
 //!
-//! let _ = LinearLayout::vertical()
-//!     .add_view(Text::new("Hello,", Point::zero()).into_styled(text_style))
-//!     .add_view(Text::new("World!", Point::zero()).into_styled(text_style))
+//! let _ = LinearLayout::vertical(
+//!         Chain::new(Text::new("Hello,", Point::zero()).into_styled(text_style))
+//!             .append(Text::new("World!", Point::zero()).into_styled(text_style))
+//!     )
 //!     .arrange();
 //! ```
 //!

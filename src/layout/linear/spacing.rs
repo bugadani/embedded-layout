@@ -28,13 +28,22 @@ pub trait ElementSpacing: Copy + Clone {
 /// Lay out objects tightly, leaving no space between them
 ///
 /// # Example:
-/// ```
+/// ```rust
 /// use embedded_layout::{
 ///     layout::linear::{spacing::Tight, LinearLayout},
 ///     prelude::*,
 /// };
 ///
-/// let _ = LinearLayout::horizontal().with_spacing(Tight);
+/// use embedded_graphics::primitives::Line;
+///
+/// let _ = LinearLayout::horizontal(
+///         Views::new(&mut [
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///         ])
+///     )
+///     .with_spacing(Tight);
 /// ```
 #[derive(Copy, Clone)]
 pub struct Tight;
@@ -63,9 +72,17 @@ impl ElementSpacing for Tight {
 ///     layout::linear::{spacing::FixedMargin, LinearLayout},
 ///     prelude::*,
 /// };
+/// use embedded_graphics::primitives::Line;
 ///
 /// // Apply a 3px margin between objects
-/// let _ = LinearLayout::horizontal().with_spacing(FixedMargin(3));
+/// let _ = LinearLayout::horizontal(
+///         Views::new(&mut [
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///         ])
+///     )
+///     .with_spacing(FixedMargin(3));
 /// ```
 #[derive(Copy, Clone)]
 pub struct FixedMargin(pub i32);
@@ -90,14 +107,22 @@ impl ElementSpacing for FixedMargin {
 /// Forces the layout to be as high or wide as set for this spacing
 ///
 /// # Example:
-/// ```
+/// ```rust
 /// use embedded_layout::{
 ///     layout::linear::{spacing::DistributeFill, LinearLayout},
 ///     prelude::*,
 /// };
+/// use embedded_graphics::primitives::Line;
 ///
 /// // Distribute views in a 64px high space
-/// let _ = LinearLayout::vertical().with_spacing(DistributeFill(64));
+/// let _ = LinearLayout::vertical(
+///         Views::new(&mut [
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///         ])
+///     )
+///     .with_spacing(DistributeFill(64));
 /// ```
 #[derive(Copy, Clone)]
 pub struct DistributeFill(pub u32);

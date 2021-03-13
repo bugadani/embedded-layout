@@ -118,7 +118,7 @@ macro_rules! reverse {
 /// ```rust
 /// use embedded_layout::prelude::*;
 /// use embedded_graphics::primitives::{Circle, Rectangle, Triangle};
-/// type Chain = Link<Rectangle, Link<Circle, Link<Triangle, Guard>>>;
+/// type Views = Link<Rectangle, Link<Circle, Chain<Triangle>>>;
 /// ```
 ///
 /// ... the `chain!` macro allows you to write this:
@@ -126,7 +126,7 @@ macro_rules! reverse {
 /// ```rust
 /// use embedded_layout::prelude::*;
 /// use embedded_graphics::primitives::{Circle, Rectangle, Triangle};
-/// type Chain = chain! { Triangle, Circle, Rectangle };
+/// type Views = chain! { Triangle, Circle, Rectangle };
 /// ```
 ///
 /// Note also how the order of types follows the type of objects in the chain instead of being

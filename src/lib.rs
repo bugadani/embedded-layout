@@ -11,7 +11,6 @@
 //!     * `NoAlignment`, `Top`, `Bottom`, `Center`
 //!     * `TopToBottom`, `BottomToTop`
 //! - [layouts] that can be used to arrange multiple views
-//!   * `ViewGroup`
 //!   * `LinearLayout`
 //!
 //! # Views
@@ -76,11 +75,12 @@
 //!     .text_color(BinaryColor::On)
 //!     .build();
 //!
-//! LinearLayout::vertical()
+//! LinearLayout::vertical(
+//!         Chain::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
+//!             .append(Text::new("Linear", Point::zero()).into_styled(text_style))
+//!             .append(Text::new("Layout", Point::zero()).into_styled(text_style))
+//!     )
 //!     .with_alignment(horizontal::Center)
-//!     .add_view(Text::new("Vertical", Point::zero()).into_styled(text_style))
-//!     .add_view(Text::new("Linear", Point::zero()).into_styled(text_style))
-//!     .add_view(Text::new("Layout", Point::zero()).into_styled(text_style))
 //!     .arrange()
 //!     .align_to(&display_area, horizontal::Center, vertical::Center)
 //!     .draw(&mut display)
@@ -157,6 +157,7 @@ pub mod prelude {
         chain,
         object_chain::{Chain, Link},
         utils::{display_area::DisplayArea, rect_helper::RectExt},
+        view_group::Views,
         View,
     };
 
