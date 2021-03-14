@@ -193,8 +193,8 @@ pub trait View {
     /// The default implementations of `translate` and `translate_mut` both call this functions.
     fn translate_impl(&mut self, by: Point);
 
-    /// Move the origin of an object by a given number of (x, y) pixels,
-    /// mutating the object in place.
+    /// Move the origin of an object by a given number of (x, y) pixels, mutating the object in place.
+    ///
     /// If you a looking for a method to implement, you might want `translate_impl()` instead.
     fn translate_mut(&mut self, by: Point) -> &mut Self
     where
@@ -204,8 +204,8 @@ pub trait View {
         self
     }
 
-    /// Move the origin of an object by a given number of (x, y) pixels,
-    /// returning a new object
+    /// Move the origin of an object by a given number of (x, y) pixels, returning a new object.
+    ///
     /// If you a looking for a method to implement, you might want `translate_impl()` instead.
     fn translate(mut self, by: Point) -> Self
     where
