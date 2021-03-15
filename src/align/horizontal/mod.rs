@@ -22,7 +22,7 @@ impl Alignment for NoAlignment {
 /// Center the objects horizontally
 ///
 /// *Note:* in certain cases it's not possible to center objects perfectly because of
-///         the integer cordinates used.
+///         the integer coordinates used.
 #[derive(Copy, Clone, Default)]
 pub struct Center;
 impl HorizontalAlignment for Center {}

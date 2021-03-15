@@ -2,7 +2,7 @@
 //!
 //! This crate extends [`embedded-graphics`] with tools that ease positioning of drawable objects.
 //!
-//! `embedded-layout` consists of two main parts:
+//! `embedded-layout` consists of three main parts:
 //! - [alignments] that can be used to position two objects relative to one another
 //!   * `horizontal`
 //!     * `NoAlignment`, `Left`, `Right`, `Center`
@@ -11,18 +11,21 @@
 //!     * `NoAlignment`, `Top`, `Bottom`, `Center`
 //!     * `TopToBottom`, `BottomToTop`
 //! - [layouts] that can be used to arrange multiple views
-//!   * `ViewGroup`
 //!   * `LinearLayout`
+//! - [view groups] which are collections of view objects
+//!   * `Chain` to create ad-hoc collections (can hold views of different types)
+//!   * `Views` to create view groups from arrays and slices (can only hold views of a single type)
+//!   * `derive(ViewGroup)` to turn any plain old Rust struct into a view group
 //!
 //! # Views
 //!
 //! The term "view" refers to anything `embedded-layout` can work with. Basically, a view is an
 //! object that can be displayed. [`View`] is the most basic trait in `embedded-layout`. Views
-//! implement [`View`] to enable translation and alignment operations on them, and also to allow
-//! them to be used with layouts.
+//! implement the [`View`] trait to enable translation and alignment operations on them, and also to
+//! allow them to be used with layouts.
 //!
 //! [`View`] is implemented for [`embedded-graphics`] display objects. There's also an example about
-//! how to implement custom [`View`] objects.
+//! how you can implement custom [`View`] objects.
 //!
 //! ## Examples
 //!
@@ -51,7 +54,7 @@
 //!
 //! Text::new("Hello, World!", Point::zero())
 //!     .into_styled(text_style)
-//!     // align text to the display
+//!     // align text to the center of the display
 //!     .align_to(&display_area, horizontal::Center, vertical::Center)
 //!     .draw(&mut display)
 //!     .unwrap();
@@ -76,15 +79,16 @@
 //!     .text_color(BinaryColor::On)
 //!     .build();
 //!
-//! LinearLayout::vertical()
-//!     .with_alignment(horizontal::Center)
-//!     .add_view(Text::new("Vertical", Point::zero()).into_styled(text_style))
-//!     .add_view(Text::new("Linear", Point::zero()).into_styled(text_style))
-//!     .add_view(Text::new("Layout", Point::zero()).into_styled(text_style))
-//!     .arrange()
-//!     .align_to(&display_area, horizontal::Center, vertical::Center)
-//!     .draw(&mut display)
-//!     .unwrap();
+//! LinearLayout::vertical(
+//!     Chain::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
+//!         .append(Text::new("Linear", Point::zero()).into_styled(text_style))
+//!         .append(Text::new("Layout", Point::zero()).into_styled(text_style))
+//! )
+//! .with_alignment(horizontal::Center)
+//! .arrange()
+//! .align_to(&display_area, horizontal::Center, vertical::Center)
+//! .draw(&mut display)
+//! .unwrap();
 //! ```
 //!
 //! # A note on imports
@@ -126,14 +130,15 @@
 //! let size = Dimensions::size(&rect);
 //! ```
 //!
-//! [`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
-//! [the `embedded-graphics` simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
+//! [`embedded-graphics`]: https://crates.io/crates/embedded-graphics/0.6.2
+//! [the `embedded-graphics` simulator]: https://crates.io/crates/embedded-graphics-simulator/0.2.1
 //! [fully qualified syntax]: https://doc.rust-lang.org/book/ch19-03-advanced-traits.html#fully-qualified-syntax-for-disambiguation-calling-methods-with-the-same-name
 //! [`View`]: crate::View
 //! [layouts]: crate::layout
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
-//! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator#usage-without-sdl2
+//! [simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/v0.6/simulator#usage-without-sdl2
 //! [alignments]: crate::align
+//! [view groups]: crate::view_group
 
 #![cfg_attr(not(test), no_std)]
 #![deny(missing_docs)]
@@ -144,7 +149,9 @@ use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
 pub mod align;
 pub mod layout;
+pub mod object_chain;
 pub mod utils;
+pub mod view_group;
 
 use utils::rect_helper::RectSize;
 
@@ -153,11 +160,9 @@ pub mod prelude {
     pub use crate::{
         align::{horizontal, vertical, Align},
         chain,
-        utils::{
-            display_area::DisplayArea,
-            object_chain::{ChainElement, Guard, Link},
-            rect_helper::RectExt,
-        },
+        object_chain::{Chain, Link},
+        utils::{display_area::DisplayArea, rect_helper::RectExt},
+        view_group::Views,
         View,
     };
 
@@ -173,8 +178,7 @@ pub mod prelude {
 
 /// A `View` is the base unit for most of the `embedded-layout` operations.
 ///
-/// `View`s must have a size and a position, so they need to implement the `Dimensions` and
-/// `Transform` traits.
+/// `View`s must have a size and a position.
 ///
 /// See the `custom_view` example for how you can define more complex views.
 pub trait View {
@@ -184,14 +188,32 @@ pub trait View {
         RectSize::size(self.bounds())
     }
 
-    /// Move the origin of an object by a given number of (x, y) pixels,
-    /// by returning a new object
-    #[must_use]
-    fn translate(self, by: Point) -> Self;
+    /// Object-safe version of `translate_mut()`.
+    ///
+    /// The default implementations of `translate` and `translate_mut` both call this functions.
+    fn translate_impl(&mut self, by: Point);
 
-    /// Move the origin of an object by a given number of (x, y) pixels,
-    /// mutating the object in place
-    fn translate_mut(&mut self, by: Point) -> &mut Self;
+    /// Move the origin of an object by a given number of (x, y) pixels, mutating the object in place.
+    ///
+    /// If you a looking for a method to implement, you might want `translate_impl()` instead.
+    fn translate_mut(&mut self, by: Point) -> &mut Self
+    where
+        Self: Sized,
+    {
+        self.translate_impl(by);
+        self
+    }
+
+    /// Move the origin of an object by a given number of (x, y) pixels, returning a new object.
+    ///
+    /// If you a looking for a method to implement, you might want `translate_impl()` instead.
+    fn translate(mut self, by: Point) -> Self
+    where
+        Self: Sized,
+    {
+        self.translate_impl(by);
+        self
+    }
 
     /// Returns the bounding box of the `View` as a `Rectangle`
     fn bounds(&self) -> Rectangle;
@@ -202,15 +224,8 @@ where
     T: Transform + Dimensions,
 {
     #[inline]
-    fn translate(mut self, by: Point) -> Self {
-        Self::translate_mut(&mut self, by);
-        self
-    }
-
-    #[inline]
-    fn translate_mut(&mut self, by: Point) -> &mut Self {
+    fn translate_impl(&mut self, by: Point) {
         Transform::translate_mut(self, by);
-        self
     }
 
     #[inline]
@@ -223,6 +238,9 @@ where
 mod test {
     use crate::prelude::*;
     use embedded_graphics::primitives::Rectangle;
+
+    #[allow(dead_code)]
+    fn view_is_object_safe(_: &dyn View) {}
 
     #[test]
     fn test_size() {

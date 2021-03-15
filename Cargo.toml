@@ -14,10 +14,14 @@ exclude = [
     ".github/",
 ]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [
+  "macros",
+]
 
 [dependencies]
 embedded-graphics = "0.6.2"
+embedded-layout-macros = { path = "macros", version = "0.1.0" }
 
 [dev-dependencies]
 embedded-graphics-simulator = "0.2.0"

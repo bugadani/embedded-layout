@@ -35,34 +35,43 @@ const fn cascading(prev_size: Size, view_size: Size) -> Size {
 
 impl SecondaryAlignment for horizontal::Left {
     type First = horizontal::Left;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         max_width(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for horizontal::Center {
     type First = horizontal::Center;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         max_width(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for horizontal::Right {
     type First = horizontal::Right;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         max_width(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for horizontal::RightToLeft {
     type First = horizontal::Right;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         cascading(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for horizontal::LeftToRight {
     type First = horizontal::Left;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         cascading(prev_size, view_size)
@@ -78,34 +87,43 @@ fn max_height(prev_size: Size, view_size: Size) -> Size {
 
 impl SecondaryAlignment for vertical::Top {
     type First = vertical::Top;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         max_height(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for vertical::Center {
     type First = vertical::Center;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         max_height(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for vertical::Bottom {
     type First = vertical::Bottom;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         max_height(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for vertical::TopToBottom {
     type First = vertical::Top;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         cascading(prev_size, view_size)
     }
 }
+
 impl SecondaryAlignment for vertical::BottomToTop {
     type First = vertical::Bottom;
+
     #[inline]
     fn measure(prev_size: Size, view_size: Size) -> Size {
         cascading(prev_size, view_size)

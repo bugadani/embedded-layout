@@ -19,14 +19,8 @@ pub trait Orientation: Copy + Clone {
     /// Create a `Size` from primary and secondary size values
     fn create_size(primary: u32, secondary: u32) -> Size;
 
-    /// Adjust measured size based on element spacing
-    fn adjust_size(self, size: Size, objects: u32) -> Size;
-
-    /// Place first view
-    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: u32);
-
-    /// Place nth view
-    fn place_nth(&self, view: &mut impl View, size: Size, previous: Rectangle, n: u32, count: u32);
+    /// Place view
+    fn place(&self, view: &mut dyn View, size: Size, previous: Rectangle, n: usize, count: usize);
 }
 
 /// Horizontal layout direction
@@ -98,48 +92,37 @@ where
     }
 
     #[inline]
-    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: u32) {
-        let (primary_size, _) = Self::destructure_size(bounds.size());
-        let view_bounds = view.bounds();
-
-        view.translate_mut(Point::new(
-            self.spacing.align(
-                horizontal::Left,
-                view_bounds,
-                bounds,
-                0,
-                count,
-                primary_size,
-            ),
-            Secondary::First::default().align(view_bounds, bounds),
-        ));
-    }
-
-    #[inline]
-    fn place_nth(&self, view: &mut impl View, size: Size, previous: Rectangle, n: u32, count: u32) {
+    fn place(&self, view: &mut dyn View, size: Size, previous: Rectangle, n: usize, count: usize) {
         let (primary_size, _) = Self::destructure_size(size);
         let view_bounds = view.bounds();
 
-        view.translate_mut(Point::new(
-            self.spacing.align(
-                horizontal::LeftToRight,
-                view_bounds,
-                previous,
-                n,
-                count,
-                primary_size,
-            ),
-            Secondary::default().align(view_bounds, previous),
-        ));
-    }
+        let translation = if n == 0 {
+            Point::new(
+                self.spacing.align(
+                    horizontal::Left,
+                    view_bounds,
+                    previous,
+                    n,
+                    count,
+                    primary_size,
+                ),
+                Secondary::First::default().align(view_bounds, previous),
+            )
+        } else {
+            Point::new(
+                self.spacing.align(
+                    horizontal::LeftToRight,
+                    view_bounds,
+                    previous,
+                    n,
+                    count,
+                    primary_size,
+                ),
+                Secondary::default().align(view_bounds, previous),
+            )
+        };
 
-    #[inline]
-    fn adjust_size(self, size: Size, objects: u32) -> Size {
-        let (primary_size, secondary_size) = Self::destructure_size(size);
-        Self::create_size(
-            self.spacing.modify_measurement(primary_size, objects),
-            secondary_size,
-        )
+        view.translate_impl(translation);
     }
 }
 
@@ -212,41 +195,30 @@ where
     }
 
     #[inline]
-    fn place_first(&self, view: &mut impl View, bounds: Rectangle, count: u32) {
-        let (primary_size, _) = Self::destructure_size(bounds.size());
-        let view_bounds = view.bounds();
-
-        view.translate_mut(Point::new(
-            Secondary::First::default().align(view_bounds, bounds),
-            self.spacing
-                .align(vertical::Top, view_bounds, bounds, 0, count, primary_size),
-        ));
-    }
-
-    #[inline]
-    fn place_nth(&self, view: &mut impl View, size: Size, previous: Rectangle, n: u32, count: u32) {
+    fn place(&self, view: &mut dyn View, size: Size, previous: Rectangle, n: usize, count: usize) {
         let (primary_size, _) = Self::destructure_size(size);
         let view_bounds = view.bounds();
 
-        view.translate_mut(Point::new(
-            Secondary::default().align(view_bounds, previous),
-            self.spacing.align(
-                vertical::TopToBottom,
-                view_bounds,
-                previous,
-                n,
-                count,
-                primary_size,
-            ),
-        ));
-    }
+        let translation = if n == 0 {
+            Point::new(
+                Secondary::First::default().align(view_bounds, previous),
+                self.spacing
+                    .align(vertical::Top, view_bounds, previous, n, count, primary_size),
+            )
+        } else {
+            Point::new(
+                Secondary::default().align(view_bounds, previous),
+                self.spacing.align(
+                    vertical::TopToBottom,
+                    view_bounds,
+                    previous,
+                    n,
+                    count,
+                    primary_size,
+                ),
+            )
+        };
 
-    #[inline]
-    fn adjust_size(self, size: Size, objects: u32) -> Size {
-        let (primary_size, secondary_size) = Self::destructure_size(size);
-        Self::create_size(
-            self.spacing.modify_measurement(primary_size, objects),
-            secondary_size,
-        )
+        view.translate_impl(translation);
     }
 }

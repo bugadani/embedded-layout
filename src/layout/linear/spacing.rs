@@ -13,17 +13,14 @@ use embedded_graphics::primitives::Rectangle;
 
 /// `ElementSpacing` base trait
 pub trait ElementSpacing: Copy + Clone {
-    /// Calculate how much the total size of a layout changes by applying the current spacing
-    fn modify_measurement(&self, measured_size: u32, objects: u32) -> u32;
-
     /// Align `view` to `reference` using the element spacing rules
     fn align(
         &self,
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        n: u32,
-        objects: u32,
+        n: usize,
+        objects: usize,
         total_size: u32,
     ) -> i32;
 }
@@ -31,30 +28,34 @@ pub trait ElementSpacing: Copy + Clone {
 /// Lay out objects tightly, leaving no space between them
 ///
 /// # Example:
-/// ```
+/// ```rust
 /// use embedded_layout::{
 ///     layout::linear::{spacing::Tight, LinearLayout},
 ///     prelude::*,
 /// };
 ///
-/// let _ = LinearLayout::horizontal().with_spacing(Tight);
+/// use embedded_graphics::primitives::Line;
+///
+/// let _ = LinearLayout::horizontal(
+///         Views::new(&mut [
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///         ])
+///     )
+///     .with_spacing(Tight);
 /// ```
 #[derive(Copy, Clone)]
 pub struct Tight;
 impl ElementSpacing for Tight {
-    #[inline]
-    fn modify_measurement(&self, measured_size: u32, _objects: u32) -> u32 {
-        measured_size
-    }
-
     #[inline]
     fn align(
         &self,
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        _n: u32,
-        _objects: u32,
+        _n: usize,
+        _objects: usize,
         _total_size: u32,
     ) -> i32 {
         alignment.align_with_offset(view, reference, 0)
@@ -71,30 +72,29 @@ impl ElementSpacing for Tight {
 ///     layout::linear::{spacing::FixedMargin, LinearLayout},
 ///     prelude::*,
 /// };
+/// use embedded_graphics::primitives::Line;
 ///
 /// // Apply a 3px margin between objects
-/// let _ = LinearLayout::horizontal().with_spacing(FixedMargin(3));
+/// let _ = LinearLayout::horizontal(
+///         Views::new(&mut [
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///         ])
+///     )
+///     .with_spacing(FixedMargin(3));
 /// ```
 #[derive(Copy, Clone)]
 pub struct FixedMargin(pub i32);
 impl ElementSpacing for FixedMargin {
-    #[inline]
-    fn modify_measurement(&self, measured_size: u32, objects: u32) -> u32 {
-        if objects == 0 {
-            measured_size
-        } else {
-            (measured_size as i32 + self.0 * (objects as i32 - 1)) as u32
-        }
-    }
-
     #[inline]
     fn align(
         &self,
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        n: u32,
-        _objects: u32,
+        n: usize,
+        _objects: usize,
         _total_size: u32,
     ) -> i32 {
         let offset = if n == 0 { 0 } else { self.0 };
@@ -107,31 +107,34 @@ impl ElementSpacing for FixedMargin {
 /// Forces the layout to be as high or wide as set for this spacing
 ///
 /// # Example:
-/// ```
+/// ```rust
 /// use embedded_layout::{
 ///     layout::linear::{spacing::DistributeFill, LinearLayout},
 ///     prelude::*,
 /// };
+/// use embedded_graphics::primitives::Line;
 ///
 /// // Distribute views in a 64px high space
-/// let _ = LinearLayout::vertical().with_spacing(DistributeFill(64));
+/// let _ = LinearLayout::vertical(
+///         Views::new(&mut [
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///             Line::new(Point::zero(), Point::new(0, 5)),
+///         ])
+///     )
+///     .with_spacing(DistributeFill(64));
 /// ```
 #[derive(Copy, Clone)]
 pub struct DistributeFill(pub u32);
 impl ElementSpacing for DistributeFill {
-    #[inline]
-    fn modify_measurement(&self, _measured_size: u32, _objects: u32) -> u32 {
-        self.0
-    }
-
     #[inline]
     fn align(
         &self,
         alignment: impl Alignment,
         view: Rectangle,
         reference: Rectangle,
-        n: u32,
-        objects: u32,
+        n: usize,
+        objects: usize,
         total_size: u32,
     ) -> i32 {
         // bit of a mess, but calculate using i32 in case the views don't fit the space

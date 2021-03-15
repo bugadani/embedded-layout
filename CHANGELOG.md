@@ -6,13 +6,23 @@ Unreleased
  * Add `chain!` macro to simplify working with object chains
  * Include object chain types in `prelude`
  * `View::translate_mut`
+ * `derive(ViewGroup)` to easily implmenet ViewGroup on a structure with named fields.
+ * `view_group::Views` which can wrap a slice of View objects into a ViewGroup.
+ * `LinearLayout::into_inner()`
+ * `LinearLayout` now has a position.
 
 ## Changed:
 
- * Change fields of `Link` and `ViewGroup` to be public
- * **breaking:** Changed `View::translate` to take ownership and return ownership instead of working with references
- * Change `Link` and `Guard` to be public
- * Change `LayoutElement` to be public
+ * **breaking** Changed `ViewGroup` to a trait. Layouts now operate on objects that implement `ViewGroup`.
+ * **breaking** LinearLayout now requires a view in their constructors.
+ * **breaking** Changed `View::translate` to take ownership and return ownership instead of working with references
+ * Changed `Link` to be public. Replaced private `Guard` with public `Chain` which now wraps an object.
+ * **breaking** Empty object chains are no longer possible.
+ * **breaking** Renamed `ChainElement::count()` to `ChainElement::len()` for consistency.
+
+## Removed:
+
+ * Removed the `ChainElement` trait from `prelude`.
 
 0.1.0 (2020-07-08)
 ==================
@@ -28,7 +38,7 @@ Unreleased
  * Secondary alignment implementations now require specifying the alignment of the first view
  * Changed what is re-exported from the `embedded-graphics` prelude. This reduces function name collisions
  * **breaking:** Renamed `layout_direction::LayoutDirection` to `orientation::Orientation`
- * **breaking:** Renamed `layout_operation::LayoutOpeartion` to `layout_element::LayoutElement`
+ * **breaking:** Renamed `layout_operation::LayoutOperation` to `layout_element::LayoutElement`
  * **breaking:** `ViewLink` has been renamed to `Link` and `ChainTerminator` to `Guard`
 
 ## Fixed:

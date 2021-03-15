@@ -1,6 +1,6 @@
 //! `Rectangle` utility methods
 //!
-//! This module implements a few usfeul extensions to `Rectangle`.
+//! This module implements a few useful extensions to `Rectangle`.
 use embedded_graphics::{prelude::*, primitives::Rectangle};
 
 /// The trait that describes the extension methods.

@@ -3,7 +3,7 @@ embedded-layout
 
 `embedded-layout` extends [`embedded-graphics`] with basic layout functions.
 
-`embedded-layout` consists of two main parts:
+`embedded-layout` consists of three main parts:
  - alignments that can be used to position two objects relative to one another
    * `horizontal`
      * `NoAlignment`, `Left`, `Right`, `Center`
@@ -12,8 +12,11 @@ embedded-layout
      * `NoAlignment`, `Top`, `Bottom`, `Center`
      * `TopToBottom`, `BottomToTop`
  - layouts that can be used to arrange multiple views
-   * `ViewGroup`
    * `LinearLayout`
+ - view groups which are collections of view objects
+   * `Chain` to create ad-hoc collections (can hold views of different types)
+   * `Views` to create view groups from arrays and slices (can only hold views of a single  type)
+   * `derive(ViewGroup)` to turn any plain old Rust struct into a view group
 
 ## Example
 
@@ -33,10 +36,7 @@ use embedded_graphics::{
     primitives::{Circle, Triangle},
     style::{PrimitiveStyle, TextStyleBuilder},
 };
-use embedded_layout::{
-    layout::{linear::LinearLayout, ViewGroup},
-    prelude::*,
-};
+use embedded_layout::{layout::linear::LinearLayout, prelude::*};
 
 fn main() -> Result<(), core::convert::Infallible> {
     let mut display: SimulatorDisplay<BinaryColor> = SimulatorDisplay::new(Size::new(128, 64));
@@ -69,24 +69,19 @@ fn main() -> Result<(), core::convert::Infallible> {
     let text = Text::new("embedded-layout", Point::zero()).into_styled(text_style);
 
     // The layout
-    LinearLayout::vertical()
-        .with_alignment(horizontal::Center)
-        .add_view(text)
-        .add_view(
-            LinearLayout::horizontal()
-                .add_view(triangle)
-                .add_view(circle)
-                .arrange(),
-        )
-        .add_view(
-            ViewGroup::new()
-                .add_view(triangle2.align_to(&circle2, horizontal::Center, vertical::Top))
-                .add_view(circle2),
-        )
-        .arrange()
-        .align_to(&display_area, horizontal::Center, vertical::Center)
-        .draw(&mut display)
-        .unwrap();
+    LinearLayout::vertical(
+        Chain::new(text)
+            .append(LinearLayout::horizontal(Chain::new(triangle).append(circle)).arrange())
+            .append(
+                Chain::new(triangle2.align_to(&circle2, horizontal::Center, vertical::Top))
+                    .append(circle2),
+            ),
+    )
+    .with_alignment(horizontal::Center)
+    .arrange()
+    .align_to(&display_area, horizontal::Center, vertical::Center)
+    .draw(&mut display)
+    .unwrap();
 
     Window::new("Layout example", &output_settings).show_static(&display);
     Ok(())
