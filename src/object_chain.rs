@@ -185,9 +185,8 @@ mod test {
 #[cfg(test)]
 #[allow(dead_code)]
 mod test_macro {
-    use embedded_graphics::primitives::{Rectangle, Triangle};
-
     use crate::prelude::*;
+    use embedded_graphics::primitives::{Rectangle, Triangle};
 
     type Views = chain! {
         Rectangle,

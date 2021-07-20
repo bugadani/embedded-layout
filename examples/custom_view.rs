@@ -8,7 +8,11 @@ use embedded_graphics_simulator::{
 };
 
 use embedded_graphics::{
-    pixelcolor::BinaryColor, primitives::Rectangle, style::PrimitiveStyle, DrawTarget,
+    draw_target::DrawTarget,
+    pixelcolor::BinaryColor,
+    prelude::{Dimensions, Point, Primitive, Size},
+    primitives::{PrimitiveStyle, Rectangle},
+    Drawable,
 };
 use embedded_layout::{
     layout::linear::{spacing::FixedMargin, LinearLayout},
@@ -23,7 +27,7 @@ impl ProgressBar {
     /// The progress bar has a configurable position and size
     fn new(position: Point, size: Size) -> Self {
         Self {
-            bounds: Rectangle::with_size(position, size),
+            bounds: Rectangle::new(position, size),
             progress: 0,
         }
     }
@@ -52,8 +56,11 @@ impl View for ProgressBar {
 }
 
 /// Need to implement `Drawable` for a _reference_ of our view
-impl Drawable<BinaryColor> for &ProgressBar {
-    fn draw<D: DrawTarget<BinaryColor>>(self, display: &mut D) -> Result<(), D::Error> {
+impl Drawable for ProgressBar {
+    type Color = BinaryColor;
+    type Output = ();
+
+    fn draw<D: DrawTarget<Color = BinaryColor>>(&self, display: &mut D) -> Result<(), D::Error> {
         // Create styles
         let border_style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
         let progress_style = PrimitiveStyle::with_fill(BinaryColor::On);
@@ -62,7 +69,7 @@ impl Drawable<BinaryColor> for &ProgressBar {
         let border = self.bounds.into_styled(border_style);
 
         // Create a rectangle that will indicate progress
-        let progress = Rectangle::with_size(
+        let progress = Rectangle::new(
             Point::zero(),
             // sizes are calculated so that the rectangle will have a 1px margin
             Size::new(
@@ -92,7 +99,7 @@ fn main() -> Result<(), core::convert::Infallible> {
         .build();
 
     // Create a Rectangle from the display's dimensions
-    let display_area = display.display_area();
+    let display_area = display.bounding_box();
 
     // Two bigger progress bars
     let progress1 = ProgressBar::new(Point::zero(), Size::new(64, 8)).with_progress(10);

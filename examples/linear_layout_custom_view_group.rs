@@ -3,9 +3,10 @@ use embedded_graphics_simulator::{
 };
 
 use embedded_graphics::{
-    fonts::{Font6x8, Text},
+    mono_font::{ascii::FONT_6X9, MonoTextStyle},
     pixelcolor::BinaryColor,
-    style::{Styled, TextStyle, TextStyleBuilder},
+    prelude::*,
+    text::Text,
 };
 use embedded_layout::{layout::linear::LinearLayout, prelude::*};
 use embedded_layout_macros::ViewGroup;
@@ -14,9 +15,9 @@ use embedded_layout_macros::ViewGroup;
 // `Drawable<C>` only if the struct has a PixelColor type parameter.
 #[derive(ViewGroup)]
 struct Layout<'txt, C: PixelColor> {
-    text_vertical: Styled<Text<'txt>, TextStyle<C, Font6x8>>,
-    text_linear: Styled<Text<'txt>, TextStyle<C, Font6x8>>,
-    text_layout: Styled<Text<'txt>, TextStyle<C, Font6x8>>,
+    text_vertical: Text<'txt, MonoTextStyle<'static, C>>,
+    text_linear: Text<'txt, MonoTextStyle<'static, C>>,
+    text_layout: Text<'txt, MonoTextStyle<'static, C>>,
 }
 
 fn main() -> Result<(), core::convert::Infallible> {
@@ -25,16 +26,14 @@ fn main() -> Result<(), core::convert::Infallible> {
         .theme(BinaryColorTheme::OledBlue)
         .build();
 
-    let display_area = display.display_area();
+    let display_area = display.bounding_box();
 
-    let text_style = TextStyleBuilder::new(Font6x8)
-        .text_color(BinaryColor::On)
-        .build();
+    let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
 
     let views = Layout {
-        text_vertical: Text::new("Vertical", Point::zero()).into_styled(text_style),
-        text_linear: Text::new("Linear", Point::zero()).into_styled(text_style),
-        text_layout: Text::new("Layout", Point::zero()).into_styled(text_style),
+        text_vertical: Text::new("Vertical", Point::zero(), text_style),
+        text_linear: Text::new("Linear", Point::zero(), text_style),
+        text_layout: Text::new("Layout", Point::zero(), text_style),
     };
 
     LinearLayout::vertical(views)

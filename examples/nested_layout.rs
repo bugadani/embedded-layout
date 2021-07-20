@@ -3,10 +3,11 @@ use embedded_graphics_simulator::{
 };
 
 use embedded_graphics::{
-    fonts::{Font6x8, Text},
+    mono_font::{ascii::FONT_6X9, MonoTextStyle},
     pixelcolor::BinaryColor,
-    primitives::{Circle, Triangle},
-    style::{PrimitiveStyle, TextStyleBuilder},
+    prelude::*,
+    primitives::{Circle, PrimitiveStyle, Triangle},
+    text::Text,
 };
 use embedded_layout::{layout::linear::LinearLayout, prelude::*};
 
@@ -18,12 +19,10 @@ fn main() -> Result<(), core::convert::Infallible> {
         .build();
 
     // Create a Rectangle from the display's dimensions
-    let display_area = display.display_area();
+    let display_area = display.bounding_box();
 
     // Style objects
-    let text_style = TextStyleBuilder::new(Font6x8)
-        .text_color(BinaryColor::On)
-        .build();
+    let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
 
     let thin_stroke = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
     let thick_stroke = PrimitiveStyle::with_stroke(BinaryColor::On, 3);
@@ -34,11 +33,11 @@ fn main() -> Result<(), core::convert::Infallible> {
     let triangle = Triangle::new(Point::new(0, 0), Point::new(12, 0), Point::new(6, 12))
         .into_styled(thin_stroke);
 
-    let circle = Circle::new(Point::zero(), 6).into_styled(thick_stroke);
-    let circle2 = Circle::new(Point::zero(), 7).into_styled(fill_on);
+    let circle = Circle::new(Point::zero(), 11).into_styled(thick_stroke);
+    let circle2 = Circle::new(Point::zero(), 15).into_styled(fill_on);
     let triangle2 =
         Triangle::new(Point::new(0, 0), Point::new(10, 0), Point::new(5, 8)).into_styled(fill_off);
-    let text = Text::new("embedded-layout", Point::zero()).into_styled(text_style);
+    let text = Text::new("embedded-layout", Point::zero(), text_style);
 
     // The layout
     LinearLayout::vertical(

@@ -1,7 +1,8 @@
 use core::ops::{Deref, DerefMut};
 
 use embedded_graphics::{
-    drawable::Drawable, pixelcolor::PixelColor, prelude::Point, primitives::Rectangle, DrawTarget,
+    draw_target::DrawTarget, pixelcolor::PixelColor, prelude::Point, primitives::Rectangle,
+    Drawable,
 };
 
 use crate::{
@@ -78,14 +79,20 @@ where
     }
 }
 
-impl<'a, C, T> Drawable<C> for &'a Views<'_, T>
+impl<'a, C, T> Drawable for Views<'_, T>
 where
     C: PixelColor,
     T: View,
-    &'a T: Drawable<C>,
+    T: Drawable<Color = C>,
 {
+    type Color = C;
+    type Output = ();
+
     #[inline]
-    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+    fn draw<D>(&self, display: &mut D) -> Result<(), D::Error>
+    where
+        D: DrawTarget<Color = Self::Color>,
+    {
         for view in self.views.iter() {
             view.draw(display)?;
         }

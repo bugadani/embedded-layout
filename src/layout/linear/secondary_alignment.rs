@@ -1,3 +1,5 @@
+use embedded_graphics::prelude::Size;
+
 use crate::{align::Alignment, prelude::*};
 
 /// Secondary alignment is used to align views perpendicular to the placement axis.

@@ -90,16 +90,8 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
         }
 
         impl #impl_generics embedded_graphics::geometry::Dimensions for #name #ty_generics #where_clause {
-            fn top_left(&self) -> Point {
-                embedded_layout::view_group::ViewGroupHelper::bounds(self).top_left
-            }
-            fn bottom_right(&self) -> Point {
-                embedded_layout::view_group::ViewGroupHelper::bounds(self).bottom_right
-            }
-            fn size(&self) -> Size {
-                embedded_layout::utils::rect_helper::RectSize::size(
-                    embedded_layout::view_group::ViewGroupHelper::bounds(self)
-                )
+            fn bounding_box(&self) -> embedded_graphics::primitives::Rectangle {
+                embedded_layout::view_group::ViewGroupHelper::bounds(self)
             }
         }
     };
@@ -118,8 +110,11 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
 
     let gen_drawable_impl = if let Some(pixelcolor) = pixelcolor {
         quote! {
-            impl #impl_generics embedded_graphics::drawable::Drawable<#pixelcolor> for &#name #ty_generics #where_clause {
-                fn draw<D: embedded_graphics::DrawTarget<#pixelcolor>>(self, display: &mut D) -> Result<(), D::Error> {
+            impl #impl_generics embedded_graphics::Drawable for #name #ty_generics #where_clause {
+                type Color = #pixelcolor;
+                type Output = ();
+
+                fn draw<D: embedded_graphics::draw_target::DrawTarget<Color = #pixelcolor>>(&self, display: &mut D) -> Result<(), D::Error> {
                     #(#draw)*
 
                     Ok(())

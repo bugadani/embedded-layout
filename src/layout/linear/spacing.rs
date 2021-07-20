@@ -33,8 +33,7 @@ pub trait ElementSpacing: Copy + Clone {
 ///     layout::linear::{spacing::Tight, LinearLayout},
 ///     prelude::*,
 /// };
-///
-/// use embedded_graphics::primitives::Line;
+/// use embedded_graphics::{prelude::*, primitives::Line};
 ///
 /// let _ = LinearLayout::horizontal(
 ///         Views::new(&mut [
@@ -72,7 +71,7 @@ impl ElementSpacing for Tight {
 ///     layout::linear::{spacing::FixedMargin, LinearLayout},
 ///     prelude::*,
 /// };
-/// use embedded_graphics::primitives::Line;
+/// use embedded_graphics::{prelude::*, primitives::Line};
 ///
 /// // Apply a 3px margin between objects
 /// let _ = LinearLayout::horizontal(
@@ -112,7 +111,7 @@ impl ElementSpacing for FixedMargin {
 ///     layout::linear::{spacing::DistributeFill, LinearLayout},
 ///     prelude::*,
 /// };
-/// use embedded_graphics::primitives::Line;
+/// use embedded_graphics::{prelude::*, primitives::Line};
 ///
 /// // Distribute views in a 64px high space
 /// let _ = LinearLayout::vertical(

@@ -4,10 +4,11 @@ use embedded_graphics_simulator::{
 };
 
 use embedded_graphics::{
-    fonts::{Font6x8, Text},
+    mono_font::{ascii::FONT_6X9, MonoTextStyle},
     pixelcolor::BinaryColor,
-    primitives::{Circle, Rectangle, Triangle},
-    style::{PrimitiveStyle, TextStyle},
+    prelude::*,
+    primitives::{Circle, PrimitiveStyle, Rectangle, Triangle},
+    text::Text,
 };
 use embedded_layout::{
     layout::linear::{
@@ -23,20 +24,20 @@ fn main() -> Result<(), core::convert::Infallible> {
         .theme(BinaryColorTheme::OledBlue)
         .build();
 
-    let display_area = display.display_area();
+    let display_area = display.bounding_box();
 
     // Create styles used by the drawing operations.
     let thin_stroke = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
     let thick_stroke = PrimitiveStyle::with_stroke(BinaryColor::On, 3);
     let fill = PrimitiveStyle::with_fill(BinaryColor::On);
-    let text_style = TextStyle::new(Font6x8, BinaryColor::On);
+    let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
 
     // Create the view objects
-    let text = Text::new("embedded-layout", Point::zero()).into_styled(text_style);
+    let text = Text::new("embedded-layout", Point::zero(), text_style);
     let triangle = Triangle::new(Point::new(0, 16), Point::new(16, 16), Point::new(8, 0))
         .into_styled(thin_stroke);
-    let rectangle = Rectangle::with_size(Point::zero(), Size::new(17, 17)).into_styled(fill);
-    let circle = Circle::new(Point::zero(), 8).into_styled(thick_stroke);
+    let rectangle = Rectangle::new(Point::zero(), Size::new(17, 17)).into_styled(fill);
+    let circle = Circle::new(Point::zero(), 16).into_styled(thick_stroke);
 
     // Draw a 3px wide outline around the display.
     display_area
