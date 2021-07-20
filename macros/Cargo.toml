@@ -2,6 +2,7 @@
 name = "embedded-layout-macros"
 version = "0.1.0"
 license = "MIT"
+description = "Procedural macros for embedded-layout"
 repository = "https://github.com/bugadani/embedded-layout"
 authors = ["Dániel Buga <bugadani@gmail.com>"]
 keywords = ["embedded-graphics", "layout", "linear-layout"]
