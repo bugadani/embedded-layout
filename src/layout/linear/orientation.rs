@@ -1,12 +1,15 @@
 use crate::{
-    align::{Alignment, HorizontalAlignment, VerticalAlignment},
+    align::{horizontal, vertical, Alignment, HorizontalAlignment, VerticalAlignment},
     layout::linear::{
         secondary_alignment::SecondaryAlignment,
         spacing::{ElementSpacing, Tight},
     },
-    prelude::*,
+    View,
 };
-use embedded_graphics::primitives::Rectangle;
+use embedded_graphics::{
+    prelude::{Point, Size},
+    primitives::Rectangle,
+};
 
 /// Helper trait that describes a linear layout orientation.
 pub trait Orientation: Copy + Clone {

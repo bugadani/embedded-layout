@@ -13,6 +13,7 @@ Unreleased
 
 ## Changed:
 
+ * **breaking** Update to `embedded-graphics` 0.7
  * **breaking** Changed `ViewGroup` to a trait. Layouts now operate on objects that implement `ViewGroup`.
  * **breaking** LinearLayout now requires a view in their constructors.
  * **breaking** Changed `View::translate` to take ownership and return ownership instead of working with references
@@ -23,6 +24,9 @@ Unreleased
 ## Removed:
 
  * Removed the `ChainElement` trait from `prelude`.
+ * Removed `embedded-graphics` types from `prelude`.
+ * Removed most methods of `RectExt`.
+ * Removed `DisplayArea` extension trait.
 
 0.1.0 (2020-07-08)
 ==================

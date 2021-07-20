@@ -24,7 +24,7 @@
 //! [`align_to`]: crate::align::Align::align_to
 //! [`align_to_mut`]: crate::align::Align::align_to_mut
 use crate::prelude::*;
-use embedded_graphics::primitives::Rectangle;
+use embedded_graphics::{prelude::Point, primitives::Rectangle};
 
 pub mod horizontal;
 pub mod vertical;

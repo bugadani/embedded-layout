@@ -3,9 +3,10 @@ use embedded_graphics_simulator::{
 };
 
 use embedded_graphics::{
-    fonts::{Font6x8, Text},
+    mono_font::{ascii::FONT_6X9, MonoTextStyle},
     pixelcolor::BinaryColor,
-    style::TextStyleBuilder,
+    prelude::*,
+    text::Text,
 };
 use embedded_layout::prelude::*;
 
@@ -13,14 +14,11 @@ fn main() -> Result<(), core::convert::Infallible> {
     let mut display: SimulatorDisplay<BinaryColor> = SimulatorDisplay::new(Size::new(129, 129));
 
     // Create a Rectangle from the display's dimensions
-    let display_area = display.display_area();
+    let display_area = display.bounding_box();
 
-    let text_style = TextStyleBuilder::new(Font6x8)
-        .text_color(BinaryColor::On)
-        .build();
+    let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
 
-    Text::new("Hello, World!", Point::zero())
-        .into_styled(text_style)
+    Text::new("Hello, World!", Point::zero(), text_style)
         // align text to the display
         .align_to(&display_area, horizontal::Center, vertical::Center)
         .draw(&mut display)

@@ -3,9 +3,10 @@ use embedded_graphics_simulator::{
 };
 
 use embedded_graphics::{
-    fonts::{Font6x8, Text},
+    mono_font::{ascii::FONT_6X9, MonoTextStyle},
     pixelcolor::BinaryColor,
-    style::TextStyleBuilder,
+    prelude::*,
+    text::Text,
 };
 use embedded_layout::{layout::linear::LinearLayout, prelude::*};
 
@@ -15,16 +16,14 @@ fn main() -> Result<(), core::convert::Infallible> {
         .theme(BinaryColorTheme::OledBlue)
         .build();
 
-    let display_area = display.display_area();
+    let display_area = display.bounding_box();
 
-    let text_style = TextStyleBuilder::new(Font6x8)
-        .text_color(BinaryColor::On)
-        .build();
+    let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
 
     LinearLayout::vertical(
-        Chain::new(Text::new("Vertical", Point::zero()).into_styled(text_style))
-            .append(Text::new("Linear", Point::zero()).into_styled(text_style))
-            .append(Text::new("Layout", Point::zero()).into_styled(text_style)),
+        Chain::new(Text::new("Vertical", Point::zero(), text_style))
+            .append(Text::new("Linear", Point::zero(), text_style))
+            .append(Text::new("Layout", Point::zero(), text_style)),
     )
     .with_alignment(horizontal::Center)
     .arrange()

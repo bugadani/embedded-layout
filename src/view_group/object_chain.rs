@@ -1,7 +1,8 @@
 //! ViewGroup implementation for object chains.
 
 use embedded_graphics::{
-    drawable::Drawable, pixelcolor::PixelColor, prelude::Point, primitives::Rectangle, DrawTarget,
+    draw_target::DrawTarget, pixelcolor::PixelColor, prelude::Point, primitives::Rectangle,
+    Drawable,
 };
 
 use crate::{
@@ -11,16 +12,20 @@ use crate::{
     View,
 };
 
-impl<'a, C, V, VC> Drawable<C> for &'a Link<V, VC>
+impl<'a, C, V, VC> Drawable for Link<V, VC>
 where
     C: PixelColor,
-    V: View,
-    &'a V: Drawable<C>,
-    VC: View + ChainElement,
-    &'a VC: Drawable<C>,
+    V: View + Drawable<Color = C>,
+    VC: View + ChainElement + Drawable<Color = C>,
 {
+    type Color = C;
+    type Output = ();
+
     #[inline]
-    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
+    fn draw<D>(&self, display: &mut D) -> Result<(), D::Error>
+    where
+        D: DrawTarget<Color = Self::Color>,
+    {
         self.object.draw(display)?;
         self.parent.draw(display)?;
 
@@ -47,15 +52,21 @@ where
     }
 }
 
-impl<'a, C, V> Drawable<C> for &'a Chain<V>
+impl<'a, C, V> Drawable for Chain<V>
 where
     C: PixelColor,
-    V: View,
-    &'a V: Drawable<C>,
+    V: View + Drawable<Color = C>,
 {
+    type Color = C;
+    type Output = ();
+
     #[inline]
-    fn draw<D: DrawTarget<C>>(self, display: &mut D) -> Result<(), D::Error> {
-        self.object.draw(display)
+    fn draw<D>(&self, display: &mut D) -> Result<(), D::Error>
+    where
+        D: DrawTarget<Color = Self::Color>,
+    {
+        self.object.draw(display)?;
+        Ok(())
     }
 }
 
@@ -118,36 +129,5 @@ where
         assert!(index == 0);
 
         return &mut self.object;
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use crate::{prelude::*, view_group::ViewGroup};
-    use embedded_graphics::{
-        pixelcolor::BinaryColor,
-        primitives::{Circle, Rectangle},
-        style::PrimitiveStyleBuilder,
-    };
-
-    #[allow(dead_code)]
-    fn compile_check() {
-        fn is_viewgroup(_v: &impl ViewGroup) {}
-        fn is_drawable(_v: impl Drawable<BinaryColor>) {}
-
-        let style = PrimitiveStyleBuilder::new()
-            .stroke_color(BinaryColor::On)
-            .build();
-
-        let rect = Rectangle::with_size(Point::zero(), Size::new(5, 10));
-        let circle = Circle::new(Point::zero(), 12);
-
-        let styled_rect = rect.into_styled(style);
-        let styled_circle = circle.into_styled(style);
-
-        let chain = Chain::new(styled_rect).append(styled_circle);
-
-        is_viewgroup(&chain);
-        is_drawable(&chain);
     }
 }

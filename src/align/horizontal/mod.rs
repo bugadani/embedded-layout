@@ -1,11 +1,8 @@
 //! Horizontal alignment options
 //!
 //! Horizontal alignment types must implement [`HorizontalAlignment`].
-use crate::{
-    align::{Alignment, HorizontalAlignment},
-    prelude::*,
-};
-use embedded_graphics::primitives::Rectangle;
+use crate::align::{Alignment, HorizontalAlignment};
+use embedded_graphics::{geometry::AnchorPoint, primitives::Rectangle};
 
 /// Keep the objects' horizontal alignment unchanged
 #[derive(Copy, Clone, Default)]
@@ -30,7 +27,8 @@ impl HorizontalAlignment for Center {}
 impl Alignment for Center {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        reference.center_x() - object.center_x() + offset
+        reference.anchor_point(AnchorPoint::Center).x - object.anchor_point(AnchorPoint::Center).x
+            + offset
     }
 }
 
@@ -54,7 +52,9 @@ impl HorizontalAlignment for Right {}
 impl Alignment for Right {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        reference.bottom_right.x - object.bottom_right.x + offset
+        reference.anchor_point(AnchorPoint::BottomRight).x
+            - object.anchor_point(AnchorPoint::BottomRight).x
+            + offset
     }
 }
 
@@ -66,7 +66,7 @@ impl HorizontalAlignment for LeftToRight {}
 impl Alignment for LeftToRight {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        (reference.bottom_right.x + 1) - object.top_left.x + offset
+        (reference.anchor_point(AnchorPoint::BottomRight).x + 1) - object.top_left.x + offset
     }
 }
 
@@ -78,14 +78,17 @@ impl HorizontalAlignment for RightToLeft {}
 impl Alignment for RightToLeft {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        (reference.top_left.x - 1) - object.bottom_right.x + offset
+        (reference.top_left.x - 1) - object.anchor_point(AnchorPoint::BottomRight).x + offset
     }
 }
 
 #[cfg(test)]
 mod test {
     use crate::prelude::*;
-    use embedded_graphics::{geometry::Point, primitives::Rectangle};
+    use embedded_graphics::{
+        geometry::{AnchorPoint, Point},
+        primitives::Rectangle,
+    };
 
     #[test]
     fn test_center() {
@@ -103,8 +106,8 @@ mod test {
             assert_eq!(result.top_left.y, source.top_left.y);
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::Center, vertical::NoAlignment);
         check_center_alignment(rect1, rect2, result);
@@ -127,8 +130,8 @@ mod test {
             assert_eq!(result.top_left.y, source.top_left.y);
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::Left, vertical::NoAlignment);
         check_left_alignment(rect1, rect2, result);
@@ -145,14 +148,20 @@ mod test {
             assert_eq!(result.size(), source.size());
 
             // Horizontal coordinate matches reference
-            assert_eq!(result.bottom_right.x, reference.bottom_right.x);
+            assert_eq!(
+                result.anchor_point(AnchorPoint::BottomRight).x,
+                reference.anchor_point(AnchorPoint::BottomRight).x
+            );
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+            assert_eq!(
+                result.anchor_point(AnchorPoint::BottomRight).y,
+                source.anchor_point(AnchorPoint::BottomRight).y
+            );
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::Right, vertical::NoAlignment);
         check_right_alignment(rect1, rect2, result);
@@ -173,14 +182,20 @@ mod test {
             assert_eq!(result.size(), source.size());
 
             // Left is at right + 1
-            assert_eq!(result.top_left.x, reference.bottom_right.x + 1);
+            assert_eq!(
+                result.top_left.x,
+                reference.anchor_point(AnchorPoint::BottomRight).x + 1
+            );
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+            assert_eq!(
+                result.anchor_point(AnchorPoint::BottomRight).y,
+                source.anchor_point(AnchorPoint::BottomRight).y
+            );
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::LeftToRight, vertical::NoAlignment);
         check_left_to_right_alignment(rect1, rect2, result);
@@ -201,14 +216,20 @@ mod test {
             assert_eq!(result.size(), source.size());
 
             // Left is at right + 1
-            assert_eq!(result.bottom_right.x, reference.top_left.x - 1);
+            assert_eq!(
+                result.anchor_point(AnchorPoint::BottomRight).x,
+                reference.top_left.x - 1
+            );
 
             // Vertical coordinate is unchanged
-            assert_eq!(result.bottom_right.y, source.bottom_right.y);
+            assert_eq!(
+                result.anchor_point(AnchorPoint::BottomRight).y,
+                source.anchor_point(AnchorPoint::BottomRight).y
+            );
         }
 
-        let rect1 = Rectangle::new(Point::new(0, 0), Point::new(10, 10));
-        let rect2 = Rectangle::new(Point::new(30, 20), Point::new(40, 50));
+        let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::RightToLeft, vertical::NoAlignment);
         check_right_to_left_alignment(rect1, rect2, result);

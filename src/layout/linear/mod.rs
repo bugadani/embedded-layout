@@ -26,17 +26,15 @@
 //! # use embedded_layout::prelude::*;
 //! # use embedded_layout::layout::linear::LinearLayout;
 //! # use embedded_graphics::{
-//! #     fonts::{Font6x8, Text},
+//! #     mono_font::{ascii::FONT_6X9, MonoTextStyle},
 //! #     pixelcolor::BinaryColor,
-//! #     style::TextStyleBuilder,
+//! #     text::Text,
+//! #     prelude::*,
 //! # };
-//! let text_style = TextStyleBuilder::new(Font6x8)
-//!     .text_color(BinaryColor::On)
-//!     .build();
-//!
+//! let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
 //! let _ = LinearLayout::vertical(
-//!     Chain::new(Text::new("Hello,", Point::zero()).into_styled(text_style))
-//!         .append(Text::new("World!", Point::zero()).into_styled(text_style)),
+//!     Chain::new(Text::new("Hello,", Point::zero(), text_style))
+//!         .append(Text::new("World!", Point::zero(), text_style)),
 //! )
 //! .arrange();
 //! ```
@@ -85,7 +83,12 @@ mod orientation;
 mod secondary_alignment;
 pub mod spacing;
 
-use embedded_graphics::{primitives::Rectangle, DrawTarget};
+use embedded_graphics::{
+    draw_target::DrawTarget,
+    prelude::{PixelColor, Point},
+    primitives::Rectangle,
+    Drawable,
+};
 pub use orientation::{Horizontal, Orientation, Vertical};
 pub use secondary_alignment::SecondaryAlignment;
 pub use spacing::{ElementSpacing, FixedMargin};
@@ -238,22 +241,20 @@ where
     /// # use embedded_layout::prelude::*;
     /// # use embedded_layout::layout::linear::LinearLayout;
     /// # use embedded_graphics::{
-    /// #     fonts::{Font6x8, Text},
+    /// #     mono_font::{ascii::FONT_6X9, MonoTextStyle},
     /// #     pixelcolor::BinaryColor,
-    /// #     style::TextStyleBuilder,
-    /// #     geometry::Dimensions,
+    /// #     prelude::*,
     /// #     mock_display::MockDisplay,
+    /// #     text::Text,
     /// # };
     /// # let mut display: MockDisplay<BinaryColor> = MockDisplay::new();
     /// #
-    /// let text_style = TextStyleBuilder::new(Font6x8)
-    ///     .text_color(BinaryColor::On)
-    ///     .build();
+    /// let text_style = MonoTextStyle::new(&FONT_6X9, BinaryColor::On);
     ///
     /// // First, wrap out views in a `ViewGroup`.
     /// let mut texts = [
-    ///     Text::new("Hello,", Point::zero()).into_styled(text_style),
-    ///     Text::new("World!", Point::zero()).into_styled(text_style)
+    ///     Text::new("Hello,", Point::zero(), text_style),
+    ///     Text::new("World!", Point::zero(), text_style)
     /// ];
     /// let mut views = Views::new(&mut texts);
     ///
@@ -261,7 +262,7 @@ where
     /// let views = LinearLayout::vertical(views).arrange().into_inner();
     ///
     /// // We can access our `StyledText` objects now. Note that `Views` works like a slice!
-    /// assert_eq!(Point::new(0, 9), views[1].top_left());
+    /// assert_eq!(Point::new(0, 9), views[1].bounds().top_left);
     ///
     /// // `Views` is also a drawable `ViewGroup`, so let's display our arranged text!
     /// views.draw(&mut display).unwrap();
@@ -289,7 +290,7 @@ where
         }
 
         // arrange
-        let mut bounds = Rectangle::with_size(self.position, size);
+        let mut bounds = Rectangle::new(self.position, size);
         for i in 0..view_count {
             self.direction
                 .place(self.views.at_mut(i), size, bounds, i, view_count);
@@ -319,18 +320,21 @@ where
     }
 }
 
-impl<'a, C, LD, VG> Drawable<C> for &'a LinearLayout<LD, VG>
+impl<'a, C, LD, VG> Drawable for LinearLayout<LD, VG>
 where
     C: PixelColor,
     LD: Orientation,
-    VG: ViewGroup,
-    &'a VG: Drawable<C>,
+    VG: ViewGroup + Drawable<Color = C>,
 {
-    fn draw<D>(self, display: &mut D) -> Result<(), <D as DrawTarget<C>>::Error>
+    type Color = C;
+    type Output = ();
+
+    fn draw<D>(&self, display: &mut D) -> Result<(), D::Error>
     where
-        D: DrawTarget<C>,
+        D: DrawTarget<Color = C>,
     {
-        self.views.draw(display)
+        self.views.draw(display)?;
+        Ok(())
     }
 }
 
@@ -341,35 +345,37 @@ mod test {
             spacing::{DistributeFill, FixedMargin},
             LinearLayout,
         },
+        object_chain::Chain,
         prelude::*,
     };
     use embedded_graphics::{
         mock_display::MockDisplay,
         pixelcolor::BinaryColor,
-        primitives::{Circle, Rectangle},
-        style::PrimitiveStyle,
+        prelude::{Point, Primitive, Size},
+        primitives::{Circle, PrimitiveStyle, Rectangle},
+        Drawable,
     };
 
     #[allow(dead_code)]
     fn compile_check() {
         let style = PrimitiveStyle::with_fill(BinaryColor::On);
-        let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20)).into_styled(style);
+        let rect = Rectangle::new(Point::zero(), Size::new(10, 20)).into_styled(style);
         let circ = Circle::new(Point::zero(), 10).into_styled(style);
         let _ = LinearLayout::horizontal(Chain::new(rect).append(circ));
     }
 
     #[test]
     fn layout_size() {
-        let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
+        let rect = Rectangle::new(Point::zero(), Size::new(10, 20));
+        let rect2 = Rectangle::new(Point::zero(), Size::new(10, 20));
         let size = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
             .size();
 
         assert_eq!(Size::new(20, 20), size);
 
-        let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
+        let rect = Rectangle::new(Point::zero(), Size::new(10, 20));
+        let rect2 = Rectangle::new(Point::zero(), Size::new(10, 20));
         let size = LinearLayout::vertical(Chain::new(rect).append(rect2))
             .arrange()
             .size();
@@ -382,8 +388,8 @@ mod test {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
-        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
-        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         LinearLayout::vertical(Chain::new(rect).append(rect2))
             .arrange()
@@ -420,8 +426,8 @@ mod test {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
-        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
-        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         LinearLayout::vertical(Chain::new(rect).append(rect2))
             .with_alignment(horizontal::Right)
@@ -459,8 +465,8 @@ mod test {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
-        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
-        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
@@ -492,8 +498,8 @@ mod test {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
-        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
-        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .with_alignment(vertical::Top)
@@ -525,8 +531,8 @@ mod test {
     fn layout_spacing_size() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
 
-        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
-        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         let size = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
@@ -550,8 +556,8 @@ mod test {
 
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
 
-        let rect = Rectangle::with_size(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
-        let rect2 = Rectangle::with_size(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .with_spacing(FixedMargin(2))
@@ -584,7 +590,7 @@ mod test {
     fn layout_spacing_distribute_overflow() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
 
-        let rect = Rectangle::with_size(Point::zero(), Size::new(5, 5)).into_styled(style);
+        let rect = Rectangle::new(Point::zero(), Size::new(5, 5)).into_styled(style);
 
         let layout = LinearLayout::horizontal(Chain::new(rect).append(rect).append(rect))
             .with_spacing(DistributeFill(11))
@@ -622,7 +628,7 @@ mod test {
     fn layout_spacing_distribute_fill() {
         let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
 
-        let rect = Rectangle::with_size(Point::zero(), Size::new(2, 2)).into_styled(style);
+        let rect = Rectangle::new(Point::zero(), Size::new(2, 2)).into_styled(style);
 
         let view_group =
             LinearLayout::vertical(Chain::new(rect).append(rect).append(rect).append(rect))
@@ -659,8 +665,8 @@ mod test {
 
     #[test]
     fn layout_size_independent_of_view_location() {
-        let rect = Rectangle::with_size(Point::zero(), Size::new(10, 20));
-        let rect2 = Rectangle::with_size(Point::zero(), Size::new(10, 20));
+        let rect = Rectangle::new(Point::zero(), Size::new(10, 20));
+        let rect2 = Rectangle::new(Point::zero(), Size::new(10, 20));
 
         let size1 = LinearLayout::horizontal(Chain::new(rect).append(rect2))
             .arrange()
