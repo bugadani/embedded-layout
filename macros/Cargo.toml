@@ -7,12 +7,12 @@ repository = "https://github.com/bugadani/embedded-layout"
 authors = ["Dániel Buga <bugadani@gmail.com>"]
 keywords = ["embedded-graphics", "layout", "linear-layout"]
 categories = ["no-std", "embedded", "graphics"]
-edition = "2018"
+edition = "2021"
 
 [lib]
 proc-macro = true
 
 [dependencies]
-syn = "1.0"
+syn = "2.0"
 quote = "1.0"
 proc-macro2 = "1.0"
