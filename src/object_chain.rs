@@ -67,6 +67,7 @@ impl<V> Chain<V> {
 
 impl<V> Chain<V> {
     /// Create a new [`Chain`] by wrapping the given object.
+    #[inline]
     pub const fn new(object: V) -> Self {
         Self { object }
     }

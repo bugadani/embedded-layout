@@ -143,6 +143,7 @@ pub trait View {
     /// Move the origin of an object by a given number of (x, y) pixels, mutating the object in place.
     ///
     /// If you a looking for a method to implement, you might want `translate_impl()` instead.
+    #[inline]
     fn translate_mut(&mut self, by: Point) -> &mut Self
     where
         Self: Sized,
@@ -154,6 +155,7 @@ pub trait View {
     /// Move the origin of an object by a given number of (x, y) pixels, returning a new object.
     ///
     /// If you a looking for a method to implement, you might want `translate_impl()` instead.
+    #[inline]
     fn translate(mut self, by: Point) -> Self
     where
         Self: Sized,
@@ -175,6 +177,7 @@ where
         Transform::translate_mut(self, by);
     }
 
+    #[inline]
     fn bounds(&self) -> Rectangle {
         self.bounding_box()
     }

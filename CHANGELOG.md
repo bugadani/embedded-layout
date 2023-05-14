@@ -1,3 +1,11 @@
+0.3.0 (2023-05-14)
+==================
+
+## Changed
+
+ * **(breaking)** Update to `embedded-graphics` 0.8
+ * **(breaking)** Bump Minimum Supported Rust Version (MSRV) to 1.61.
+
 0.2.0 (2021-07-20)
 ==================
 

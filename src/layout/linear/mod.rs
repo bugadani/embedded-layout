@@ -306,11 +306,13 @@ where
     LD: Orientation,
     VG: ViewGroup,
 {
+    #[inline]
     fn translate_impl(&mut self, by: Point) {
         self.position += by;
         View::translate_impl(&mut self.views, by);
     }
 
+    #[inline]
     fn bounds(&self) -> Rectangle {
         let bounds = View::bounds(&self.views);
         let top_left = bounds.top_left;
@@ -320,7 +322,7 @@ where
     }
 }
 
-impl<'a, C, LD, VG> Drawable for LinearLayout<LD, VG>
+impl<C, LD, VG> Drawable for LinearLayout<LD, VG>
 where
     C: PixelColor,
     LD: Orientation,
@@ -329,6 +331,7 @@ where
     type Color = C;
     type Output = ();
 
+    #[inline]
     fn draw<D>(&self, display: &mut D) -> Result<(), D::Error>
     where
         D: DrawTarget<Color = C>,

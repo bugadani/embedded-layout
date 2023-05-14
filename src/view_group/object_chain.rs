@@ -12,7 +12,7 @@ use crate::{
     View,
 };
 
-impl<'a, C, V, VC> Drawable for Link<V, VC>
+impl<C, V, VC> Drawable for Link<V, VC>
 where
     C: PixelColor,
     V: View + Drawable<Color = C>,
@@ -52,7 +52,7 @@ where
     }
 }
 
-impl<'a, C, V> Drawable for Chain<V>
+impl<C, V> Drawable for Chain<V>
 where
     C: PixelColor,
     V: View + Drawable<Color = C>,
@@ -90,24 +90,27 @@ where
     V: View,
     VC: ViewGroup + View + ChainElement,
 {
+    #[inline]
     fn len(&self) -> usize {
-        ChainElement::len(self) as usize
+        ChainElement::len(self)
     }
 
+    #[inline]
     fn at(&self, index: usize) -> &dyn View {
         if index == ViewGroup::len(self) - 1 {
             return &self.object;
         }
 
-        return self.parent.at(index);
+        self.parent.at(index)
     }
 
+    #[inline]
     fn at_mut(&mut self, index: usize) -> &mut dyn View {
         if index == ViewGroup::len(self) - 1 {
             return &mut self.object;
         }
 
-        return self.parent.at_mut(index);
+        self.parent.at_mut(index)
     }
 }
 
@@ -115,19 +118,22 @@ impl<V> ViewGroup for Chain<V>
 where
     V: View,
 {
+    #[inline]
     fn len(&self) -> usize {
-        ChainElement::len(self) as usize
+        ChainElement::len(self)
     }
 
+    #[inline]
     fn at(&self, index: usize) -> &dyn View {
         assert!(index == 0);
 
-        return &self.object;
+        &self.object
     }
 
+    #[inline]
     fn at_mut(&mut self, index: usize) -> &mut dyn View {
         assert!(index == 0);
 
-        return &mut self.object;
+        &mut self.object
     }
 }

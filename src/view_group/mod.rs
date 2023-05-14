@@ -26,6 +26,7 @@ pub struct ViewGroupHelper;
 
 impl ViewGroupHelper {
     /// Translates every [`View`] object in a view group.
+    #[inline]
     pub fn translate(vg: &mut impl ViewGroup, by: Point) {
         for i in 0..ViewGroup::len(vg) {
             vg.at_mut(i).translate_impl(by);
@@ -33,6 +34,7 @@ impl ViewGroupHelper {
     }
 
     /// Returns the smallest bounding box that envelopes all [`View`] objects in a view group.
+    #[inline]
     pub fn bounds(vg: &impl ViewGroup) -> Rectangle {
         let mut rect = vg.at(0).bounds();
 

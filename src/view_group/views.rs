@@ -33,14 +33,17 @@ impl<T> ViewGroup for Views<'_, T>
 where
     T: View,
 {
+    #[inline]
     fn len(&self) -> usize {
         self.views.len()
     }
 
+    #[inline]
     fn at(&self, idx: usize) -> &dyn View {
         &self.views[idx]
     }
 
+    #[inline]
     fn at_mut(&mut self, idx: usize) -> &mut dyn View {
         &mut self.views[idx]
     }
@@ -50,10 +53,12 @@ impl<T> View for Views<'_, T>
 where
     T: View,
 {
+    #[inline]
     fn translate_impl(&mut self, by: Point) {
         ViewGroupHelper::translate(self, by)
     }
 
+    #[inline]
     fn bounds(&self) -> Rectangle {
         ViewGroupHelper::bounds(self)
     }
@@ -65,8 +70,9 @@ where
 {
     type Target = [T];
 
+    #[inline]
     fn deref(&self) -> &[T] {
-        &self.views
+        self.views
     }
 }
 
@@ -74,12 +80,13 @@ impl<'a, T> DerefMut for Views<'a, T>
 where
     T: View,
 {
+    #[inline]
     fn deref_mut(&mut self) -> &mut [T] {
-        &mut self.views
+        self.views
     }
 }
 
-impl<'a, C, T> Drawable for Views<'_, T>
+impl<C, T> Drawable for Views<'_, T>
 where
     C: PixelColor,
     T: View,
