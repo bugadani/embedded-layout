@@ -98,6 +98,6 @@ For setup in general, follow the installation instructions for [`embedded-graphi
 
 To install SDL2 on Windows, see https://github.com/Rust-SDL2/rust-sdl2#windows-msvc
 
-[`embedded-graphics`]: https://github.com/jamwaffles/embedded-graphics/
-[the embedded-graphics simulator]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator
-[simulator README]: https://github.com/jamwaffles/embedded-graphics/tree/master/simulator#usage-without-sdl2
+[`embedded-graphics`]: https://github.com/embedded-graphics/embedded-graphics/
+[the embedded-graphics simulator]: https://github.com/embedded-graphics/simulator
+[simulator README]: https://github.com/embedded-graphics/simulator/blob/master/README.md#usage-without-sdl2
