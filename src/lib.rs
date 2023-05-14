@@ -105,6 +105,8 @@
 
 use embedded_graphics::{geometry::Point, prelude::*, primitives::Rectangle};
 
+pub use embedded_layout_macros::ViewGroup;
+
 pub mod align;
 pub mod layout;
 pub mod object_chain;

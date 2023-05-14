@@ -1,3 +1,11 @@
+0.3.1 (2023-05-14)
+==================
+
+## Changed
+
+ * Update `embedded-layout-macros` crate dependency
+ * Re-export the `ViewGroup` derive macro
+
 0.3.0 (2023-05-14)
 ==================
 

@@ -8,8 +8,7 @@ use embedded_graphics::{
     prelude::*,
     text::Text,
 };
-use embedded_layout::{layout::linear::LinearLayout, prelude::*};
-use embedded_layout_macros::ViewGroup;
+use embedded_layout::{layout::linear::LinearLayout, prelude::*, ViewGroup};
 
 // We need to make our Layout generic over the pixel color, because `derive(ViewGroup)` implements
 // `Drawable<C>` only if the struct has a PixelColor type parameter.
