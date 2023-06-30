@@ -2,85 +2,292 @@ extern crate proc_macro;
 
 use proc_macro::TokenStream;
 use proc_macro2::Span;
-use quote::quote;
-use syn::{self, Data, Fields, GenericParam, LitInt, TypeParamBound};
+use quote::{format_ident, quote};
+use syn::{
+    self, parse_macro_input, Data, DeriveInput, Fields, FieldsNamed, FieldsUnnamed, GenericParam,
+    LitInt, TypeParamBound,
+};
 
 #[proc_macro_derive(ViewGroup)]
 pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
-    let ast: syn::DeriveInput = syn::parse(input).unwrap();
+    let ast = parse_macro_input!(input as DeriveInput);
 
-    let struct_data = if let Data::Struct(ref data) = ast.data {
-        data
-    } else {
-        panic!("derive(ViewGroup) only supports structs with named fields");
+    let (field_count_impl, index_impl, index_mut_impl, translate_impl, draw_impl) = match &ast.data
+    {
+        Data::Struct(struct_data) if matches!(&struct_data.fields, Fields::Named(_)) => {
+            let fields = if let Fields::Named(fields) = &struct_data.fields {
+                fields
+            } else {
+                panic!("Programming error: matches! should have prevent from taking this arm");
+            };
+
+            let field_names = fields
+                .named
+                .iter()
+                .map(|f| f.ident.clone().unwrap())
+                .collect::<Vec<_>>();
+
+            let field_count = format!("{}", field_names.len());
+            let field_count = LitInt::new(&field_count, Span::call_site());
+
+            let translate = field_names
+                .iter()
+                .map(|f| quote!(#f: self.#f.translate(by),))
+                .collect::<Vec<_>>();
+
+            let draw = field_names
+                .iter()
+                .map(|f| quote!(self.#f.draw(display)?;))
+                .collect::<Vec<_>>();
+
+            let index = field_names
+                .iter()
+                .enumerate()
+                .map(|(i, f)| quote!(#i => &self.#f,))
+                .collect::<Vec<_>>();
+
+            let index_mut = field_names
+                .iter()
+                .enumerate()
+                .map(|(i, f)| quote!(#i => &mut self.#f,))
+                .collect::<Vec<_>>();
+
+            let field_count_impl = quote! {
+                #field_count
+            };
+
+            let index_impl = quote! {
+                match index {
+                    #(#index)*
+                    _ => panic!("Invalid index! Index exceeds the value returned by len()")
+                }
+            };
+
+            let index_mut_impl = quote! {
+                match index {
+                    #(#index_mut)*
+                    _ => panic!("Invalid index! Index exceeds the value returned by len()")
+                }
+            };
+
+            let translate_impl = quote! {
+                Self {
+                    #(#translate)*
+                }
+            };
+
+            let draw_impl = quote! {
+                #(#draw)*
+            };
+
+            (
+                field_count_impl,
+                index_impl,
+                index_mut_impl,
+                translate_impl,
+                draw_impl,
+            )
+        }
+        Data::Enum(enum_data) => {
+            let mut enum_field_counts = Vec::new();
+            let mut enum_translates = Vec::new();
+            let mut enum_indexes = Vec::new();
+            let mut enum_mut_indexes = Vec::new();
+            let mut enum_draws = Vec::new();
+
+            enum_data.variants.iter().for_each(|variant| {
+                let variant_name = &variant.ident;
+
+                let (enum_field_count, enum_translate, enum_index, enum_mut_index, enum_draw) =
+                    match &variant.fields {
+                        Fields::Named(FieldsNamed { named, .. }) => {
+                            let field_idents = named
+                                .iter()
+                                .map(|field| field.ident.as_ref().unwrap())
+                                .collect::<Vec<_>>();
+
+                            let fields_count = named.iter().count();
+                            let enum_field_count = quote! {
+                                Self::#variant_name { #(#field_idents,)* } => {
+                                    #fields_count
+                                }
+                            };
+
+                            let translate_fields =
+                                field_idents.iter().map(|f| quote!(#f: #f.translate(by)));
+                            let enum_translate = quote! {
+                                Self::#variant_name { #(#field_idents,)* } => {
+                                    Self::#variant_name {
+                                        #(#translate_fields,)*
+                                    }
+                                }
+                            };
+
+                            let fields_index = field_idents
+                                .iter()
+                                .enumerate()
+                                .map(|(i, f)| quote!(#i => #f,));
+                            let enum_index = quote! {
+                                Self::#variant_name { #(#field_idents,)* } => {
+                                    match index {
+                                        #(#fields_index)*
+                                        _ => panic!("Invalid index!"),
+                                    }
+                                }
+                            };
+
+                            let enum_mut_index = enum_index.clone();
+
+                            let fields_draw =
+                                field_idents.iter().map(|f| quote!(#f.draw(display)?;));
+                            let enum_draw = quote! {
+                                Self::#variant_name { #(#field_idents,)* } => {
+                                    #(#fields_draw)*
+                                }
+                            };
+
+                            (
+                                enum_field_count,
+                                enum_translate,
+                                enum_index,
+                                enum_mut_index,
+                                enum_draw,
+                            )
+                        }
+                        Fields::Unnamed(FieldsUnnamed { unnamed, .. }) => {
+                            let field_idents = unnamed
+                                .iter()
+                                .enumerate()
+                                .map(|(num, _)| format_ident!("__self_{}", num))
+                                .collect::<Vec<_>>();
+
+                            let fields_count = unnamed.iter().count();
+                            let enum_field_count = quote! {
+                                Self::#variant_name(#(#field_idents,)*) => {
+                                    #fields_count
+                                }
+                            };
+
+                            let translate_fields =
+                                field_idents.iter().map(|f| quote!(#f.translate(by), ));
+                            let enum_translate = quote! {
+                                Self::#variant_name(#(#field_idents),*) => {
+                                    Self::#variant_name(
+                                        #(#translate_fields)*
+                                    )
+                                }
+                            };
+
+                            let fields_index = field_idents
+                                .iter()
+                                .enumerate()
+                                .map(|(i, f)| quote!(#i => #f,));
+                            let enum_index = quote! {
+                                Self::#variant_name(#(#field_idents),*) => {
+                                    match index {
+                                        #(#fields_index)*
+                                        _ => panic!("Invalid index! Index exceeds the value returned by len()"),
+                                    }
+                                }
+                            };
+
+                            let enum_mut_index = enum_index.clone();
+
+                            let field_draws =
+                                field_idents.iter().map(|f| quote!(#f.draw(display)?;));
+                            let enum_draw = quote! {
+                                Self::#variant_name(#(#field_idents),*) => {
+                                    #(#field_draws)*
+                                }
+                            };
+
+                            (
+                                enum_field_count,
+                                enum_translate,
+                                enum_index,
+                                enum_mut_index,
+                                enum_draw,
+                            )
+                        }
+                        Fields::Unit => {
+                            panic!(
+                                "Can't have unit enum. Contents of enum must impl View + Drawable"
+                            )
+                        }
+                    };
+
+                enum_field_counts.push(enum_field_count);
+                enum_translates.push(enum_translate);
+                enum_indexes.push(enum_index);
+                enum_mut_indexes.push(enum_mut_index);
+                enum_draws.push(enum_draw);
+            });
+
+            let field_count_impl = quote! {
+                match self {
+                    #(#enum_field_counts)*
+                }
+            };
+
+            let index_impl = quote! {
+                match self {
+                    #(#enum_indexes)*
+                }
+            };
+
+            let index_mut_impl = quote! {
+                match self {
+                    #(#enum_mut_indexes)*
+                }
+            };
+
+            let translate_impl = quote! {
+                match self {
+                    #(#enum_translates)*
+                }
+            };
+
+            let draw_impl = quote! {
+                match self {
+                    #(#enum_draws)*
+                }
+            };
+
+            (
+                field_count_impl,
+                index_impl,
+                index_mut_impl,
+                translate_impl,
+                draw_impl,
+            )
+        }
+        _ => panic!("derive(ViewGroup) only supports structs with named fields and enums"),
     };
-
-    let fields = if let Fields::Named(ref fields) = struct_data.fields {
-        fields
-    } else {
-        panic!("derive(ViewGroup) only supports structs with named fields");
-    };
-
-    let field_names = fields
-        .named
-        .iter()
-        .map(|f| f.ident.clone().unwrap())
-        .collect::<Vec<_>>();
-
-    let translate = field_names
-        .iter()
-        .map(|f| quote!(#f: self.#f.translate(by),))
-        .collect::<Vec<_>>();
-
-    let draw = field_names
-        .iter()
-        .map(|f| quote!(self.#f.draw(display)?;))
-        .collect::<Vec<_>>();
-
-    let index = field_names
-        .iter()
-        .enumerate()
-        .map(|(i, f)| quote!(#i => &self.#f,))
-        .collect::<Vec<_>>();
-
-    let index_mut = field_names
-        .iter()
-        .enumerate()
-        .map(|(i, f)| quote!(#i => &mut self.#f,))
-        .collect::<Vec<_>>();
 
     let (impl_generics, ty_generics, where_clause) = ast.generics.split_for_impl();
 
     let name = &ast.ident;
-    let field_count = format!("{}", field_names.len());
-    let field_count = LitInt::new(&field_count, Span::call_site());
 
     let gen_view_group = quote! {
         impl #impl_generics embedded_layout::view_group::ViewGroup for #name #ty_generics #where_clause {
             fn len(&self) -> usize {
-                #field_count
+                #field_count_impl
             }
 
-            fn at(&self, index: usize) -> &dyn View {
-                match index {
-                    #(#index)*
-                    _ => panic!()
-                }
+            #[inline(never)]
+            fn at(&self, index: usize) -> &dyn embedded_layout::View {
+                #index_impl
             }
 
-            fn at_mut(&mut self, index: usize) -> &mut dyn View {
-                match index {
-                    #(#index_mut)*
-                    _ => panic!()
-                }
+            #[inline(never)]
+            fn at_mut(&mut self, index: usize) -> &mut dyn embedded_layout::View {
+                #index_mut_impl
             }
         }
 
         impl #impl_generics embedded_graphics::transform::Transform for #name #ty_generics #where_clause {
             fn translate(&self, by: Point) -> Self {
-                Self {
-                    #(#translate)*
-                }
+                #translate_impl
             }
 
             fn translate_mut(&mut self, by: Point) -> &mut Self {
@@ -115,7 +322,7 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 type Output = ();
 
                 fn draw<D: embedded_graphics::draw_target::DrawTarget<Color = #pixelcolor>>(&self, display: &mut D) -> Result<(), D::Error> {
-                    #(#draw)*
+                    #draw_impl
 
                     Ok(())
                 }
@@ -129,7 +336,8 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
         #gen_view_group
         #gen_drawable_impl
     };
-    generated.into()
+
+    TokenStream::from(generated)
 }
 
 fn is_type_param(ident: &'static str) -> impl Fn(&TypeParamBound) -> bool {
