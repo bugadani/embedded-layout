@@ -318,12 +318,10 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 #field_count_impl
             }
 
-            #[inline(never)]
             fn at(&self, index: usize) -> &dyn embedded_layout::View {
                 #index_impl
             }
 
-            #[inline(never)]
             fn at_mut(&mut self, index: usize) -> &mut dyn embedded_layout::View {
                 #index_mut_impl
             }
