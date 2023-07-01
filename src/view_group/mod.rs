@@ -21,6 +21,35 @@ pub trait ViewGroup: View {
     fn at_mut(&mut self, idx: usize) -> &mut dyn View;
 }
 
+/// A [`ViewGroup`] that contains no [`View`] objects.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub struct EmptyViewGroup;
+
+/// A single instance of [`EmptyViewGroup`].
+pub static mut EMPTY_VIEW_GROUP: EmptyViewGroup = EmptyViewGroup;
+
+impl View for EmptyViewGroup {
+    fn translate_impl(&mut self, _by: Point) {}
+
+    fn bounds(&self) -> Rectangle {
+        Rectangle::zero()
+    }
+}
+
+impl ViewGroup for EmptyViewGroup {
+    fn len(&self) -> usize {
+        0
+    }
+
+    fn at(&self, _idx: usize) -> &dyn View {
+        self
+    }
+
+    fn at_mut(&mut self, _idx: usize) -> &mut dyn View {
+        self
+    }
+}
+
 /// Utility struct to simplify implementing [`View`] operations for any [`ViewGroup`].
 pub struct ViewGroupHelper;
 
@@ -36,6 +65,10 @@ impl ViewGroupHelper {
     /// Returns the smallest bounding box that envelopes all [`View`] objects in a view group.
     #[inline]
     pub fn bounds(vg: &impl ViewGroup) -> Rectangle {
+        if ViewGroup::len(vg) == 0 {
+            return EmptyViewGroup.bounds();
+        }
+
         let mut rect = vg.at(0).bounds();
 
         for i in 1..vg.len() {
