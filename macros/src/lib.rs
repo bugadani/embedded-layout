@@ -12,6 +12,10 @@ use syn::{
 pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
     let ast = parse_macro_input!(input as DeriveInput);
 
+    let empty_vg_instance = quote!(unsafe { &embedded_layout::view_group::EMPTY_VIEW_GROUP });
+    let empty_vg_instance_mut =
+        quote!(unsafe { &mut embedded_layout::view_group::EMPTY_VIEW_GROUP });
+
     let (field_count_impl, index_impl, index_mut_impl, translate_impl, draw_impl) = match &ast.data
     {
         Data::Struct(struct_data) if matches!(&struct_data.fields, Fields::Named(_)) => {
@@ -59,14 +63,14 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
             let index_impl = quote! {
                 match index {
                     #(#index)*
-                    _ => panic!("Invalid index! Index exceeds the value returned by len()")
+                    _ => #empty_vg_instance
                 }
             };
 
             let index_mut_impl = quote! {
                 match index {
                     #(#index_mut)*
-                    _ => panic!("Invalid index! Index exceeds the value returned by len()")
+                    _ => #empty_vg_instance_mut
                 }
             };
 
@@ -126,17 +130,24 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                             let fields_index = field_idents
                                 .iter()
                                 .enumerate()
-                                .map(|(i, f)| quote!(#i => #f,));
+                                .map(|(i, f)| quote!(#i => #f,))
+                                .collect::<Vec<_>>();
                             let enum_index = quote! {
                                 Self::#variant_name { #(#field_idents,)* } => {
                                     match index {
                                         #(#fields_index)*
-                                        _ => panic!("Invalid index!"),
+                                        _ => #empty_vg_instance,
                                     }
                                 }
                             };
-
-                            let enum_mut_index = enum_index.clone();
+                            let enum_mut_index = quote! {
+                                Self::#variant_name { #(#field_idents,)* } => {
+                                    match index {
+                                        #(#fields_index)*
+                                        _ => #empty_vg_instance_mut,
+                                    }
+                                }
+                            };
 
                             let fields_draw =
                                 field_idents.iter().map(|f| quote!(#f.draw(display)?;));
@@ -181,17 +192,25 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                             let fields_index = field_idents
                                 .iter()
                                 .enumerate()
-                                .map(|(i, f)| quote!(#i => #f,));
+                                .map(|(i, f)| quote!(#i => #f,))
+                                .collect::<Vec<_>>();
                             let enum_index = quote! {
                                 Self::#variant_name(#(#field_idents),*) => {
                                     match index {
                                         #(#fields_index)*
-                                        _ => panic!("Invalid index! Index exceeds the value returned by len()"),
+                                        _ => #empty_vg_instance,
                                     }
                                 }
                             };
 
-                            let enum_mut_index = enum_index.clone();
+                            let enum_mut_index = quote! {
+                                Self::#variant_name(#(#field_idents),*) => {
+                                    match index {
+                                        #(#fields_index)*
+                                        _ => #empty_vg_instance_mut,
+                                    }
+                                }
+                            };
 
                             let field_draws =
                                 field_idents.iter().map(|f| quote!(#f.draw(display)?;));
@@ -218,13 +237,13 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                             };
                             let enum_index = quote! {
                                 Self::#variant_name => {
-                                    unsafe { &embedded_layout::view_group::EMPTY_VIEW_GROUP }
+                                    #empty_vg_instance
                                 }
                             };
 
                             let enum_mut_index = quote! {
                                 Self::#variant_name => {
-                                    unsafe { &mut embedded_layout::view_group::EMPTY_VIEW_GROUP }
+                                    #empty_vg_instance_mut
                                 }
                             };
                             let enum_draw = quote! {
