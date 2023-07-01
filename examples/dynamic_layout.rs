@@ -23,6 +23,7 @@ enum LayoutViews<C: PixelColor> {
         circle: Styled<Circle, PrimitiveStyle<C>>,
         square: Styled<Rectangle, PrimitiveStyle<C>>,
     },
+    EmptyView,
 }
 
 fn main() -> Result<(), core::convert::Infallible> {
@@ -33,7 +34,7 @@ fn main() -> Result<(), core::convert::Infallible> {
 
     let mut views = Vec::new();
 
-    (0..5).for_each(|col_idx| {
+    (0..6).for_each(|col_idx| {
         (0..2).for_each(|row_idx| {
             let view = match (col_idx + (row_idx * 5)) % 5 {
                 0 => {
@@ -72,6 +73,7 @@ fn main() -> Result<(), core::convert::Infallible> {
 
                     LayoutViews::CombinedViewStruct { circle, square }
                 }
+                5 => LayoutViews::EmptyView,
                 _ => panic!("Out of bounds number"),
             };
 
