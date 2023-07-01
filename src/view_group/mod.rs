@@ -22,6 +22,7 @@ pub trait ViewGroup: View {
 }
 
 /// A [`ViewGroup`] that contains no [`View`] objects.
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct EmptyViewGroup;
 
 /// A single instance of [`EmptyViewGroup`].

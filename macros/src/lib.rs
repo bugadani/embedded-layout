@@ -36,7 +36,7 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
 
             let translate = field_names
                 .iter()
-                .map(|f| quote!(#f: self.#f.translate(by),))
+                .map(|f| quote!(#f: self.#f.clone().translate(by),))
                 .collect::<Vec<_>>();
 
             let draw = field_names
@@ -117,8 +117,9 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                                 }
                             };
 
-                            let translate_fields =
-                                field_idents.iter().map(|f| quote!(#f: #f.translate(by)));
+                            let translate_fields = field_idents
+                                .iter()
+                                .map(|f| quote!(#f: #f.clone().translate(by)));
                             let enum_translate = quote! {
                                 Self::#variant_name { #(#field_idents,)* } => {
                                     Self::#variant_name {
