@@ -108,7 +108,7 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
 
                             let fields_count = named.iter().count();
                             let enum_field_count = quote! {
-                                Self::#variant_name { #(#field_idents,)* } => {
+                                Self::#variant_name { ..  } => {
                                     #fields_count
                                 }
                             };
@@ -163,7 +163,7 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
 
                             let fields_count = unnamed.iter().count();
                             let enum_field_count = quote! {
-                                Self::#variant_name(#(#field_idents,)*) => {
+                                Self::#variant_name(..) => {
                                     #fields_count
                                 }
                             };
