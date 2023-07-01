@@ -210,8 +210,32 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                             )
                         }
                         Fields::Unit => {
-                            panic!(
-                                "Can't have unit enum. Contents of enum must impl View + Drawable"
+                            let enum_field_count = quote! {
+                                Self::#variant_name => 0,
+                            };
+                            let enum_translate = quote! {
+                                Self::#variant_name => Self::#variant_name,
+                            };
+                            let enum_index = quote! {
+                                Self::#variant_name => {
+                                    unsafe { &embedded_layout::view_group::EMPTY_VIEW_GROUP }
+                                }
+                            };
+
+                            let enum_mut_index = quote! {
+                                Self::#variant_name => {
+                                    unsafe { &mut embedded_layout::view_group::EMPTY_VIEW_GROUP }
+                                }
+                            };
+                            let enum_draw = quote! {
+                                Self::#variant_name => {}
+                            };
+                            (
+                                enum_field_count,
+                                enum_translate,
+                                enum_index,
+                                enum_mut_index,
+                                enum_draw,
                             )
                         }
                     };
