@@ -36,6 +36,10 @@ impl ViewGroupHelper {
     /// Returns the smallest bounding box that envelopes all [`View`] objects in a view group.
     #[inline]
     pub fn bounds(vg: &impl ViewGroup) -> Rectangle {
+        if ViewGroup::len(vg) == 0 {
+            return Rectangle::zero();
+        }
+
         let mut rect = vg.at(0).bounds();
 
         for i in 1..vg.len() {
