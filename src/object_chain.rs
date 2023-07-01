@@ -38,6 +38,19 @@ impl<V, C: ChainElement> Link<V, C> {
     }
 }
 
+impl<V, C> Clone for Link<V, C>
+where
+    V: Clone,
+    C: ChainElement + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            object: self.object.clone(),
+            parent: self.parent.clone(),
+        }
+    }
+}
+
 impl<V, VC> ChainElement for Link<V, VC>
 where
     VC: ChainElement,
@@ -70,6 +83,17 @@ impl<V> Chain<V> {
     #[inline]
     pub const fn new(object: V) -> Self {
         Self { object }
+    }
+}
+
+impl<V> Clone for Chain<V>
+where
+    V: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            object: self.object.clone(),
+        }
     }
 }
 

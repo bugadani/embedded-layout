@@ -222,6 +222,20 @@ where
     }
 }
 
+impl<LD, VG> Clone for LinearLayout<LD, VG>
+where
+    LD: Orientation,
+    VG: ViewGroup + Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            position: self.position,
+            direction: self.direction,
+            views: self.views.clone(),
+        }
+    }
+}
+
 impl<LD, VG> LinearLayout<LD, VG>
 where
     LD: Orientation,
