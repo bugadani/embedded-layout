@@ -180,8 +180,9 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                                 }
                             };
 
-                            let translate_fields =
-                                field_idents.iter().map(|f| quote!(#f.clone().translate(by), ));
+                            let translate_fields = field_idents
+                                .iter()
+                                .map(|f| quote!(#f.clone().translate(by), ));
                             let enum_translate = quote! {
                                 Self::#variant_name(#(#field_idents),*) => {
                                     Self::#variant_name(
