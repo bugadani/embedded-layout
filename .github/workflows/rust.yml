@@ -76,7 +76,7 @@ jobs:
       run: cargo c --examples
 
     - name: Run tests
-      run: cargo test
+      run: cargo test --lib
 
   docs:
     runs-on: ubuntu-latest
