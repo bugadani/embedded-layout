@@ -41,6 +41,7 @@
 //! For a more (but not really) complex example, you may check the source of [`LinearLayout`].
 //!
 //! [`View`]: crate::View
+//! [`ViewGroup`]: crate::view_group::ViewGroup
 //! [`LinearLayout`]: crate::layout::linear::LinearLayout
 
 pub mod linear;

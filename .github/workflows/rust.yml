@@ -7,13 +7,52 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
     branches: [ master ]
 
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  ci:
+  formatting:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: stable
+        components: rustfmt
+
+    - name: Check formatting
+      run: cargo fmt --all -- --check
+
+  build-nostd:
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
+
+    needs:
+    - formatting
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: nightly
+        targets: thumbv7em-none-eabihf
+
+    - name: Build no_std
+      run: cargo build --target thumbv7em-none-eabihf -Z avoid-dev-deps
+
+  tests:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+
+    needs:
+    - formatting
 
     strategy:
       matrix:
@@ -24,31 +63,33 @@ jobs:
           - 1.61.0  # MSRV
 
     steps:
-    - name: install_dependencies
-      run: |
-        sudo add-apt-repository -y "deb http://archive.ubuntu.com/ubuntu `lsb_release -sc` main universe restricted multiverse"
-        sudo apt-get update -y -qq
-        sudo apt-get install libsdl2-dev
+    - uses: actions/checkout@v3
 
-    - uses: actions/checkout@v2
-
-    - uses: actions-rs/toolchain@v1
+    - uses: dtolnay/rust-toolchain@master
       with:
-        profile: minimal
         toolchain: ${{ matrix.rust }}
-        override: true
-        components: rustfmt, clippy
 
-    - name: Check formatting
-      run: cargo fmt --all -- --check
+    - name: Check
+      run: cargo c
 
-    - name: Build
-      run: cargo build --verbose
-
-    - name: Build examples
-      run: cargo build --examples --verbose
+    - name: Check examples
+      run: cargo c --examples
 
     - name: Run tests
+      run: cargo test --lib
+
+  docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - uses: dtolnay/rust-toolchain@master
+      with:
+        toolchain: stable
+    
+    - name: Check doc links
       run: |
-        cargo test --verbose --release
-        cargo test --verbose --release --all-features
+        cargo doc --color=never &> ./out
+        cat ./out
+        ! grep "^warning:" ./out

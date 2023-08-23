@@ -62,10 +62,8 @@
 //!
 //! [`View`]: crate::View
 //! [`ViewGroup`]: crate::view_group::ViewGroup
-//! [`LinearLayout`]: crate::layout::linear::LinearLayout
-//! [`LinearLayout::arrange`]: crate::layout::linear::LinearLayout::arrange
-//! [secondary alignment]: crate::layout::linear::LinearLayout::with_alignment
-//! [element spacing]: crate::layout::linear::LinearLayout::with_spacing
+//! [secondary alignment]: LinearLayout::with_alignment
+//! [element spacing]: LinearLayout::with_spacing
 //! [`Tight`]: crate::layout::linear::spacing::Tight
 //! [`FixedMargin(0)`]: crate::layout::linear::spacing::FixedMargin
 //! [`FixedMargin(margin)`]: crate::layout::linear::spacing::FixedMargin
