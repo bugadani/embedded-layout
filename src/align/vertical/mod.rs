@@ -66,7 +66,12 @@ impl VerticalAlignment for TopToBottom {}
 impl Alignment for TopToBottom {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        (reference.anchor_point(AnchorPoint::BottomRight).y + 1) - object.top_left.y + offset
+        let offset = if object.size.height == 0 {
+            offset
+        } else {
+            offset + 1
+        };
+        reference.anchor_point(AnchorPoint::BottomRight).y - object.top_left.y + offset
     }
 }
 
@@ -78,7 +83,12 @@ impl VerticalAlignment for BottomToTop {}
 impl Alignment for BottomToTop {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        (reference.top_left.y - 1) - object.anchor_point(AnchorPoint::BottomRight).y + offset
+        let offset = if object.size.height == 0 {
+            offset
+        } else {
+            offset - 1
+        };
+        reference.top_left.y - object.anchor_point(AnchorPoint::BottomRight).y + offset
     }
 }
 
@@ -87,6 +97,7 @@ mod test {
     use crate::prelude::*;
     use embedded_graphics::{
         geometry::{AnchorPoint, Point},
+        prelude::Size,
         primitives::Rectangle,
     };
 
@@ -174,69 +185,157 @@ mod test {
 
     #[test]
     fn test_top_to_bottom() {
-        fn check_top_to_bottom_alignment(
-            source: Rectangle,
-            reference: Rectangle,
-            result: Rectangle,
-        ) {
-            // The size hasn't changed
-            assert_eq!(result.size(), source.size());
-
-            // Top is at bottom + 1
-            assert_eq!(
-                result.top_left.y,
-                reference.anchor_point(AnchorPoint::BottomRight).y + 1
-            );
-
-            // Horizontal coordinate is unchanged
-            assert_eq!(
-                result.anchor_point(AnchorPoint::BottomRight).x,
-                source.anchor_point(AnchorPoint::BottomRight).x
-            );
-        }
-
         let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::TopToBottom);
-        check_top_to_bottom_alignment(rect1, rect2, result);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Top is at bottom + 1
+        assert_eq!(
+            result.top_left.y,
+            rect2.anchor_point(AnchorPoint::BottomRight).y + 1
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect1.anchor_point(AnchorPoint::BottomRight).x
+        );
 
         // Test the other direction
         let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::TopToBottom);
-        check_top_to_bottom_alignment(rect2, rect1, result);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Top is at bottom + 1
+        assert_eq!(
+            result.top_left.y,
+            rect1.anchor_point(AnchorPoint::BottomRight).y + 1
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect2.anchor_point(AnchorPoint::BottomRight).x
+        );
+    }
+
+    #[test]
+    fn test_top_to_bottom_empty() {
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::zero());
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::TopToBottom);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Top is at bottom
+        assert_eq!(
+            result.top_left.y,
+            rect2.anchor_point(AnchorPoint::BottomRight).y
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect1.anchor_point(AnchorPoint::BottomRight).x
+        );
+
+        // Test the other direction
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::TopToBottom);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Top is at bottom + 1
+        assert_eq!(
+            result.top_left.y,
+            rect1.anchor_point(AnchorPoint::BottomRight).y + 1
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect2.anchor_point(AnchorPoint::BottomRight).x
+        );
     }
 
     #[test]
     fn test_bottom_to_top() {
-        fn check_bottom_to_top_alignment(
-            source: Rectangle,
-            reference: Rectangle,
-            result: Rectangle,
-        ) {
-            // The size hasn't changed
-            assert_eq!(result.size(), source.size());
-
-            // Bottom is at top - 1
-            assert_eq!(
-                result.anchor_point(AnchorPoint::BottomRight).y,
-                reference.top_left.y - 1
-            );
-
-            // Horizontal coordinate is unchanged
-            assert_eq!(
-                result.anchor_point(AnchorPoint::BottomRight).x,
-                source.anchor_point(AnchorPoint::BottomRight).x
-            );
-        }
-
         let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::BottomToTop);
-        check_bottom_to_top_alignment(rect1, rect2, result);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Bottom is at top - 1
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect2.top_left.y - 1
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect1.anchor_point(AnchorPoint::BottomRight).x
+        );
 
         // Test the other direction
         let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::BottomToTop);
-        check_bottom_to_top_alignment(rect2, rect1, result);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Bottom is at top - 1
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect1.top_left.y - 1
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect2.anchor_point(AnchorPoint::BottomRight).x
+        );
+    }
+
+    #[test]
+    fn test_bottom_to_top_empty() {
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::zero());
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(&rect2, horizontal::NoAlignment, vertical::BottomToTop);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Bottom is at top
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect2.top_left.y
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect1.anchor_point(AnchorPoint::BottomRight).x
+        );
+
+        // Test the other direction
+        let result = rect2.align_to(&rect1, horizontal::NoAlignment, vertical::BottomToTop);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Bottom is at top - 1
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect1.top_left.y - 1
+        );
+
+        // Horizontal coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect2.anchor_point(AnchorPoint::BottomRight).x
+        );
     }
 }

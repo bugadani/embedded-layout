@@ -439,6 +439,45 @@ mod test {
     }
 
     #[test]
+    fn empty_rectangle_takes_up_no_vertical_space() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect_empty = Rectangle::new(Point::new(-50, 10), Size::zero()).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+
+        LinearLayout::vertical(Chain::new(rect).append(rect_empty).append(rect2))
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
+
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "           ",
+                "           ",
+                " ##########",
+                " #        #",
+                " #        #",
+                " #        #",
+                " ##########",
+                " #####     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #   #     ",
+                " #####     ",
+            ])
+        );
+    }
+
+    #[test]
     fn layout_arrange_vertical_secondary() {
         let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
 
@@ -486,6 +525,40 @@ mod test {
         let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
 
         LinearLayout::horizontal(Chain::new(rect).append(rect2))
+            .arrange()
+            .translate(Point::new(1, 2))
+            .draw(&mut disp)
+            .unwrap();
+
+        assert_eq!(
+            disp,
+            MockDisplay::from_pattern(&[
+                "                ",
+                "                ",
+                "           #####",
+                "           #   #",
+                "           #   #",
+                "           #   #",
+                "           #   #",
+                " ###########   #",
+                " #        ##   #",
+                " #        ##   #",
+                " #        ##   #",
+                " ###############",
+            ])
+        );
+    }
+
+    #[test]
+    fn empty_rectangle_takes_up_no_horizontal_space() {
+        let mut disp: MockDisplay<BinaryColor> = MockDisplay::new();
+
+        let style = PrimitiveStyle::with_stroke(BinaryColor::On, 1);
+        let rect = Rectangle::new(Point::new(10, 30), Size::new(10, 5)).into_styled(style);
+        let rect_empty = Rectangle::new(Point::new(-50, 10), Size::zero()).into_styled(style);
+        let rect2 = Rectangle::new(Point::new(-50, 10), Size::new(5, 10)).into_styled(style);
+
+        LinearLayout::horizontal(Chain::new(rect).append(rect_empty).append(rect2))
             .arrange()
             .translate(Point::new(1, 2))
             .draw(&mut disp)

@@ -66,7 +66,12 @@ impl HorizontalAlignment for LeftToRight {}
 impl Alignment for LeftToRight {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        (reference.anchor_point(AnchorPoint::BottomRight).x + 1) - object.top_left.x + offset
+        let offset = if object.size.width == 0 {
+            offset
+        } else {
+            offset + 1
+        };
+        reference.anchor_point(AnchorPoint::BottomRight).x - object.top_left.x + offset
     }
 }
 
@@ -78,7 +83,12 @@ impl HorizontalAlignment for RightToLeft {}
 impl Alignment for RightToLeft {
     #[inline]
     fn align_with_offset(&self, object: Rectangle, reference: Rectangle, offset: i32) -> i32 {
-        (reference.top_left.x - 1) - object.anchor_point(AnchorPoint::BottomRight).x + offset
+        let offset = if object.size.width == 0 {
+            offset
+        } else {
+            offset - 1
+        };
+        reference.top_left.x - object.anchor_point(AnchorPoint::BottomRight).x + offset
     }
 }
 
@@ -87,6 +97,7 @@ mod test {
     use crate::prelude::*;
     use embedded_graphics::{
         geometry::{AnchorPoint, Point},
+        prelude::Size,
         primitives::Rectangle,
     };
 
@@ -206,36 +217,120 @@ mod test {
     }
 
     #[test]
+    fn test_left_to_right_empty() {
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::zero());
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(&rect2, horizontal::LeftToRight, vertical::NoAlignment);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Left is at right
+        assert_eq!(
+            result.top_left.x,
+            rect2.anchor_point(AnchorPoint::BottomRight).x
+        );
+
+        // Vertical coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect1.anchor_point(AnchorPoint::BottomRight).y
+        );
+
+        // Test the other direction
+        let result = rect2.align_to(&rect1, horizontal::LeftToRight, vertical::NoAlignment);
+
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Left is at right
+        assert_eq!(
+            result.top_left.x,
+            rect1.anchor_point(AnchorPoint::BottomRight).x + 1
+        );
+
+        // Vertical coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect2.anchor_point(AnchorPoint::BottomRight).y
+        );
+    }
+
+    #[test]
     fn test_right_to_left() {
-        fn check_right_to_left_alignment(
-            source: Rectangle,
-            reference: Rectangle,
-            result: Rectangle,
-        ) {
-            // The size hasn't changed
-            assert_eq!(result.size(), source.size());
-
-            // Left is at right + 1
-            assert_eq!(
-                result.anchor_point(AnchorPoint::BottomRight).x,
-                reference.top_left.x - 1
-            );
-
-            // Vertical coordinate is unchanged
-            assert_eq!(
-                result.anchor_point(AnchorPoint::BottomRight).y,
-                source.anchor_point(AnchorPoint::BottomRight).y
-            );
-        }
-
         let rect1 = Rectangle::with_corners(Point::new(0, 0), Point::new(10, 10));
         let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
 
         let result = rect1.align_to(&rect2, horizontal::RightToLeft, vertical::NoAlignment);
-        check_right_to_left_alignment(rect1, rect2, result);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Left is at right - 1
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect2.top_left.x - 1
+        );
+
+        // Vertical coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect1.anchor_point(AnchorPoint::BottomRight).y
+        );
 
         // Test the other direction
         let result = rect2.align_to(&rect1, horizontal::RightToLeft, vertical::NoAlignment);
-        check_right_to_left_alignment(rect2, rect1, result);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Left is at right + 1
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect1.top_left.x - 1
+        );
+
+        // Vertical coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect2.anchor_point(AnchorPoint::BottomRight).y
+        );
+    }
+
+    #[test]
+    fn test_right_to_left_empty() {
+        let rect1 = Rectangle::new(Point::new(0, 0), Size::zero());
+        let rect2 = Rectangle::with_corners(Point::new(30, 20), Point::new(40, 50));
+
+        let result = rect1.align_to(&rect2, horizontal::RightToLeft, vertical::NoAlignment);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect1.size());
+
+        // Left is at right
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect2.top_left.x
+        );
+
+        // Vertical coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect1.anchor_point(AnchorPoint::BottomRight).y
+        );
+
+        // Test the other direction
+        let result = rect2.align_to(&rect1, horizontal::RightToLeft, vertical::NoAlignment);
+        // The size hasn't changed
+        assert_eq!(result.size(), rect2.size());
+
+        // Left is at right + 1
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).x,
+            rect1.top_left.x - 1
+        );
+
+        // Vertical coordinate is unchanged
+        assert_eq!(
+            result.anchor_point(AnchorPoint::BottomRight).y,
+            rect2.anchor_point(AnchorPoint::BottomRight).y
+        );
     }
 }
