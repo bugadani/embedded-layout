@@ -76,7 +76,7 @@ jobs:
       run: cargo c --examples --verbose
 
     - name: Run tests
-      run: cargo test --verbose --release
+      run: cargo test --verbose
 
   docs:
     runs-on: ubuntu-latest
