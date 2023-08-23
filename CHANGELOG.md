@@ -1,10 +1,16 @@
 Unreleased
 ==========
 
+## New
+
 * `ViewGroup` macro can now be used on enums
 * `ViewGroup` macro now supports empty enum variants and unit structs
-* `embedded-layout` no longer panicks when accessing an out-of-bounds view in a `ViewGroup`
 * `LinearLayout` can now be used in macro-generated view groups
+
+## Fixed
+
+* `embedded-layout` no longer panicks when accessing an out-of-bounds view in a `ViewGroup`
+* Fixed aligning to a 0-sized reference object
 
 0.3.1 (2023-05-14)
 ==================
