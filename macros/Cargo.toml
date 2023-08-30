@@ -1,6 +1,6 @@
 [package]
 name = "embedded-layout-macros"
-version = "0.2.0"
+version = "0.2.1"
 license = "MIT"
 description = "Procedural macros for embedded-layout"
 repository = "https://github.com/bugadani/embedded-layout"
