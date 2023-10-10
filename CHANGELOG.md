@@ -4,6 +4,7 @@
 ## New
 
 * `LinearLayout` now implements `ViewGroup`
+* `LinearLayout::inner{_mut}`
 
 0.3.2 (2023-08-23)
 ==================

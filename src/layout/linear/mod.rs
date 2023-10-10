@@ -104,6 +104,20 @@ pub struct LinearLayout<LD, VG> {
     views: VG,
 }
 
+impl<LD, VG> LinearLayout<LD, VG> {
+    /// Returns a reference to the contained views.
+    #[inline]
+    pub fn inner(&self) -> &VG {
+        &self.views
+    }
+
+    /// Returns a mutable reference to the contained views.
+    #[inline]
+    pub fn inner_mut(&mut self) -> &mut VG {
+        &mut self.views
+    }
+}
+
 impl<VG> LinearLayout<Horizontal<vertical::Bottom, Tight>, VG>
 where
     VG: ViewGroup,
