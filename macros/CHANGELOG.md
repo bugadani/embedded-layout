@@ -1,3 +1,10 @@
+0.3.0 (2023-10-10)
+==================
+
+## Changed
+
+* `ViewGroup` now generates optimized `bounds_of` and `translate_child` methods.
+
 0.2.1 (2023-08-30)
 ==================
 

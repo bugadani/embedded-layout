@@ -16,8 +16,15 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
     let empty_vg_instance_mut =
         quote!(unsafe { &mut embedded_layout::view_group::EMPTY_VIEW_GROUP });
 
-    let (field_count_impl, index_impl, index_mut_impl, translate_impl, draw_impl) = match &ast.data
-    {
+    let (
+        field_count_impl,
+        index_impl,
+        index_mut_impl,
+        translate_impl,
+        draw_impl,
+        bounds_of_impl,
+        translate_child_impl,
+    ) = match &ast.data {
         Data::Struct(struct_data) if matches!(&struct_data.fields, Fields::Named(_)) => {
             let fields = if let Fields::Named(fields) = &struct_data.fields {
                 fields
@@ -56,6 +63,18 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 .map(|(i, f)| quote!(#i => &mut self.#f,))
                 .collect::<Vec<_>>();
 
+            let bounds_of = field_names
+                .iter()
+                .enumerate()
+                .map(|(i, f)| quote!(#i => self.#f.bounds(),))
+                .collect::<Vec<_>>();
+
+            let translate_child = field_names
+                .iter()
+                .enumerate()
+                .map(|(i, f)| quote!(#i => self.#f.translate_impl(by),))
+                .collect::<Vec<_>>();
+
             let field_count_impl = quote! {
                 #field_count
             };
@@ -80,6 +99,20 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 }
             };
 
+            let bounds_of_impl = quote! {
+                match index {
+                    #(#bounds_of)*
+                    _ => embedded_graphics::primitives::Rectangle::zero(),
+                }
+            };
+
+            let translate_child_impl = quote! {
+                match index {
+                    #(#translate_child)*
+                    _ => {}
+                }
+            };
+
             let draw_impl = quote! {
                 #(#draw)*
             };
@@ -90,6 +123,8 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 index_mut_impl,
                 translate_impl,
                 draw_impl,
+                bounds_of_impl,
+                translate_child_impl,
             )
         }
         Data::Enum(enum_data) => {
@@ -98,174 +133,252 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
             let mut enum_indexes = Vec::new();
             let mut enum_mut_indexes = Vec::new();
             let mut enum_draws = Vec::new();
+            let mut enum_bounds_ofs = Vec::new();
+            let mut enum_translate_childs = Vec::new();
 
             enum_data.variants.iter().for_each(|variant| {
                 let variant_name = &variant.ident;
 
-                let (enum_field_count, enum_translate, enum_index, enum_mut_index, enum_draw) =
-                    match &variant.fields {
-                        Fields::Named(FieldsNamed { named, .. }) => {
-                            let field_idents = named
-                                .iter()
-                                .map(|field| field.ident.as_ref().unwrap())
-                                .collect::<Vec<_>>();
+                let (
+                    enum_field_count,
+                    enum_translate,
+                    enum_index,
+                    enum_mut_index,
+                    enum_draw,
+                    enum_bounds_of,
+                    enum_translate_child,
+                ) = match &variant.fields {
+                    Fields::Named(FieldsNamed { named, .. }) => {
+                        let field_idents = named
+                            .iter()
+                            .map(|field| field.ident.as_ref().unwrap())
+                            .collect::<Vec<_>>();
 
-                            let fields_count = named.iter().count();
-                            let enum_field_count = quote! {
-                                Self::#variant_name { ..  } => {
-                                    #fields_count
-                                }
-                            };
+                        let fields_count = named.iter().count();
+                        let enum_field_count = quote! {
+                            Self::#variant_name { ..  } => {
+                                #fields_count
+                            }
+                        };
 
-                            let translate_fields = field_idents
-                                .iter()
-                                .map(|f| quote!(#f: #f.clone().translate(by)));
-                            let enum_translate = quote! {
-                                Self::#variant_name { #(#field_idents,)* } => {
-                                    Self::#variant_name {
-                                        #(#translate_fields,)*
-                                    }
+                        let translate_fields = field_idents
+                            .iter()
+                            .map(|f| quote!(#f: #f.clone().translate(by)));
+                        let enum_translate = quote! {
+                            Self::#variant_name { #(#field_idents,)* } => {
+                                Self::#variant_name {
+                                    #(#translate_fields,)*
                                 }
-                            };
+                            }
+                        };
 
-                            let fields_index = field_idents
-                                .iter()
-                                .enumerate()
-                                .map(|(i, f)| quote!(#i => #f,))
-                                .collect::<Vec<_>>();
-                            let enum_index = quote! {
-                                Self::#variant_name { #(#field_idents,)* } => {
-                                    match index {
-                                        #(#fields_index)*
-                                        _ => #empty_vg_instance,
-                                    }
+                        let fields_index = field_idents
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| quote!(#i => #f,))
+                            .collect::<Vec<_>>();
+                        let enum_index = quote! {
+                            Self::#variant_name { #(#field_idents,)* } => {
+                                match index {
+                                    #(#fields_index)*
+                                    _ => #empty_vg_instance,
                                 }
-                            };
-                            let enum_mut_index = quote! {
-                                Self::#variant_name { #(#field_idents,)* } => {
-                                    match index {
-                                        #(#fields_index)*
-                                        _ => #empty_vg_instance_mut,
-                                    }
+                            }
+                        };
+                        let enum_mut_index = quote! {
+                            Self::#variant_name { #(#field_idents,)* } => {
+                                match index {
+                                    #(#fields_index)*
+                                    _ => #empty_vg_instance_mut,
                                 }
-                            };
+                            }
+                        };
 
-                            let fields_draw =
-                                field_idents.iter().map(|f| quote!(#f.draw(display)?;));
-                            let enum_draw = quote! {
-                                Self::#variant_name { #(#field_idents,)* } => {
-                                    #(#fields_draw)*
-                                }
-                            };
+                        let fields_draw = field_idents.iter().map(|f| quote!(#f.draw(display)?;));
+                        let enum_draw = quote! {
+                            Self::#variant_name { #(#field_idents,)* } => {
+                                #(#fields_draw)*
+                            }
+                        };
 
-                            (
-                                enum_field_count,
-                                enum_translate,
-                                enum_index,
-                                enum_mut_index,
-                                enum_draw,
-                            )
-                        }
-                        Fields::Unnamed(FieldsUnnamed { unnamed, .. }) => {
-                            let field_idents = unnamed
-                                .iter()
-                                .enumerate()
-                                .map(|(num, _)| format_ident!("__self_{}", num))
-                                .collect::<Vec<_>>();
-
-                            let fields_count = unnamed.iter().count();
-                            let enum_field_count = quote! {
-                                Self::#variant_name(..) => {
-                                    #fields_count
+                        let fields_bounds_of = field_idents
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| quote!(#i => #f.bounds(),));
+                        let enum_bounds_of = quote! {
+                            Self::#variant_name { #(#field_idents,)* } => {
+                                match index {
+                                    #(#fields_bounds_of)*
+                                    _ => embedded_graphics::primitives::Rectangle::zero(),
                                 }
-                            };
+                            }
+                        };
 
-                            let translate_fields = field_idents
-                                .iter()
-                                .map(|f| quote!(#f.clone().translate(by), ));
-                            let enum_translate = quote! {
-                                Self::#variant_name(#(#field_idents),*) => {
-                                    Self::#variant_name(
-                                        #(#translate_fields)*
-                                    )
+                        let fields_translate_child = field_idents
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| quote!(#i => #f.translate_impl(by),));
+                        let enum_translate_child = quote! {
+                            Self::#variant_name { #(#field_idents,)* } => {
+                                match index {
+                                    #(#fields_translate_child)*
+                                    _ => {},
                                 }
-                            };
+                            }
+                        };
 
-                            let fields_index = field_idents
-                                .iter()
-                                .enumerate()
-                                .map(|(i, f)| quote!(#i => #f,))
-                                .collect::<Vec<_>>();
-                            let enum_index = quote! {
-                                Self::#variant_name(#(#field_idents),*) => {
-                                    match index {
-                                        #(#fields_index)*
-                                        _ => #empty_vg_instance,
-                                    }
-                                }
-                            };
+                        (
+                            enum_field_count,
+                            enum_translate,
+                            enum_index,
+                            enum_mut_index,
+                            enum_draw,
+                            enum_bounds_of,
+                            enum_translate_child,
+                        )
+                    }
+                    Fields::Unnamed(FieldsUnnamed { unnamed, .. }) => {
+                        let field_idents = unnamed
+                            .iter()
+                            .enumerate()
+                            .map(|(num, _)| format_ident!("__self_{}", num))
+                            .collect::<Vec<_>>();
 
-                            let enum_mut_index = quote! {
-                                Self::#variant_name(#(#field_idents),*) => {
-                                    match index {
-                                        #(#fields_index)*
-                                        _ => #empty_vg_instance_mut,
-                                    }
-                                }
-                            };
+                        let fields_count = unnamed.iter().count();
+                        let enum_field_count = quote! {
+                            Self::#variant_name(..) => {
+                                #fields_count
+                            }
+                        };
 
-                            let field_draws =
-                                field_idents.iter().map(|f| quote!(#f.draw(display)?;));
-                            let enum_draw = quote! {
-                                Self::#variant_name(#(#field_idents),*) => {
-                                    #(#field_draws)*
-                                }
-                            };
+                        let translate_fields = field_idents
+                            .iter()
+                            .map(|f| quote!(#f.clone().translate(by), ));
+                        let enum_translate = quote! {
+                            Self::#variant_name(#(#field_idents),*) => {
+                                Self::#variant_name(
+                                    #(#translate_fields)*
+                                )
+                            }
+                        };
 
-                            (
-                                enum_field_count,
-                                enum_translate,
-                                enum_index,
-                                enum_mut_index,
-                                enum_draw,
-                            )
-                        }
-                        Fields::Unit => {
-                            let enum_field_count = quote! {
-                                Self::#variant_name => 0,
-                            };
-                            let enum_translate = quote! {
-                                Self::#variant_name => Self::#variant_name,
-                            };
-                            let enum_index = quote! {
-                                Self::#variant_name => {
-                                    #empty_vg_instance
+                        let fields_index = field_idents
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| quote!(#i => #f,))
+                            .collect::<Vec<_>>();
+                        let enum_index = quote! {
+                            Self::#variant_name(#(#field_idents),*) => {
+                                match index {
+                                    #(#fields_index)*
+                                    _ => #empty_vg_instance,
                                 }
-                            };
+                            }
+                        };
 
-                            let enum_mut_index = quote! {
-                                Self::#variant_name => {
-                                    #empty_vg_instance_mut
+                        let enum_mut_index = quote! {
+                            Self::#variant_name(#(#field_idents),*) => {
+                                match index {
+                                    #(#fields_index)*
+                                    _ => #empty_vg_instance_mut,
                                 }
-                            };
-                            let enum_draw = quote! {
-                                Self::#variant_name => {}
-                            };
-                            (
-                                enum_field_count,
-                                enum_translate,
-                                enum_index,
-                                enum_mut_index,
-                                enum_draw,
-                            )
-                        }
-                    };
+                            }
+                        };
+
+                        let field_draws = field_idents.iter().map(|f| quote!(#f.draw(display)?;));
+                        let enum_draw = quote! {
+                            Self::#variant_name(#(#field_idents),*) => {
+                                #(#field_draws)*
+                            }
+                        };
+
+                        let fields_bounds_of = field_idents
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| quote!(#i => #f.bounds(),));
+                        let enum_bounds_of = quote! {
+                            Self::#variant_name(#(#field_idents),*) => {
+                                match index {
+                                    #(#fields_bounds_of)*
+                                    _ => embedded_graphics::primitives::Rectangle::zero(),
+                                }
+                            }
+                        };
+
+                        let fields_translate_child = field_idents
+                            .iter()
+                            .enumerate()
+                            .map(|(i, f)| quote!(#i => #f.translate_impl(by),));
+                        let enum_translate_child = quote! {
+                            Self::#variant_name(#(#field_idents),*) => {
+                                match index {
+                                    #(#fields_translate_child)*
+                                    _ => {},
+                                }
+                            }
+                        };
+
+                        (
+                            enum_field_count,
+                            enum_translate,
+                            enum_index,
+                            enum_mut_index,
+                            enum_draw,
+                            enum_bounds_of,
+                            enum_translate_child,
+                        )
+                    }
+                    Fields::Unit => {
+                        let enum_field_count = quote! {
+                            Self::#variant_name => 0,
+                        };
+                        let enum_translate = quote! {
+                            Self::#variant_name => Self::#variant_name,
+                        };
+                        let enum_index = quote! {
+                            Self::#variant_name => {
+                                #empty_vg_instance
+                            }
+                        };
+
+                        let enum_mut_index = quote! {
+                            Self::#variant_name => {
+                                #empty_vg_instance_mut
+                            }
+                        };
+                        let enum_draw = quote! {
+                            Self::#variant_name => {}
+                        };
+
+                        let enum_bounds_of = quote! {
+                            Self::#variant_name => {
+                                embedded_graphics::primitives::Rectangle::zero()
+                            }
+                        };
+
+                        let enum_translate_child = quote! {
+                            Self::#variant_name => {}
+                        };
+
+                        (
+                            enum_field_count,
+                            enum_translate,
+                            enum_index,
+                            enum_mut_index,
+                            enum_draw,
+                            enum_bounds_of,
+                            enum_translate_child,
+                        )
+                    }
+                };
 
                 enum_field_counts.push(enum_field_count);
                 enum_translates.push(enum_translate);
                 enum_indexes.push(enum_index);
                 enum_mut_indexes.push(enum_mut_index);
                 enum_draws.push(enum_draw);
+                enum_bounds_ofs.push(enum_bounds_of);
+                enum_translate_childs.push(enum_translate_child);
             });
 
             let field_count_impl = quote! {
@@ -298,12 +411,26 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 }
             };
 
+            let bounds_of_impl = quote! {
+                match self {
+                    #(#enum_bounds_ofs)*
+                }
+            };
+
+            let translate_child_impl = quote! {
+                match self {
+                    #(#enum_translate_childs)*
+                }
+            };
+
             (
                 field_count_impl,
                 index_impl,
                 index_mut_impl,
                 translate_impl,
                 draw_impl,
+                bounds_of_impl,
+                translate_child_impl,
             )
         }
         _ => panic!("derive(ViewGroup) only supports structs with named fields and enums"),
@@ -325,6 +452,16 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
 
             fn at_mut(&mut self, index: usize) -> &mut dyn embedded_layout::View {
                 #index_mut_impl
+            }
+
+            fn bounds_of(&self, index: usize) -> embedded_graphics::primitives::Rectangle {
+                use embedded_layout::View;
+                #bounds_of_impl
+            }
+
+            fn translate_child(&mut self, index: usize, by: Point) {
+                use embedded_layout::View;
+                #translate_child_impl
             }
         }
 
