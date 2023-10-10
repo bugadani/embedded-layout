@@ -5,7 +5,10 @@
 
 * `LinearLayout` now implements `ViewGroup`
 * `LinearLayout::inner{_mut}`
+* `LinearLayout::arrange_view_group`
 * `Orientation::compute_offset`
+* `ViewGroup::bounds_of`
+* `ViewGroup::translate_child`
 
 ## Changed
 

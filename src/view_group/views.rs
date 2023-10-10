@@ -47,6 +47,16 @@ where
     fn at_mut(&mut self, idx: usize) -> &mut dyn View {
         &mut self.views[idx]
     }
+
+    #[inline]
+    fn bounds_of(&self, idx: usize) -> Rectangle {
+        self.views[idx].bounds()
+    }
+
+    #[inline]
+    fn translate_child(&mut self, idx: usize, by: Point) {
+        self.views[idx].translate_impl(by)
+    }
 }
 
 impl<T> View for Views<'_, T>

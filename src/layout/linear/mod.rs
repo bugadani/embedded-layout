@@ -72,9 +72,10 @@
 //! [`horizontal::Left`]: crate::align::horizontal::Left
 
 use crate::{
+    align::{horizontal, vertical},
     align::{HorizontalAlignment, VerticalAlignment},
-    prelude::*,
-    view_group::ViewGroup,
+    view_group::{EmptyViewGroup, ViewGroup},
+    View,
 };
 
 mod orientation;
@@ -300,30 +301,47 @@ where
     }
 
     /// Arrange the views according to the layout properties and return the views as a [`ViewGroup`].
-    /// Note: The top left point is always `Point::zero()`.
-    ///
-    /// [`View::translate`]: crate::View::translate
-    /// [`Align`]: crate::align::Align
     #[inline]
+    #[must_use]
     pub fn arrange(mut self) -> Self {
-        let view_count = self.views.len();
+        // Place first child to the layout's position.
+        self.views
+            .translate_child(0, self.position - self.views.bounds_of(0).top_left);
+
+        // We can't use `self` because we borrow parts of it mutably.
+        LinearLayout {
+            position: Point::zero(),
+            direction: self.direction,
+            views: EmptyViewGroup,
+        }
+        .arrange_view_group(&mut self.views);
+
+        self
+    }
+
+    /// Arrange a [`ViewGroup`] according to the layout properties.
+    #[inline]
+    pub fn arrange_view_group(&self, view_group: &mut impl ViewGroup) {
+        let view_count = view_group.len();
 
         // measure
-        let mut size = self.views.at(0).size();
+        let bounds = view_group.bounds_of(0);
+        let position = bounds.top_left;
+        let mut size = bounds.size();
         for i in 1..view_count {
-            let current_el_size = self.views.at(i).size();
+            let current_el_size = view_group.bounds_of(i).size();
             size = LD::Secondary::measure(size, current_el_size);
         }
 
         // arrange
-        let mut bounds = Rectangle::new(self.position, size);
+        let mut bounds = Rectangle::new(position, size);
         for i in 0..view_count {
-            bounds = self
-                .direction
-                .place(self.views.at_mut(i), size, bounds, i, view_count);
+            let offset =
+                self.direction
+                    .compute_offset(view_group.bounds_of(i), size, bounds, i, view_count);
+            view_group.translate_child(i, offset);
+            bounds = view_group.bounds_of(i);
         }
-
-        self
     }
 }
 
@@ -353,16 +371,29 @@ where
     LD: Orientation,
     VG: ViewGroup,
 {
+    #[inline]
     fn len(&self) -> usize {
         self.views.len()
     }
 
+    #[inline]
     fn at(&self, idx: usize) -> &dyn View {
         self.views.at(idx)
     }
 
+    #[inline]
     fn at_mut(&mut self, idx: usize) -> &mut dyn View {
         self.views.at_mut(idx)
+    }
+
+    #[inline]
+    fn bounds_of(&self, idx: usize) -> Rectangle {
+        self.views.bounds_of(idx)
+    }
+
+    #[inline]
+    fn translate_child(&mut self, idx: usize, by: Point) {
+        self.views.translate_child(idx, by)
     }
 }
 

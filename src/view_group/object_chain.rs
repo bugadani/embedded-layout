@@ -112,6 +112,24 @@ where
 
         self.parent.at_mut(index)
     }
+
+    #[inline]
+    fn bounds_of(&self, index: usize) -> Rectangle {
+        if index == ViewGroup::len(self) - 1 {
+            return self.object.bounds();
+        }
+
+        self.parent.bounds_of(index)
+    }
+
+    #[inline]
+    fn translate_child(&mut self, index: usize, by: Point) {
+        if index == ViewGroup::len(self) - 1 {
+            return self.object.translate_impl(by);
+        }
+
+        self.parent.translate_child(index, by)
+    }
 }
 
 impl<V> ViewGroup for Chain<V>
@@ -125,15 +143,29 @@ where
 
     #[inline]
     fn at(&self, index: usize) -> &dyn View {
-        assert!(index == 0);
+        assert_eq!(index, 0);
 
         &self.object
     }
 
     #[inline]
     fn at_mut(&mut self, index: usize) -> &mut dyn View {
-        assert!(index == 0);
+        assert_eq!(index, 0);
 
         &mut self.object
+    }
+
+    #[inline]
+    fn bounds_of(&self, index: usize) -> Rectangle {
+        assert_eq!(index, 0);
+
+        self.object.bounds()
+    }
+
+    #[inline]
+    fn translate_child(&mut self, index: usize, by: Point) {
+        assert_eq!(index, 0);
+
+        self.object.translate_impl(by)
     }
 }

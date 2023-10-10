@@ -19,6 +19,16 @@ pub trait ViewGroup: View {
 
     /// Returns an exclusive reference to the [`View`] object at position `idx`.
     fn at_mut(&mut self, idx: usize) -> &mut dyn View;
+
+    /// Returns the bounding box of the given View.
+    fn bounds_of(&self, idx: usize) -> Rectangle {
+        self.at(idx).bounds()
+    }
+
+    /// Translates the given View.
+    fn translate_child(&mut self, idx: usize, by: Point) {
+        self.at_mut(idx).translate_impl(by)
+    }
 }
 
 /// A [`ViewGroup`] that contains no [`View`] objects.
@@ -58,7 +68,7 @@ impl ViewGroupHelper {
     #[inline]
     pub fn translate(vg: &mut impl ViewGroup, by: Point) {
         for i in 0..ViewGroup::len(vg) {
-            vg.at_mut(i).translate_impl(by);
+            vg.translate_child(i, by);
         }
     }
 
@@ -69,10 +79,10 @@ impl ViewGroupHelper {
             return EmptyViewGroup.bounds();
         }
 
-        let mut rect = vg.at(0).bounds();
+        let mut rect = vg.bounds_of(0);
 
         for i in 1..vg.len() {
-            rect = rect.enveloping(&vg.at(i).bounds());
+            rect = rect.enveloping(&vg.bounds_of(i));
         }
 
         rect
