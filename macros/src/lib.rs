@@ -442,23 +442,28 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
 
     let gen_view_group = quote! {
         impl #impl_generics embedded_layout::view_group::ViewGroup for #name #ty_generics #where_clause {
+            #[inline]
             fn len(&self) -> usize {
                 #field_count_impl
             }
 
+            #[inline]
             fn at(&self, index: usize) -> &dyn embedded_layout::View {
                 #index_impl
             }
 
+            #[inline]
             fn at_mut(&mut self, index: usize) -> &mut dyn embedded_layout::View {
                 #index_mut_impl
             }
 
+            #[inline]
             fn bounds_of(&self, index: usize) -> embedded_graphics::primitives::Rectangle {
                 use embedded_layout::View;
                 #bounds_of_impl
             }
 
+            #[inline]
             fn translate_child(&mut self, index: usize, by: Point) {
                 use embedded_layout::View;
                 #translate_child_impl
@@ -466,10 +471,12 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
         }
 
         impl #impl_generics embedded_graphics::transform::Transform for #name #ty_generics #where_clause {
+            #[inline]
             fn translate(&self, by: Point) -> Self {
                 #translate_impl
             }
 
+            #[inline]
             fn translate_mut(&mut self, by: Point) -> &mut Self {
                 embedded_layout::view_group::ViewGroupHelper::translate(self, by);
                 self
@@ -477,6 +484,7 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
         }
 
         impl #impl_generics embedded_graphics::geometry::Dimensions for #name #ty_generics #where_clause {
+            #[inline]
             fn bounding_box(&self) -> embedded_graphics::primitives::Rectangle {
                 embedded_layout::view_group::ViewGroupHelper::bounds(self)
             }
@@ -501,6 +509,7 @@ pub fn derive_viewgroup(input: TokenStream) -> TokenStream {
                 type Color = #pixelcolor;
                 type Output = ();
 
+                #[inline]
                 fn draw<D: embedded_graphics::draw_target::DrawTarget<Color = #pixelcolor>>(&self, display: &mut D) -> Result<(), D::Error> {
                     #draw_impl
 
