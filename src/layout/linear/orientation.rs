@@ -22,8 +22,30 @@ pub trait Orientation: Copy + Clone {
     /// Create a `Size` from primary and secondary size values
     fn create_size(primary: u32, secondary: u32) -> Size;
 
+    /// Computes translation for the next view.
+    fn compute_offset(
+        &self,
+        bounds: Rectangle,
+        size: Size,
+        previous: Rectangle,
+        n: usize,
+        count: usize,
+    ) -> Point;
+
     /// Place view
-    fn place(&self, view: &mut dyn View, size: Size, previous: Rectangle, n: usize, count: usize);
+    #[inline]
+    fn place(
+        &self,
+        view: &mut dyn View,
+        size: Size,
+        previous: Rectangle,
+        n: usize,
+        count: usize,
+    ) -> Rectangle {
+        let offset = self.compute_offset(view.bounds(), size, previous, n, count);
+        view.translate_impl(offset);
+        view.bounds()
+    }
 }
 
 /// Horizontal layout direction
@@ -95,37 +117,35 @@ where
     }
 
     #[inline]
-    fn place(&self, view: &mut dyn View, size: Size, previous: Rectangle, n: usize, count: usize) {
+    fn compute_offset(
+        &self,
+        bounds: Rectangle,
+        size: Size,
+        previous: Rectangle,
+        n: usize,
+        count: usize,
+    ) -> Point {
         let (primary_size, _) = Self::destructure_size(size);
-        let view_bounds = view.bounds();
 
-        let translation = if n == 0 {
+        if n == 0 {
             Point::new(
-                self.spacing.align(
-                    horizontal::Left,
-                    view_bounds,
-                    previous,
-                    n,
-                    count,
-                    primary_size,
-                ),
-                Secondary::First::default().align(view_bounds, previous),
+                self.spacing
+                    .align(horizontal::Left, bounds, previous, n, count, primary_size),
+                Secondary::First::default().align(bounds, previous),
             )
         } else {
             Point::new(
                 self.spacing.align(
                     horizontal::LeftToRight,
-                    view_bounds,
+                    bounds,
                     previous,
                     n,
                     count,
                     primary_size,
                 ),
-                Secondary::default().align(view_bounds, previous),
+                Secondary::default().align(bounds, previous),
             )
-        };
-
-        view.translate_impl(translation);
+        }
     }
 }
 
@@ -198,30 +218,34 @@ where
     }
 
     #[inline]
-    fn place(&self, view: &mut dyn View, size: Size, previous: Rectangle, n: usize, count: usize) {
+    fn compute_offset(
+        &self,
+        bounds: Rectangle,
+        size: Size,
+        previous: Rectangle,
+        n: usize,
+        count: usize,
+    ) -> Point {
         let (primary_size, _) = Self::destructure_size(size);
-        let view_bounds = view.bounds();
 
-        let translation = if n == 0 {
+        if n == 0 {
             Point::new(
-                Secondary::First::default().align(view_bounds, previous),
+                Secondary::First::default().align(bounds, previous),
                 self.spacing
-                    .align(vertical::Top, view_bounds, previous, n, count, primary_size),
+                    .align(vertical::Top, bounds, previous, n, count, primary_size),
             )
         } else {
             Point::new(
-                Secondary::default().align(view_bounds, previous),
+                Secondary::default().align(bounds, previous),
                 self.spacing.align(
                     vertical::TopToBottom,
-                    view_bounds,
+                    bounds,
                     previous,
                     n,
                     count,
                     primary_size,
                 ),
             )
-        };
-
-        view.translate_impl(translation);
+        }
     }
 }

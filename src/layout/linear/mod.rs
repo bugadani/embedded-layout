@@ -318,9 +318,9 @@ where
         // arrange
         let mut bounds = Rectangle::new(self.position, size);
         for i in 0..view_count {
-            self.direction
+            bounds = self
+                .direction
                 .place(self.views.at_mut(i), size, bounds, i, view_count);
-            bounds = self.views.at(i).bounds();
         }
 
         self
