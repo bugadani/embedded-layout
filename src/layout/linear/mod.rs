@@ -334,6 +334,24 @@ where
     }
 }
 
+impl<LD, VG> ViewGroup for LinearLayout<LD, VG>
+where
+    LD: Orientation,
+    VG: ViewGroup,
+{
+    fn len(&self) -> usize {
+        self.views.len()
+    }
+
+    fn at(&self, idx: usize) -> &dyn View {
+        self.views.at(idx)
+    }
+
+    fn at_mut(&mut self, idx: usize) -> &mut dyn View {
+        self.views.at_mut(idx)
+    }
+}
+
 impl<C, LD, VG> Drawable for LinearLayout<LD, VG>
 where
     C: PixelColor,
