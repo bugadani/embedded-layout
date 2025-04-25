@@ -138,6 +138,11 @@ impl ElementSpacing for DistributeFill {
     ) -> i32 {
         // bit of a mess, but calculate using i32 in case the views don't fit the space
         let empty_space = self.0 as i32 - total_size as i32;
+
+        if objects <= 1 {
+            return alignment.align_with_offset(view, reference, empty_space / 2);
+        }
+
         let base = empty_space / (objects - 1) as i32;
         let remainder = empty_space % (objects - 1) as i32;
 
